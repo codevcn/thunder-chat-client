@@ -12,11 +12,11 @@ import {
 import { Spinner } from "@/materials/spinner"
 import { postLoginUser } from "@/apis/auth"
 import toast from "react-hot-toast"
-import axiosErrorHandler from "@/utils/axios-error-hanlder"
 import axios from "axios"
 import { Form, Input } from "antd"
 import { useAuthRedirect } from "@/hooks/redirect"
-import { useSocketChatting } from "@/contexts/socket.context"
+import socketClient from "@/configs/socket"
+import AxiosErrorHanlder from "@/utils/axios-error-hanlder"
 
 type TLogInUserForm = {
    email: string
@@ -26,7 +26,6 @@ type TLogInUserForm = {
 const LoginForm = ({ typedEmail }: { typedEmail: string }) => {
    const [loading, setLoading] = useState<boolean>(false)
    const redirect = useAuthRedirect()
-   const socket = useSocketChatting()
 
    const loginUser = async (form_data: TLogInUserForm) => {
       setLoading(true)
@@ -36,11 +35,11 @@ const LoginForm = ({ typedEmail }: { typedEmail: string }) => {
             email: typedEmail,
             password: form_data.password,
          })
-         socket.connect()
+         socketClient.connect()
          redirect({ refresh: true })
       } catch (error) {
          if (axios.isAxiosError(error)) {
-            toast.error(axiosErrorHandler(error).message)
+            toast.error(AxiosErrorHanlder.errorSetting(error).message)
          }
       }
 

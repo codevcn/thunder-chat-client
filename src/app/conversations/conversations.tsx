@@ -8,7 +8,7 @@ import { useDebounce } from "@/hooks/debounce"
 import type { TSearchConversationParams, TUserWithProfile } from "@/utils/types"
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
 import { searchConversationThunk } from "@/redux/conversations/conversations-thunks"
-import { ChangeEventHandler, Dispatch, SetStateAction, useRef, useState } from "react"
+import { ChangeEvent, ChangeEventHandler, Dispatch, SetStateAction, useRef, useState } from "react"
 import validator from "validator"
 import { Spinner } from "@/materials/spinner"
 import { IconButton } from "@/materials/icon-button"
@@ -144,12 +144,11 @@ const Search = ({ setIsTyping, setSearching, isTyping }: TSearchProps) => {
    const debounce = useDebounce(300)
    const dispatch = useAppDispatch()
 
-   const search: ChangeEventHandler<HTMLInputElement> = async (e) => {
-      let search_value: string | boolean = e.target.value?.trim()
-      search_value = search_value && search_value.length > 0 && search_value
-      let search_data: TSearchConversationParams = {}
-
+   const search = async (e: ChangeEvent<HTMLInputElement>) => {
+      let search_value = e.target.value.trim()
       if (!search_value) return
+
+      let search_data: TSearchConversationParams = {}
 
       if (validator.isEmail(search_value)) {
          search_data.email = search_value

@@ -7,7 +7,7 @@ import AppLogoPng from "@/assets/images/logo.png"
 import toast from "react-hot-toast"
 import { getUserByEmail } from "@/apis/user"
 import axios from "axios"
-import axiosErrorHandler from "@/utils/axios-error-hanlder"
+import AxiosErrorHandler from "@/utils/axios-error-hanlder"
 import RegisterForm from "./register-form"
 import LoginForm from "@/app/login-sign-up/login-form"
 import { Spinner } from "@/materials/spinner"
@@ -33,7 +33,7 @@ const CheckUserForm = ({ onSetCheckUserStatus, onSetTypedEmail }: TCheckUserForm
          onSetCheckUserStatus(ECheckUserStatus.EXIST)
       } catch (error) {
          if (axios.isAxiosError(error)) {
-            const error_result = axiosErrorHandler(error)
+            const error_result = AxiosErrorHandler.errorSetting(error)
 
             if (error_result.statusCode === 404) {
                onSetCheckUserStatus(ECheckUserStatus.NOT_EXIST)

@@ -6,10 +6,10 @@ import toast from "react-hot-toast"
 import { useRedirectToLogin } from "@/hooks/redirect"
 import { AppLoading } from "./app-loading"
 import { usePathname } from "next/navigation"
-import { useAuthStatus } from "@/contexts/auth.context"
+import { useAuth } from "@/hooks/auth"
 
 const Guard = ({ children }: { children: JSX.Element }) => {
-   const authStatus = useAuthStatus()
+   const { authStatus } = useAuth()
    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
    const redirect_to_login = useRedirectToLogin()
 

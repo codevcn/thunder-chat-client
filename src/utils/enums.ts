@@ -39,12 +39,3 @@ export enum ECommonStatus {
    FAIL = "fail",
    ERROR = "error",
 }
-
-export enum ESocketEventNames {
-   client_connected = "client_connected",
-   connect_error = "connect_error",
-}
-
-export enum ESocketNamespaces {
-   Chatting = "Chatting",
-}

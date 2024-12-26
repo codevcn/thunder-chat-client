@@ -5,7 +5,7 @@ import React, { useRef } from "react"
 import { Flex } from "antd"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faCheckDouble } from "@fortawesome/free-solid-svg-icons"
-import { useEffect, useState, memo } from "react"
+import { useEffect, memo } from "react"
 import { fetchMessagesThunk } from "@/redux/messages/messages.thunk"
 import type { TConvMessage, TMessage, TUserWithoutPassword } from "@/utils/types"
 import { Spinner } from "@/materials/spinner"
@@ -14,91 +14,49 @@ import { EEventNames, ETimeGapOfStickyTimes, ETimeFormats } from "@/utils/enums"
 import { ScrollToBottomEventor } from "@/utils/custom-events"
 import { ScrollToBottomMessageBtn } from "./scroll-to-bottom-msg-btn"
 import { createPortal } from "react-dom"
+import { useUser } from "@/hooks/user"
+import socketClientChatting from "@/configs/socket"
+import { EChattingEvents } from "@/utils/events/chatting-events"
+import { pushMsg } from "@/redux/messages/messages.slice"
 
 type TMessageProps = {
-   content: string
-   time: string
-   isNewMsg: boolean
-}
-
-const CreatorMessage = ({ content, time, isNewMsg }: TMessageProps) => {
-   const [animate, setAnimate] = useState<boolean>(true)
-
-   const set_animate_new_msg = () =>
-      isNewMsg && animate
-         ? "-translate-x-14 translate-y-4 opacity-0"
-         : "translate-x-0 translate-y-0 opacity-100"
-
-   useEffect(() => {
-      if (isNewMsg) {
-         setTimeout(() => {
-            setAnimate(false)
-         }, 10)
-      }
-   }, [])
-
-   return (
-      <Flex //
-         className="w-full"
-         justify="space-between"
-      >
-         <span></span>
-         <div
-            className={`${set_animate_new_msg()} transition duration-200 bg-regular-violet-cl rounded-t-2xl rounded-bl-2xl py-1.5 px-2 relative`}
-         >
-            <p className="text-sm inline break-all">{content}</p>
-            <div className="float-right ml-3 relative right-0 top-1">
-               <span className="text-xs text-regular-creator-msg-time-cl">{time}</span>
-               <div className="inline-block ml-0.5">
-                  <FontAwesomeIcon icon={faCheckDouble} fontSize={12} />
-               </div>
-            </div>
-         </div>
-      </Flex>
-   )
-}
-
-const RecipientMessage = ({ content, time, isNewMsg }: TMessageProps) => {
-   return (
-      <div
-         className={`${""} bg-regular-darkGray-cl rounded-t-2xl rounded-br-2xl pt-1.5 pb-2 px-2 w-fit relative`}
-      >
-         <p className="text-sm inline break-all">{content}</p>
-         <span className="text-xs text-regular-recipient-msg-time-cl float-right ml-3 relative right-0 top-2">
-            {time}
-         </span>
-      </div>
-   )
-}
-
-const Message = ({
-   message,
-   creator,
-   isNewMsg,
-}: {
    message: TMessage
-   creator: TUserWithoutPassword
+   user: TUserWithoutPassword
    isNewMsg: boolean
-}) => {
-   const { authorId, content, createdAt: msgTime } = message
-   const isCreatorMessage = creator.id === authorId
+}
 
-   const formatMessageTime = (msg_time: string) => dayjs(msg_time).format("hh:mm")
+const Message = ({ message, isNewMsg, user }: TMessageProps) => {
+   const { authorId, content, createdAt: msgTime } = message
+
+   const time = dayjs(msgTime).format("hh:mm")
+   const addMsgAnimation = isNewMsg ? "animate-add-message" : ""
 
    return (
       <div className="Message-Container max-w-full">
-         {isCreatorMessage ? (
-            <CreatorMessage
-               content={content}
-               time={formatMessageTime(msgTime)}
-               isNewMsg={isNewMsg}
-            />
+         {user.id === authorId ? (
+            <Flex className="w-full" justify="space-between">
+               <span></span>
+               <div
+                  className={`${addMsgAnimation} bg-regular-violet-cl rounded-t-2xl rounded-bl-2xl py-1.5 px-2 relative`}
+               >
+                  <p className="text-sm inline break-all">{content}</p>
+                  <div className="float-right ml-3 relative right-0 top-1">
+                     <span className="text-xs text-regular-creator-msg-time-cl">{time}</span>
+                     <div className="inline-block ml-0.5">
+                        <FontAwesomeIcon icon={faCheckDouble} fontSize={12} />
+                     </div>
+                  </div>
+               </div>
+            </Flex>
          ) : (
-            <RecipientMessage
-               content={content}
-               time={formatMessageTime(msgTime)}
-               isNewMsg={isNewMsg}
-            />
+            <div
+               className={`${addMsgAnimation} bg-regular-darkGray-cl rounded-t-2xl rounded-br-2xl pt-1.5 pb-2 px-2 w-fit relative`}
+            >
+               <p className="text-sm inline break-all">{content}</p>
+               <span className="text-xs text-regular-recipient-msg-time-cl float-right ml-3 relative right-0 top-2">
+                  {time}
+               </span>
+            </div>
          )}
       </div>
    )
@@ -127,7 +85,7 @@ const StickyTime = ({ sticky_time }: { sticky_time: string }) => {
 export const Messages = memo(({ conversationId }: { conversationId: number }) => {
    const { messages, fetchedMsgs } = useAppSelector(({ messages }) => messages)
    const dispatch = useAppDispatch()
-   const user = useAppSelector(({ user }) => user.user)
+   const user = useUser()
    const messages_container_ref = useRef<HTMLDivElement>(null)
 
    const scrollToBottomMessage = async () => {
@@ -167,6 +125,21 @@ export const Messages = memo(({ conversationId }: { conversationId: number }) =>
    useEffect(() => {
       fetchMessages()
       publishScrollToBottomMsgEvent()
+
+      socketClientChatting.on(EChattingEvents.send_message_1v1, (data: TMessage) => {
+         console.log(">>> payload:", data)
+         const { id, authorId, conversationId, createdAt, content } = data
+         dispatch(
+            pushMsg({
+               id,
+               authorId,
+               content,
+               conversationId,
+               createdAt,
+               isNewMsg: true,
+            })
+         )
+      })
 
       return () => {
          messages_container_ref.current?.removeEventListener("scroll", () => {})
@@ -208,7 +181,7 @@ export const Messages = memo(({ conversationId }: { conversationId: number }) =>
       return current_time_data.format(ETimeFormats.MMMM_DD_YYYY)
    }
 
-   const map_message = (messages: TConvMessage[], user: TUserWithoutPassword) =>
+   const mapMessage = (messages: TConvMessage[], user: TUserWithoutPassword) =>
       messages.map((message, index) => {
          const sticky_time =
             index > 0
@@ -222,8 +195,8 @@ export const Messages = memo(({ conversationId }: { conversationId: number }) =>
                <Message
                   message={message}
                   key={message.id}
-                  creator={user}
                   isNewMsg={!!message.isNewMsg}
+                  user={user}
                />
             </React.Fragment>
          )
@@ -245,7 +218,7 @@ export const Messages = memo(({ conversationId }: { conversationId: number }) =>
             {fetchedMsgs && user ? (
                messages && messages.length > 0 ? (
                   <Flex className="py-2 box-border w-messages-list-width gap-y-2" vertical>
-                     {map_message(messages, user)}
+                     {mapMessage(messages, user)}
                   </Flex>
                ) : (
                   <NoMessagesYet />

@@ -9,12 +9,11 @@ import { faMagnifyingGlass, faPhone, faEllipsisVertical } from "@fortawesome/fre
 import { IconButton } from "@/materials/icon-button"
 import { Messages } from "./messages"
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
-import { useEffect, useState, memo, ChangeEvent } from "react"
+import { useEffect, useState, memo, ChangeEvent, useRef } from "react"
 import { fetchConversationThunk } from "@/redux/messages/messages.thunk"
 import { useSearchParams } from "next/navigation"
 import validator from "validator"
-import { CONV_ID_QUERY_KEY } from "@/utils/constants"
-import { pushMsg } from "@/redux/messages/messages.slice"
+import { QueryString } from "@/utils/constants"
 import {
    faMicrophone,
    faPaperclip,
@@ -25,6 +24,10 @@ import { Input } from "antd"
 import { InfoBar } from "./infoBar"
 import { openInfoBar } from "@/redux/conversations/conversations-slice"
 import { pickFirstLetterOfNameUser, setLastSeen } from "@/utils/helpers"
+import { chattingService } from "@/services/chatting.service"
+import { TextAreaRef } from "antd/es/input/TextArea"
+import type { TConversation, TSuccess } from "@/utils/types"
+import toast from "react-hot-toast"
 
 type THeaderProps = {
    infoBarIsOpened: boolean
@@ -107,48 +110,46 @@ const Header = ({ infoBarIsOpened, onOpenInfoBar }: THeaderProps) => {
    )
 }
 
-const TypeMessageBar = memo(() => {
+type TTypeMessageBarProps = {
+   conversation: TConversation
+}
+
+type TSendMessage1v1ErrorRes = {
+   isError: boolean
+   message: string
+}
+
+const TypeMessageBar = memo(({ conversation }: TTypeMessageBarProps) => {
    const { fetchedMsgs } = useAppSelector(({ messages }) => messages)
    const [message, setMessage] = useState<string>("")
-   const dispatch = useAppDispatch()
-
-   const filterMessage = (msg: string): boolean => {
-      // stop typing when input value is "\n" after sending message
-      if (/^\n$/.test(msg)) {
-         return false
-      }
-      return true
-   }
+   const chatInputRef = useRef<TextAreaRef>(null)
 
    const typing = async (e: ChangeEvent<HTMLTextAreaElement>) => {
       const msg = e.target.value
-      if (filterMessage(msg)) {
-         setTimeout(() => {
-            setMessage(msg)
-         }, 0)
+      // stop typing when input value is "\n" after sending message
+      if (!/^\n$/.test(msg)) {
+         setMessage(msg)
       }
    }
 
    const sendMessage = async () => {
-      const msg_to_send = message.trim()
-      if (!msg_to_send) return
-      console.log(">>> msg_to_send >>>", `"${msg_to_send}"`)
-      dispatch(
-         pushMsg({
-            id: dev_test_values.random_between_two_numbers(1000, 2000),
-            authorId: 11,
-            content: msg_to_send,
-            conversationId: 4,
-            createdAt: new Date().toISOString(),
-            isNewMsg: true,
-         })
+      const msgToSend = message?.trim()
+      if (!msgToSend) return
+      console.log(">>> msg To Send >>>", `"${msgToSend}"`)
+      const { recipientId, id } = conversation
+      chattingService.sendMessage(
+         { message: msgToSend, receiverId: recipientId, conversationId: id },
+         (res: TSendMessage1v1ErrorRes | TSuccess) => {
+            if ("isError" in res) {
+               toast.error(res.message)
+            }
+         }
       )
    }
 
    const catchEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === "Enter") {
          sendMessage()
-         setMessage("")
       }
    }
 
@@ -169,8 +170,8 @@ const TypeMessageBar = memo(() => {
                      className="bg-transparent text-base p-3 px-1 z-10 styled-scrollbar border-transparent text-white hover:border-transparent focus:border-transparent focus:shadow-none"
                      onChange={typing}
                      autoSize={{ minRows: 1, maxRows: 10 }}
-                     onKeyDown={catchEnter}
-                     value={message}
+                     onKeyUp={catchEnter}
+                     ref={chatInputRef}
                   />
                   <div
                      className={`${message ? "animate-hide-placeholder" : "animate-grow-placeholder"} left-2 z-0 absolute top-1/2 -translate-y-1/2 text-regular-placeholder-text-cl`}
@@ -219,7 +220,7 @@ export const Chat = () => {
    }
 
    useEffect(() => {
-      const conversationId = search.get(CONV_ID_QUERY_KEY)
+      const conversationId = search.get(QueryString.CONV_ID)
       if (conversationId && validator.isNumeric(conversationId)) {
          const conv_id = parseInt(conversationId)
 
@@ -248,7 +249,7 @@ export const Chat = () => {
                >
                   <Messages conversationId={conversationId} />
 
-                  <TypeMessageBar />
+                  <TypeMessageBar conversation={conversation} />
                </Flex>
             </Flex>
 

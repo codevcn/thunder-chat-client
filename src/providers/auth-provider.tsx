@@ -1,10 +1,20 @@
 "use client"
 
-import { AuthStatusContext } from "@/contexts/auth.context"
-import { useAuth } from "@/hooks/auth"
+import { useEffect } from "react"
+import { checkAuthThunk } from "@/redux/auth/auth.thunk"
+import { EAuthStatus } from "@/utils/enums"
+import { useAppDispatch, useAppSelector } from "@/hooks/redux"
 
 export const AuthProvider = ({ children }: { children: JSX.Element }) => {
-   const { authStatus } = useAuth()
+   const auth = useAppSelector((state) => state.auth)
+   const { authStatus } = auth
+   const dispatch = useAppDispatch()
 
-   return <AuthStatusContext.Provider value={authStatus}>{children}</AuthStatusContext.Provider>
+   useEffect(() => {
+      if (authStatus === EAuthStatus.UNAUTHENTICATED || authStatus === EAuthStatus.UNKNOWN) {
+         dispatch(checkAuthThunk())
+      }
+   }, [])
+
+   return children
 }

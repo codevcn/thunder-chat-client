@@ -15,7 +15,7 @@ import { get_days_in_month, get_years_list } from "@/utils/date-time"
 import { PASSWORD_REGEX } from "@/utils/regex"
 import { postRegisterUser } from "@/apis/user"
 import axios from "axios"
-import axiosErrorHandler from "@/utils/axios-error-hanlder"
+import AxiosErrorHandler from "@/utils/axios-error-hanlder"
 import toast from "react-hot-toast"
 import { Spinner } from "@/materials/spinner"
 import { Select, Input, Tooltip, Form } from "antd"
@@ -168,7 +168,7 @@ const NameAndPassword = ({
          redirect({ refresh: true })
       } catch (error) {
          if (axios.isAxiosError(error)) {
-            toast.error(axiosErrorHandler(error).message)
+            toast.error(AxiosErrorHandler.errorSetting(error).message)
          }
       }
    }

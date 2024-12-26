@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react"
+import { createContext } from "react"
 
 type TChatBackgroundContext = {
    background: string | null
@@ -11,5 +11,3 @@ const defaultContext: TChatBackgroundContext = {
 }
 
 export const ChatBackgroundContext = createContext<TChatBackgroundContext>(defaultContext)
-
-export const useChatBackground = () => useContext(ChatBackgroundContext)

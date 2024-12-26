@@ -2,41 +2,41 @@ import { AxiosError } from "axios"
 
 export type TUser = {
    id: number
+   createdAt: string
    email: string
+   username: string | null
    password: string
    firstName: string
    lastName: string
    birthday: Date | null
-   createdAt: Date
-   username: string | null
 }
 
 export type TProfile = {
    id: number
+   createdAt: string
    about: string | null
    avatar: string | null
    userId: number
-   createdAt: Date
 }
 
-export type TUserWithProfile = TUser & { Profile?: Omit<TProfile, "id" | "userId"> | null }
+export type TUserWithProfile = TUser & { Profile: Omit<TProfile, "id" | "userId"> | null }
 
 export type TUserWithoutPassword = Omit<TUser, "password">
 
 export type TConversation = {
    id: number
+   createdAt: string
+   lastMsgSentId: number | null
    creatorId: number
    recipientId: number
-   createdAt: Date
-   lastMsgSentId: number | null
 }
 
 export type TMessage = {
    id: number
    content: string
+   createdAt: string
    authorId: number
    conversationId: number
-   createdAt: string
 }
 
 // Conversation Message Type
@@ -103,3 +103,9 @@ export type TStartConversationParams = {
 export type TDirectConversation = TConversation & {
    recipient: TUserWithProfile
 }
+
+export type TUnknownObject = {
+   [key: number | string]: any
+}
+
+export type TUnknownFunction<R> = (...args: any[]) => R

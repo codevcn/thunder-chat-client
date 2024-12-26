@@ -1,15 +1,18 @@
-import {
-   fetchConversationService,
-   startConversationService,
-} from "@/services/conversations.service"
-import { fetchMessagesService } from "@/services/message.service"
+import { conversationService } from "@/services/conversations.service"
+import { messageService } from "@/services/message.service"
 import { createAsyncThunk } from "@reduxjs/toolkit"
 
-export const startConversationThunk = createAsyncThunk("messages/start", startConversationService)
+export const startConversationThunk = createAsyncThunk(
+   "messages/start",
+   conversationService.startConversationService
+)
 
 export const fetchConversationThunk = createAsyncThunk(
    "messages/fetchConversation",
-   fetchConversationService
+   conversationService.fetchConversationService
 )
 
-export const fetchMessagesThunk = createAsyncThunk("messages/fetchMessages", fetchMessagesService)
+export const fetchMessagesThunk = createAsyncThunk(
+   "messages/fetchMessages",
+   messageService.fetchMessagesService
+)

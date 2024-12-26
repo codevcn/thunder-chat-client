@@ -9,13 +9,13 @@ const config: Config = {
       "./src/materials/*.{js,ts,tsx,mdx}",
    ],
    theme: {
-      fontFamily: {
-         sans: ["ui-sans-serif", "system-ui"],
-         serif: ["ui-serif", "Georgia"],
-         mono: ["ui-monospace", "SFMono-Regular"],
-         roboto: ["var(--ggfont-roboto)"],
-      },
       extend: {
+         fontFamily: {
+            sans: ["ui-sans-serif", "system-ui"],
+            serif: ["ui-serif", "Georgia"],
+            mono: ["ui-monospace", "SFMono-Regular"],
+            roboto: ["var(--ggfont-roboto)"],
+         },
          screens: {
             "screen-medium-chatting": "970px",
             "screen-large-chatting": "1275px",
@@ -84,6 +84,7 @@ const config: Config = {
                "super-zoom-in 0.15s forwards ease, fade-out 0.15s forwards ease",
             "disappear-zoom-out-s40": "disappear-zoom-out-s40 0.15s forwards linear",
             "appear-zoom-in-s40": "appear-zoom-in-s40 0.15s forwards linear",
+            "add-message": "add-message 0.2s var(--tdc-add-message-timing) 0.01s",
          },
       },
    },

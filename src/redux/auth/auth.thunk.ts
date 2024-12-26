@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit"
-import { checkAuthService } from "@/services/auth.service"
+import { authService } from "@/services/auth.service"
 
-const checkAuthThunk = createAsyncThunk("auth/checkAuth", checkAuthService)
+const checkAuthThunk = createAsyncThunk("auth/checkAuth", authService.checkAuthService)
 
 export { checkAuthThunk }

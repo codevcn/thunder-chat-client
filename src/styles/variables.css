@@ -33,6 +33,7 @@
 
    /* transitions */
    --tdc-slide-info-bar-timing: cubic-bezier(0.33, 1, 0.68, 1);
+   --tdc-add-message-timing: cubic-bezier(0.4, 0, 0.2, 1);
 
    /* translates */
    --tdc-slide-chat-container: calc(var(--tdc-info-bar-width) / -2);
