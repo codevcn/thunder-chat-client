@@ -1,6 +1,5 @@
 "use client"
 
-import { Navigation } from "./navigation"
 import { Conversations } from "./conversations"
 import { Chat } from "./chat"
 import { Flex } from "antd"
@@ -8,20 +7,7 @@ import { memo, useEffect } from "react"
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
 import { setChatBackground } from "@/redux/settings/settings.slice"
 import backgroundDarkPattern from "@/assets/images/chat_bg/chat-bg-pattern-dark.ad38368a9e8140d0ac7d.png"
-
-const MainSection = memo(() => {
-   return (
-      <>
-         <Navigation />
-
-         <Flex className="w-full relative z-20">
-            <Conversations />
-
-            <Chat />
-         </Flex>
-      </>
-   )
-})
+import { Navigation } from "@/components/navigation"
 
 const ChatBackground = () => {
    const chatBackground = useAppSelector(({ settings }) => settings.theme.chatBackground)
@@ -43,7 +29,14 @@ const ConversationPage = () => {
    return (
       <Flex className="ConversationPage bg-regular-black-cl w-full relative">
          <ChatBackground />
-         <MainSection />
+
+         <Navigation />
+
+         <Flex className="w-full relative z-20">
+            <Conversations />
+
+            <Chat />
+         </Flex>
       </Flex>
    )
 }

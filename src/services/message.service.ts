@@ -4,14 +4,10 @@ import { getFetchMessages } from "@/apis/messages"
 import { dev_test_values } from "@/providers/test"
 
 class MessageService {
-   async fetchMessagesService(conversationId: number) {
-      try {
-         // const { data } = await getFetchMessages(conversationId)
-         // return data
-         return await dev_test_values.getTestMessages()
-      } catch (error) {
-         throw error
-      }
+   async fetchMessages(conversationId: number) {
+      // const { data } = await getFetchMessages(conversationId)
+      // return data
+      return await dev_test_values.getTestMessages()
    }
 }
 

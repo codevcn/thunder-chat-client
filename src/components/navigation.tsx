@@ -1,9 +1,17 @@
 "use client"
 
-import { Avatar, Badge, Tooltip, Flex } from "antd"
+import { Avatar, Tooltip, Flex } from "antd"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faUser, faHouse, faBell, faGear, faComments } from "@fortawesome/free-solid-svg-icons"
+import {
+   faUser,
+   faHouse,
+   faBell,
+   faGear,
+   faComments,
+   faUserGroup,
+} from "@fortawesome/free-solid-svg-icons"
 import Link from "next/link"
+import { memo } from "react"
 
 type Navs = {
    label: string
@@ -18,7 +26,7 @@ const navs: Navs = [
       icon: <FontAwesomeIcon icon={faHouse} />,
    },
    {
-      label: "Conversation",
+      label: "Conversations",
       href: "/conversations",
       icon: <FontAwesomeIcon icon={faComments} />,
    },
@@ -27,9 +35,14 @@ const navs: Navs = [
       href: "/nofication",
       icon: <FontAwesomeIcon icon={faBell} />,
    },
+   {
+      label: "Friends",
+      href: "/friends",
+      icon: <FontAwesomeIcon icon={faUserGroup} />,
+   },
 ]
 
-export const Navigation = () => {
+export const Navigation = memo(() => {
    return (
       <Flex
          className="hidden relative z-20 screen-medium-chatting:flex h-screen bg-regular-darkGray-cl border-r border-r-regular-hover-card-cl pt-6 pb-3 w-[55px] box-border"
@@ -39,11 +52,9 @@ export const Navigation = () => {
       >
          <Tooltip title="Account" placement="right">
             <Link href="/account" className="flex">
-               <Badge dot color="green" className="m-auto">
-                  <div className="cursor-pointer transition duration-200 hover:scale-125">
-                     <Avatar icon={<FontAwesomeIcon icon={faUser} />} />
-                  </div>
-               </Badge>
+               <div className="m-auto cursor-pointer transition duration-200 hover:scale-125">
+                  <Avatar icon={<FontAwesomeIcon icon={faUser} />} />
+               </div>
             </Link>
          </Tooltip>
 
@@ -72,4 +83,4 @@ export const Navigation = () => {
          </Tooltip>
       </Flex>
    )
-}
+})

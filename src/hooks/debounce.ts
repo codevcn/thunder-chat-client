@@ -1,7 +1,9 @@
 export const useDebounce = (delay: number) => (handler: (...params: any) => void) => {
-   let timer: any
+   let timer: NodeJS.Timeout
    return (...args: any) => {
       clearTimeout(timer)
-      timer = setTimeout(() => handler(...args), delay)
+      timer = setTimeout(() => {
+         handler.apply(this, args)
+      }, delay)
    }
 }

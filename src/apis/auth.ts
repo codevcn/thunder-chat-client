@@ -7,10 +7,8 @@ const request_config: AxiosRequestConfig = {
    withCredentials: true,
 }
 
-const postLoginUser = (data: TLoginUserParams) =>
+export const postLoginUser = (data: TLoginUserParams) =>
    client_axios.post<TSuccess>("/auth/login", data, request_config)
 
-const postCheckAuth = () =>
-   client_axios.post<TUserWithoutPassword>("/auth/checkAuth", {}, request_config)
-
-export { postLoginUser, postCheckAuth }
+export const postCheckAuth = () =>
+   client_axios.get<TUserWithoutPassword>("/auth/check-auth", request_config)

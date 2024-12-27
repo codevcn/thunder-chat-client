@@ -9,7 +9,7 @@ type TMessage = {
 }
 
 class ChattingService {
-   sendMessage(message: TMessage, callback: TUnknownFunction<void>) {
+   async sendMessage(message: TMessage, callback: TUnknownFunction<void>): Promise<void> {
       socketClient.emit(EChattingEvents.send_message_1v1, message, (res: unknown) => {
          callback(res)
       })

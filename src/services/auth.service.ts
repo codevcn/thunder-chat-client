@@ -1,7 +1,8 @@
 import { postCheckAuth } from "@/apis/auth"
+import type { TUserWithoutPassword } from "@/utils/types"
 
 class AuthService {
-   async checkAuthService() {
+   async checkAuth(): Promise<TUserWithoutPassword> {
       try {
          const { data } = await postCheckAuth()
          return data

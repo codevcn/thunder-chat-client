@@ -3,38 +3,33 @@ import {
    postSearchConversation,
    postStartConversation,
 } from "@/apis/conversations"
-import type { TSearchConversationParams, TStartConversationParams } from "@/utils/types"
+import type {
+   TDirectConversation,
+   TSearchConversationParams,
+   TStartConversationParams,
+   TUserWithProfile,
+} from "@/utils/types"
 import { ConversationError } from "@/utils/custom-errors"
 import { EConversationErrMsgs } from "@/utils/enums"
 
 class ConversationService {
-   async searchConversationService(payload: TSearchConversationParams) {
-      try {
-         const { data } = await postSearchConversation(payload)
-         return data
-      } catch (error) {
-         throw error
-      }
+   async searchConversation(payload: TSearchConversationParams): Promise<TUserWithProfile[]> {
+      const { data } = await postSearchConversation(payload)
+      return data
    }
 
-   async startConversationService(payload: TStartConversationParams) {
-      try {
-         const { data } = await postStartConversation(payload)
-         return data
-      } catch (error) {
-         throw error
-      }
+   async startConversation(payload: TStartConversationParams): Promise<TDirectConversation> {
+      const { data } = await postStartConversation(payload)
+      return data
    }
 
-   async fetchConversationService(conversationId: number) {
-      try {
-         const { data } = await getFetchConversation(conversationId)
+   async fetchConversation(conversationId: number): Promise<TDirectConversation> {
+      const { data } = await getFetchConversation(conversationId)
 
-         if (data) return data
-         else throw new ConversationError(EConversationErrMsgs.CONV_NOT_FOUND)
-      } catch (error) {
-         throw error
+      if (!data) {
+         throw new ConversationError(EConversationErrMsgs.CONV_NOT_FOUND)
       }
+      return data
    }
 }
 

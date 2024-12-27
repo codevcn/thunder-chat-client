@@ -1,4 +1,3 @@
-import "@/styles/globals.css"
 import type { Metadata } from "next"
 import { Toaster } from "react-hot-toast"
 import { ConfigProvider } from "antd"
@@ -14,7 +13,11 @@ import { SocketProvider } from "@/providers/socket-provider"
 import { RouteGuard } from "@/components/resource.guard"
 import { setNonGuardRoutes } from "@/utils/helpers"
 import { AuthProvider } from "@/providers/auth-provider"
+import { AppLayoutProvider } from "@/providers/app-layout-provider"
 config.autoAddCss = false
+
+// import my own css
+import "@/styles/index.css"
 
 export const metadata: Metadata = {
    title: "Thunder Chat",
@@ -33,9 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                      <AuthProvider>
                         <RouteGuard nonGuardRoutes={nonGuardRoutes}>
                            <SocketProvider>
-                              <div id="App-Wrapper" className="bg-regular-darkGray-cl">
-                                 {children}
-                              </div>
+                              <AppLayoutProvider>{children}</AppLayoutProvider>
                            </SocketProvider>
                         </RouteGuard>
                      </AuthProvider>

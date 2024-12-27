@@ -16,7 +16,7 @@ import axios from "axios"
 import { Form, Input } from "antd"
 import { useAuthRedirect } from "@/hooks/redirect"
 import socketClient from "@/configs/socket"
-import AxiosErrorHanlder from "@/utils/axios-error-hanlder"
+import axiosErrorHanlder from "@/utils/axios-error-hanlder"
 
 type TLogInUserForm = {
    email: string
@@ -39,7 +39,7 @@ const LoginForm = ({ typedEmail }: { typedEmail: string }) => {
          redirect({ refresh: true })
       } catch (error) {
          if (axios.isAxiosError(error)) {
-            toast.error(AxiosErrorHanlder.errorSetting(error).message)
+            toast.error(axiosErrorHanlder.handleHttpError(error).message)
          }
       }
 

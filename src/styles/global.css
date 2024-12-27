@@ -1,3 +1,17 @@
+:root {
+   --foreground-rgb: 0, 0, 0;
+   --background-start-rgb: 214, 219, 220;
+   --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+   :root {
+      --foreground-rgb: 255, 255, 255;
+      --background-start-rgb: 0, 0, 0;
+      --background-end-rgb: 0, 0, 0;
+   }
+}
+
 .ant-form-item-explain-error {
    font-size: 13px;
 }
@@ -23,5 +37,33 @@
 .styled-scrollbar::-webkit-scrollbar-thumb:hover {
    background-color: #444444;
 }
-
 /* style for scrollbar | scrollbar styling - end */
+
+body {
+   color: rgb(var(--foreground-rgb));
+   background: linear-gradient(to bottom, transparent, rgb(var(--background-end-rgb)))
+      rgb(var(--background-start-rgb));
+}
+
+body,
+h1,
+h2,
+h3,
+p,
+a,
+li,
+div,
+p,
+section,
+form,
+button,
+input,
+textarea {
+   margin: 0;
+   padding: 0;
+   font-size: 1rem;
+}
+
+svg {
+   display: flex;
+}

@@ -5,39 +5,43 @@ import { EInvalidHttpErrMsgs, EServerErrMsgs } from "./enums"
 import { HttpStatusCode } from "axios"
 
 class AxiosErrorHanlder {
-   static errorSetting(
-      originalError: AxiosError<THttpErrorResBody>,
-      clientMessage: string = "Unknow Error!"
+   handleHttpError(
+      originalError: unknown | Error | AxiosError<THttpErrorResBody>,
+      clientMessage: string = "Unknown Error!"
    ) {
       let statusCode: HttpStatusCode = HttpStatusCode.InternalServerError
       let message: string = clientMessage
       let isUserError: boolean = false
 
-      const response_of_error = originalError.response
+      if (originalError instanceof AxiosError) {
+         const response_of_error = originalError.response
 
-      if (response_of_error) {
-         //if error was made by server at backend
+         if (response_of_error) {
+            //if error was made by server at backend
 
-         statusCode = response_of_error.status //update error status
+            statusCode = response_of_error.status //update error status
 
-         const data_of_response: THttpErrorResBody = response_of_error.data
+            const data_of_response: THttpErrorResBody = response_of_error.data
 
-         if (typeof data_of_response === "string") {
-            message = EInvalidHttpErrMsgs.INVALID_REQUEST
-         } else {
-            isUserError = data_of_response.isUserException //check if is error due to user or not
-            message = data_of_response.message //update error message
+            if (typeof data_of_response === "string") {
+               message = EInvalidHttpErrMsgs.INVALID_REQUEST
+            } else {
+               isUserError = data_of_response.isUserException //check if is error due to user or not
+               message = data_of_response.message //update error message
 
-            if (message.length > MAX_LEN_OF_ERROR_MESSAGE) {
-               message = `${message.slice(0, MAX_LEN_OF_ERROR_MESSAGE)}...`
+               if (message.length > MAX_LEN_OF_ERROR_MESSAGE) {
+                  message = `${message.slice(0, MAX_LEN_OF_ERROR_MESSAGE)}...`
+               }
             }
+         } else if (originalError.request) {
+            //The request was made but no response was received
+            statusCode = HttpStatusCode.BadGateway
+            message = EServerErrMsgs.BAD_NETWORK_OR_ERROR
+         } else {
+            //Something happened in setting up the request that triggered an Error
+            message = originalError.message
          }
-      } else if (originalError.request) {
-         //The request was made but no response was received
-         statusCode = HttpStatusCode.BadGateway
-         message = EServerErrMsgs.BAD_NETWORK_OR_ERROR
-      } else {
-         //Something happened in setting up the request that triggered an Error
+      } else if (originalError instanceof Error) {
          message = originalError.message
       }
 
@@ -51,4 +55,6 @@ class AxiosErrorHanlder {
    }
 }
 
-export default AxiosErrorHanlder
+const axiosErrorHanlder = new AxiosErrorHanlder()
+
+export default axiosErrorHanlder

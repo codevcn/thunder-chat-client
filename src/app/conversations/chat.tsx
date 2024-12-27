@@ -23,7 +23,7 @@ import {
 import { Input } from "antd"
 import { InfoBar } from "./infoBar"
 import { openInfoBar } from "@/redux/conversations/conversations-slice"
-import { pickFirstLetterOfNameUser, setLastSeen } from "@/utils/helpers"
+import { setLastSeen } from "@/utils/helpers"
 import { chattingService } from "@/services/chatting.service"
 import { TextAreaRef } from "antd/es/input/TextArea"
 import type { TConversation, TSuccess } from "@/utils/types"
@@ -49,11 +49,11 @@ const Header = ({ infoBarIsOpened, onOpenInfoBar }: THeaderProps) => {
                   {recipient.Profile && recipient.Profile.avatar ? (
                      <Avatar src={recipient.Profile.avatar} size={45} />
                   ) : (
-                     <Avatar size={45}>{pickFirstLetterOfNameUser(recipient)}</Avatar>
+                     <Avatar size={45}>{recipient.Profile?.fullName}</Avatar>
                   )}
                   <div>
                      <h3 className="text-lg font-bold">
-                        {recipient.lastName + " " + recipient.firstName}
+                        {recipient.Profile?.fullName || "Unnamed"}
                      </h3>
                      <div className="text-xs text-regular-text-secondary-cl">
                         {"Last seen " + setLastSeen(dev_test_values.user_1.lastOnline)}

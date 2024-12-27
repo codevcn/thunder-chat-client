@@ -1,14 +1,9 @@
 "use client"
 
-import { socketClientChatting } from "@/contexts/socket.context"
 import { useEffect } from "react"
 
 export default function FAQPage() {
-   const todo = () => {
-      if (socketClientChatting.connected) {
-         socketClientChatting.emit("foo", { vcn_val: "vcn 123" })
-      }
-   }
+   const todo = () => {}
 
    // useEffect(() => {
    //     function onConnect() {

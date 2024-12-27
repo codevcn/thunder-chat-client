@@ -4,15 +4,15 @@ import { createAsyncThunk } from "@reduxjs/toolkit"
 
 export const startConversationThunk = createAsyncThunk(
    "messages/start",
-   conversationService.startConversationService
+   conversationService.startConversation
 )
 
 export const fetchConversationThunk = createAsyncThunk(
    "messages/fetchConversation",
-   conversationService.fetchConversationService
+   conversationService.fetchConversation
 )
 
 export const fetchMessagesThunk = createAsyncThunk(
    "messages/fetchMessages",
-   messageService.fetchMessagesService
+   messageService.fetchMessages
 )

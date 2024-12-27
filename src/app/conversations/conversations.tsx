@@ -8,7 +8,7 @@ import { useDebounce } from "@/hooks/debounce"
 import type { TSearchConversationParams, TUserWithProfile } from "@/utils/types"
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
 import { searchConversationThunk } from "@/redux/conversations/conversations-thunks"
-import { ChangeEvent, ChangeEventHandler, Dispatch, SetStateAction, useRef, useState } from "react"
+import { ChangeEvent, Dispatch, SetStateAction, useRef, useState } from "react"
 import validator from "validator"
 import { Spinner } from "@/materials/spinner"
 import { IconButton } from "@/materials/icon-button"
@@ -26,7 +26,8 @@ type TResultProps = {
 }
 
 const Result = ({ convResult, handleStartConversation }: TResultProps) => {
-   const { Profile, id, firstName, lastName } = convResult
+   const { Profile, id } = convResult
+   const fullName = Profile?.fullName || "Unnamed"
 
    return (
       <Tooltip title="Click to open a chat" placement="right">
@@ -38,11 +39,11 @@ const Result = ({ convResult, handleStartConversation }: TResultProps) => {
                {Profile && Profile.avatar ? (
                   <Avatar src={Profile.avatar} size={50} />
                ) : (
-                  <Avatar size={50}>{firstName}</Avatar>
+                  <Avatar size={50}>{fullName}</Avatar>
                )}
             </div>
             <Flex vertical justify="center" className="gap-1">
-               <span className="font-bold text-base">{firstName + " " + lastName}</span>
+               <span className="font-bold text-base">{fullName}</span>
                <span className="text-xs text-regular-icon-cl">{"Last seen 10/08/2023"}</span>
             </Flex>
          </Flex>

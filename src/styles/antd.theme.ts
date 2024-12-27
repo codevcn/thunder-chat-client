@@ -5,8 +5,6 @@ export const CustomAntTheme: ThemeConfig = {
       Input: {
          hoverBorderColor: "#6b7280",
          activeBorderColor: "#6b7280",
-         paddingBlock: 8,
-         paddingInline: 10,
       },
       Form: {
          itemMarginBottom: 0,
@@ -22,7 +20,7 @@ export const CustomAntTheme: ThemeConfig = {
       colorPrimary: "#6b7280",
       colorPrimaryHover: "#6b7280",
       colorPrimaryBgHover: "#6b7280",
-      fontSize: 14,
+      fontSize: 16,
       lineWidth: 2,
       purple: "#766AC8",
       colorInfo: "white",

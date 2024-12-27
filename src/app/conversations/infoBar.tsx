@@ -8,7 +8,7 @@ import { openInfoBar } from "@/redux/conversations/conversations-slice"
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
 import { IconButton } from "@/materials/icon-button"
 import { ProgressiveImage } from "@/components/progressive-image"
-import { getFullName, pickFirstLetterOfNameUser, setLastSeen } from "@/utils/helpers"
+import { setLastSeen } from "@/utils/helpers"
 import { robotoFont } from "@/utils/fonts"
 import type { TUserWithProfile } from "@/utils/types"
 
@@ -26,7 +26,7 @@ const Avatar = ({ recipient }: { recipient: TUserWithProfile }) => {
                <div
                   className={`${robotoFont.variable} w-full h-full flex justify-center font-roboto items-center overflow-hidden text-user-avt-fsize bg-user-avt-bgimg`}
                >
-                  {pickFirstLetterOfNameUser(recipient)}
+                  {recipient.Profile?.fullName[0] || "U"}
                </div>
             )}
          </div>
@@ -36,7 +36,7 @@ const Avatar = ({ recipient }: { recipient: TUserWithProfile }) => {
             justify="end"
             vertical
          >
-            <p className="text-xl font-bold">{getFullName(recipient)}</p>
+            <p className="text-xl font-bold">{recipient.Profile?.fullName || "Unnamed"}</p>
             <span className="text-sm opacity-60">
                {"Last seen " + setLastSeen(dev_test_values.user_1.lastOnline)}
             </span>
