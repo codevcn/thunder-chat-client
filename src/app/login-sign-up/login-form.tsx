@@ -9,7 +9,7 @@ import {
    faLock,
    faEnvelope,
 } from "@fortawesome/free-solid-svg-icons"
-import { Spinner } from "@/materials/spinner"
+import { Spinner } from "@/components/spinner"
 import { postLoginUser } from "@/apis/auth"
 import toast from "react-hot-toast"
 import axios from "axios"

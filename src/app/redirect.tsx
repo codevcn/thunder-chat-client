@@ -1,7 +1,7 @@
 "use client"
 
 import { useAuth } from "@/hooks/auth"
-import { Spinner } from "@/materials/spinner"
+import { Spinner } from "@/components/spinner"
 import { EAuthStatus } from "@/utils/enums"
 import Link from "next/link"
 

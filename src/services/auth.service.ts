@@ -3,12 +3,8 @@ import type { TUserWithoutPassword } from "@/utils/types"
 
 class AuthService {
    async checkAuth(): Promise<TUserWithoutPassword> {
-      try {
-         const { data } = await postCheckAuth()
-         return data
-      } catch (error) {
-         throw error
-      }
+      const { data } = await postCheckAuth()
+      return data
    }
 }
 

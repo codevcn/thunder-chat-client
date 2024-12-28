@@ -17,7 +17,7 @@ import { postRegisterUser } from "@/apis/user"
 import axios from "axios"
 import AxiosErrorHandler from "@/utils/axios-error-hanlder"
 import toast from "react-hot-toast"
-import { Spinner } from "@/materials/spinner"
+import { Spinner } from "@/components/spinner"
 import { Select, Input, Tooltip, Form } from "antd"
 import { useAuthRedirect } from "@/hooks/redirect"
 
@@ -168,7 +168,7 @@ const NameAndPassword = ({
          redirect({ refresh: true })
       } catch (error) {
          if (axios.isAxiosError(error)) {
-            toast.error(AxiosErrorHandler.errorSetting(error).message)
+            toast.error(AxiosErrorHandler.handleHttpError(error).message)
          }
       }
    }

@@ -4,7 +4,7 @@ export enum ESocketInitEvents {
 }
 
 export enum ESocketNamespaces {
-   Chatting = "Chatting",
+   app = "app",
 }
 
 export enum EChattingEvents {

@@ -5,11 +5,7 @@ import type {
    TUserWithProfile,
    TDirectConversation,
 } from "@/utils/types"
-import { AxiosRequestConfig } from "axios"
-
-const request_config: AxiosRequestConfig = {
-   withCredentials: true,
-}
+import { request_config } from "./init"
 
 export const postSearchConversation = (data: TSearchConversationParams) =>
    client_axios.post<TUserWithProfile[]>("/conversations/search", data, request_config)

@@ -10,7 +10,7 @@ import axios from "axios"
 import AxiosErrorHandler from "@/utils/axios-error-hanlder"
 import RegisterForm from "./register-form"
 import LoginForm from "@/app/login-sign-up/login-form"
-import { Spinner } from "@/materials/spinner"
+import { Spinner } from "@/components/spinner"
 import validator from "validator"
 import { Form, Input } from "antd"
 
@@ -33,7 +33,7 @@ const CheckUserForm = ({ onSetCheckUserStatus, onSetTypedEmail }: TCheckUserForm
          onSetCheckUserStatus(ECheckUserStatus.EXIST)
       } catch (error) {
          if (axios.isAxiosError(error)) {
-            const error_result = AxiosErrorHandler.errorSetting(error)
+            const error_result = AxiosErrorHandler.handleHttpError(error)
 
             if (error_result.statusCode === 404) {
                onSetCheckUserStatus(ECheckUserStatus.NOT_EXIST)

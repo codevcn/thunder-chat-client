@@ -7,7 +7,6 @@ export const CustomAntTheme: ThemeConfig = {
          activeBorderColor: "#6b7280",
       },
       Form: {
-         itemMarginBottom: 0,
          labelFontSize: 14,
       },
       Button: {
@@ -21,9 +20,9 @@ export const CustomAntTheme: ThemeConfig = {
       colorPrimaryHover: "#6b7280",
       colorPrimaryBgHover: "#6b7280",
       fontSize: 16,
-      lineWidth: 2,
       purple: "#766AC8",
       colorInfo: "white",
-      colorBgSpotlight: "#8b5cf6", //tooltip background-color
+      colorBgSpotlight: "#8b5cf6", //tooltip background-color,
+      lineHeight: 1,
    },
 }

@@ -10,15 +10,15 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux"
 import { searchConversationThunk } from "@/redux/conversations/conversations-thunks"
 import { ChangeEvent, Dispatch, SetStateAction, useRef, useState } from "react"
 import validator from "validator"
-import { Spinner } from "@/materials/spinner"
-import { IconButton } from "@/materials/icon-button"
+import { Spinner } from "@/components/spinner"
+import { IconButton } from "@/components/icon-button"
 import { clearSearchResult } from "@/redux/conversations/conversations-slice"
 import { useRouter } from "next/navigation"
 import { sortConversationsByPinned } from "@/redux/conversations/conversations-selectors"
 import { startConversationThunk } from "@/redux/messages/messages.thunk"
 import { unwrapResult } from "@reduxjs/toolkit"
 import { MAX_NUMBER_OF_PINNED_CONVERSATIONS } from "@/utils/constants"
-import { PinnedConvIcon } from "@/materials/icons"
+import { PinnedConvIcon } from "@/components/icons"
 
 type TResultProps = {
    convResult: TUserWithProfile
