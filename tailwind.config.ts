@@ -27,7 +27,7 @@ const config: Config = {
             "regular-full-bgsize": "var(--tdc-full-bgsize)",
          },
          colors: {
-            "regular-darkGray-cl": "var(--tdc-regular-darkGray-cl)",
+            "regular-darkGray-cl": "var(--tdc-regular-dark-gray-cl)",
             "regular-white-cl": "var(--tdc-regular-white-cl)",
             "regular-trans-cl": "var(--tdc-regular-trans-cl)",
             "regular-black-cl": "var(--tdc-regular-black-cl)",

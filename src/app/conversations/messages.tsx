@@ -1,7 +1,7 @@
 "use client"
 
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
-import React, { useRef } from "react"
+import { useRef, Fragment } from "react"
 import { Flex } from "antd"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faCheckDouble } from "@fortawesome/free-solid-svg-icons"
@@ -15,8 +15,8 @@ import { ScrollToBottomEventor } from "@/utils/custom-events"
 import { ScrollToBottomMessageBtn } from "./scroll-to-bottom-msg-btn"
 import { createPortal } from "react-dom"
 import { useUser } from "@/hooks/user"
-import socketClientChatting from "@/configs/socket"
-import { EChattingEvents } from "@/utils/events/chatting-events"
+import { clientSocket } from "@/configs/socket"
+import { ESocketEvents } from "@/utils/events/socket-events"
 import { pushMsg } from "@/redux/messages/messages.slice"
 
 type TMessageProps = {
@@ -126,7 +126,7 @@ export const Messages = memo(({ conversationId }: { conversationId: number }) =>
       fetchMessages()
       publishScrollToBottomMsgEvent()
 
-      socketClientChatting.on(EChattingEvents.send_message_1v1, (data: TMessage) => {
+      clientSocket.on(ESocketEvents.send_message_1v1, (data) => {
          console.log(">>> payload:", data)
          const { id, authorId, conversationId, createdAt, content } = data
          dispatch(
@@ -189,7 +189,7 @@ export const Messages = memo(({ conversationId }: { conversationId: number }) =>
                : handleStickyTimeOfFirstMsg(message.createdAt)
 
          return (
-            <React.Fragment key={message.id}>
+            <Fragment key={message.id}>
                {sticky_time && <StickyTime sticky_time={sticky_time} />}
 
                <Message
@@ -198,7 +198,7 @@ export const Messages = memo(({ conversationId }: { conversationId: number }) =>
                   isNewMsg={!!message.isNewMsg}
                   user={user}
                />
-            </React.Fragment>
+            </Fragment>
          )
       })
 

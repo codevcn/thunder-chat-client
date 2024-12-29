@@ -1,4 +1,5 @@
 import { Flex } from "antd"
+import NImage from "next/image"
 import { useEffect, useState } from "react"
 
 type TProgressiveImageProps = {
@@ -31,7 +32,7 @@ export const ProgressiveImage = ({
    }, [src])
 
    return imgSrc ? (
-      <img src={imgSrc} alt={alt || "Unknown"} className={className || ""} />
+      <NImage src={imgSrc} alt={alt || "Unknown"} className={className || ""} />
    ) : (
       progress || (
          <Flex className={prgssClassName || ""}>

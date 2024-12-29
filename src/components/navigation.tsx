@@ -15,7 +15,7 @@ import { memo } from "react"
 
 type Navs = {
    label: string
-   href: string
+   href?: string
    icon: JSX.Element
 }[]
 
@@ -26,14 +26,13 @@ const navs: Navs = [
       icon: <FontAwesomeIcon icon={faHouse} />,
    },
    {
+      label: "Nofication",
+      icon: <FontAwesomeIcon icon={faBell} />,
+   },
+   {
       label: "Conversations",
       href: "/conversations",
       icon: <FontAwesomeIcon icon={faComments} />,
-   },
-   {
-      label: "Nofication",
-      href: "/nofication",
-      icon: <FontAwesomeIcon icon={faBell} />,
    },
    {
       label: "Friends",
@@ -61,25 +60,28 @@ export const Navigation = memo(() => {
          <Flex align="center" className="w-full" vertical>
             {navs.map(({ label, href, icon }) => (
                <Tooltip key={label} placement="right" title={label}>
-                  <Link
-                     href={href}
-                     className="flex w-[55px] cursor-pointer transition duration-200 hover:bg-regular-hover-card-cl py-3"
-                  >
-                     <div className="m-auto">{icon}</div>
-                  </Link>
+                  {href ? (
+                     <Link
+                        href={href}
+                        className="flex w-[55px] cursor-pointer transition duration-200 hover:bg-regular-hover-card-cl py-3"
+                     >
+                        <div className="m-auto">{icon}</div>
+                     </Link>
+                  ) : (
+                     <div className="flex w-[55px] cursor-pointer transition duration-200 hover:bg-regular-hover-card-cl py-3">
+                        <div className="m-auto">{icon}</div>
+                     </div>
+                  )}
                </Tooltip>
             ))}
          </Flex>
 
          <Tooltip placement="right" title="Settings">
-            <Link
-               href="/settings"
-               className="flex w-[55px] cursor-pointer transition duration-200 hover:bg-regular-hover-card-cl py-3"
-            >
+            <div className="flex w-[55px] cursor-pointer transition duration-200 hover:bg-regular-hover-card-cl py-3">
                <div className="m-auto">
                   <FontAwesomeIcon icon={faGear} />
                </div>
-            </Link>
+            </div>
          </Tooltip>
       </Flex>
    )

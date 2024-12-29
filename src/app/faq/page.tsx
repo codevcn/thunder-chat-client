@@ -18,14 +18,14 @@ export default function FAQPage() {
    //         console.log(">>> run this foo event")
    //     }
 
-   //     socketClient.on("connect", onConnect)
-   //     socketClient.on("disconnect", onDisconnect)
-   //     socketClient.on("foo", onFooEvent)
+   //     clientSocket.on("connect", onConnect)
+   //     clientSocket.on("disconnect", onDisconnect)
+   //     clientSocket.on("foo", onFooEvent)
 
    //     return () => {
-   //         socketClient.off("connect", onConnect)
-   //         socketClient.off("disconnect", onDisconnect)
-   //         socketClient.off("foo", onFooEvent)
+   //         clientSocket.off("connect", onConnect)
+   //         clientSocket.off("disconnect", onDisconnect)
+   //         clientSocket.off("foo", onFooEvent)
    //     }
    // }, [])
 

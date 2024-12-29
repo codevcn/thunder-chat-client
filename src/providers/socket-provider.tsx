@@ -2,9 +2,9 @@
 
 import { useEffect } from "react"
 import { EAuthStatus } from "@/utils/enums"
-import socketClient from "@/configs/socket"
+import { clientSocket } from "@/configs/socket"
 import toast from "react-hot-toast"
-import { EChattingEvents, ESocketInitEvents } from "@/utils/events/chatting-events"
+import { ESocketEvents, ESocketInitEvents } from "@/utils/events/socket-events"
 import { useAuth } from "@/hooks/auth"
 import { useUser } from "@/hooks/user"
 
@@ -14,29 +14,30 @@ export const SocketProvider = ({ children }: { children: JSX.Element }) => {
 
    useEffect(() => {
       if (authStatus === EAuthStatus.AUTHENTICATED && user) {
-         socketClient.auth = {
+         console.log(">>> user id:", user.id)
+         clientSocket.auth = {
             clientId: user.id,
          }
-         socketClient.connect()
+         clientSocket.connect()
 
-         socketClient.on(ESocketInitEvents.client_connected, (payload) => {
+         clientSocket.on(ESocketInitEvents.client_connected, (payload) => {
             console.log(">>> Socket connected to server")
          })
 
-         socketClient.on(ESocketInitEvents.connect_error, (error) => {
+         clientSocket.on(ESocketInitEvents.connect_error, (error) => {
             console.log(">>> Socket is fail to connect to server >>>", error)
             toast.error("Something went wrong! Can't connect to Server")
          })
 
-         socketClient.on(EChattingEvents.error, (payload: string) => {
-            toast.error(payload)
+         clientSocket.on(ESocketEvents.error, (payload) => {
+            toast.error(payload.message)
          })
       } else if (authStatus === EAuthStatus.UNAUTHENTICATED) {
-         socketClient.disconnect()
+         clientSocket.disconnect()
       }
 
       return () => {
-         socketClient.off(ESocketInitEvents.client_connected, () => {})
+         clientSocket.off(ESocketInitEvents.client_connected, () => {})
       }
    }, [authStatus])
 

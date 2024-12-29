@@ -15,7 +15,7 @@ import toast from "react-hot-toast"
 import axios from "axios"
 import { Form, Input } from "antd"
 import { useAuthRedirect } from "@/hooks/redirect"
-import socketClient from "@/configs/socket"
+import { clientSocket } from "@/configs/socket"
 import axiosErrorHanlder from "@/utils/axios-error-hanlder"
 
 type TLogInUserForm = {
@@ -35,7 +35,7 @@ const LoginForm = ({ typedEmail }: { typedEmail: string }) => {
             email: typedEmail,
             password: form_data.password,
          })
-         socketClient.connect()
+         clientSocket.connect()
          redirect({ refresh: true })
       } catch (error) {
          if (axios.isAxiosError(error)) {

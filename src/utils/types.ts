@@ -1,5 +1,6 @@
 import { AxiosError } from "axios"
 
+// DB entities
 export type TUser = {
    id: number
    email: string
@@ -38,7 +39,7 @@ export type TMessage = {
    conversationId: number
 }
 
-// Conversation Message Type
+// Common types
 export type TConvMessage = TMessage & {
    isNewMsg?: boolean
 }

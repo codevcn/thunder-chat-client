@@ -6,8 +6,7 @@ import { EAuthStatus } from "@/utils/enums"
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
 
 export const AuthProvider = ({ children }: { children: JSX.Element }) => {
-   const auth = useAppSelector((state) => state.auth)
-   const { authStatus } = auth
+   const { authStatus } = useAppSelector((state) => state.auth)
    const dispatch = useAppDispatch()
 
    useEffect(() => {

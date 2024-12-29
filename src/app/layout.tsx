@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { Toaster } from "react-hot-toast"
 import { ConfigProvider } from "antd"
 import { CustomAntTheme } from "@/styles/antd.theme"
-import StyledComponentsRegistry from "@/providers/antd-registry"
+import { StyledComponentsRegistry } from "@/providers/antd-registry"
 import { ReduxProvider } from "@/providers/redux-provider"
 
 // config css for fontawesome

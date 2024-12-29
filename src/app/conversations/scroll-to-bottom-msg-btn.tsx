@@ -5,8 +5,12 @@ import { faArrowDown } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useEffect, useState, memo } from "react"
 
+type TScrollToBottomMessageBtnProps = {
+   messagesContainerRef: React.RefObject<HTMLDivElement>
+}
+
 export const ScrollToBottomMessageBtn = memo(
-   ({ messagesContainerRef }: { messagesContainerRef: React.RefObject<HTMLDivElement> }) => {
+   ({ messagesContainerRef }: TScrollToBottomMessageBtnProps) => {
       const [showScrollBtn, setShowScrollBtn] = useState<boolean>(false)
       const { infoBarIsOpened } = useAppSelector(({ conversations }) => conversations)
 

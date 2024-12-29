@@ -3,7 +3,7 @@
 import { Conversations } from "./conversations"
 import { Chat } from "./chat"
 import { Flex } from "antd"
-import { memo, useEffect } from "react"
+import { useEffect } from "react"
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
 import { setChatBackground } from "@/redux/settings/settings.slice"
 import backgroundDarkPattern from "@/assets/images/chat_bg/chat-bg-pattern-dark.ad38368a9e8140d0ac7d.png"
