@@ -26,7 +26,7 @@ class AxiosErrorHanlder {
             if (typeof data_of_response === "string") {
                message = EInvalidHttpErrMsgs.INVALID_REQUEST
             } else {
-               isUserError = data_of_response.isUserException //check if is error due to user or not
+               isUserError = data_of_response.isUserError //check if is error due to user or not
                message = data_of_response.message //update error message
 
                if (message.length > MAX_LEN_OF_ERROR_MESSAGE) {

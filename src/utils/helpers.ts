@@ -21,3 +21,7 @@ export const setLastSeen = (date: string) => {
 export const setNonGuardRoutes = (...routes: string[]) => {
    return routes
 }
+
+export function isValueInEnum<T extends object>(value: string, enumObject: T): boolean {
+   return Object.values(enumObject).includes(value)
+}

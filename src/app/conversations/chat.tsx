@@ -13,7 +13,6 @@ import { useEffect, useState, memo, ChangeEvent, useRef } from "react"
 import { fetchConversationThunk } from "@/redux/messages/messages.thunk"
 import { useSearchParams } from "next/navigation"
 import validator from "validator"
-import { QueryString } from "@/utils/constants"
 import {
    faMicrophone,
    faPaperclip,
@@ -211,7 +210,7 @@ const TypeMessageBar = memo(({ conversation }: TTypeMessageBarProps) => {
 export const Chat = () => {
    const { conversation } = useAppSelector(({ messages }) => messages)
    const dispatch = useAppDispatch()
-   const search = useSearchParams()
+   const searchParams = useSearchParams()
    const [conversationId, setConversationId] = useState<number>()
    const { infoBarIsOpened } = useAppSelector(({ conversations }) => conversations)
 
@@ -220,7 +219,7 @@ export const Chat = () => {
    }
 
    useEffect(() => {
-      const conversationId = search.get(QueryString.CONV_ID)
+      const conversationId = searchParams.get("cid")
       if (conversationId && validator.isNumeric(conversationId)) {
          const conv_id = parseInt(conversationId)
 

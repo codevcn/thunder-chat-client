@@ -1,12 +1,27 @@
 type TSpinnerProps = Partial<{
    className: string
    color: "text-violet-400" | "text-black" | "text-white"
+   size: "small" | "medium" | "large" | "full"
 }>
 
-export const Spinner = ({ className, color }: TSpinnerProps) => {
+export const Spinner = ({ className, color, size }: TSpinnerProps) => {
+   let realSize: string
+   switch (size) {
+      case "full":
+         realSize = "h-full w-full"
+         break
+      case "large":
+         realSize = "h-10 w-10"
+         break
+      case "medium":
+         realSize = "h-7 w-7"
+         break
+      default:
+         realSize = "h-5 w-5"
+   }
    return (
       <svg
-         className={`${className || ""} animate-spin ${color || "text-white"}`}
+         className={`${className || ""} animate-spin ${color || "text-white"} ${realSize}`}
          xmlns="http://www.w3.org/2000/svg"
          fill="none"
          viewBox="0 0 24 24"

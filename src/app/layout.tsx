@@ -17,7 +17,7 @@ import { AppLayoutProvider } from "@/providers/app-layout-provider"
 config.autoAddCss = false
 
 // import my own css
-import "@/styles/index.css"
+import "@/styles/index.scss"
 
 export const metadata: Metadata = {
    title: "Thunder Chat",

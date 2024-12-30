@@ -1,5 +1,5 @@
 import { useRouter } from "next/navigation"
-import { getPathnameWithQueryString } from "@/utils/url"
+import { getRouteWithQueryString } from "@/utils/url"
 
 export const useAuthRedirect = () => {
    const params = new URLSearchParams(window.location.search)
@@ -17,7 +17,7 @@ export const useAuthRedirect = () => {
 export const useRedirectToLogin = () => {
    const router = useRouter()
    return () => {
-      const redirect = `/login-sign-up?redirect=${getPathnameWithQueryString()}`
+      const redirect = `/login-sign-up?redirect=${getRouteWithQueryString()}`
       router.push(redirect)
    }
 }

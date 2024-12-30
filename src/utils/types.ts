@@ -50,9 +50,8 @@ export type THttpErrorResBody =
    | {
         name: string
         message: string
-        trace: string
         timestamp: string
-        isUserException: boolean
+        isUserError: boolean
      }
    | string
 

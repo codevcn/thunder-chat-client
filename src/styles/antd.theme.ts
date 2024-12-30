@@ -16,7 +16,7 @@ export const CustomAntTheme: ThemeConfig = {
       },
    },
    token: {
-      colorPrimary: "#6b7280",
+      colorPrimary: "white",
       colorPrimaryHover: "#6b7280",
       colorPrimaryBgHover: "#6b7280",
       fontSize: 16,

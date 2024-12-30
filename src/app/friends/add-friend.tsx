@@ -4,7 +4,7 @@ import type { TSearchUsersData } from "@/utils/types"
 import axiosErrorHanlder from "@/utils/axios-error-hanlder"
 import toast from "react-hot-toast"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faSearch, faClose, faPaperPlane } from "@fortawesome/free-solid-svg-icons"
+import { faSearch, faClose, faPaperPlane, faUserPlus } from "@fortawesome/free-solid-svg-icons"
 import { useDebounce } from "@/hooks/debounce"
 import { UserOutlined } from "@ant-design/icons"
 import { Spinner } from "@/components/spinner"
@@ -18,14 +18,13 @@ type TUserCardProps = {
    item: TSearchUsersData
 }
 
-export const AddFriendSection = () => {
+export const AddFriend = () => {
    const [users, setUsers] = useState<TSearchUsersData[] | null>(null)
    const searchInputRef = useRef<InputRef>(null)
    const [showModalAddFriend, setShowModalAddFriend] = useState<boolean>(false)
    const debounce = useDebounce(300)
    const [loading, setLoading] = useState<"searching" | null>(null)
    const user = useUser()
-   console.log(">>> user:", user)
 
    const searchUsers = async () => {
       setLoading("searching")
@@ -33,7 +32,6 @@ export const AddFriendSection = () => {
       if (keyword) {
          try {
             const users = await userService.searchUsers(keyword)
-            console.log(">>> users:", { users })
             setUsers(users)
          } catch (error) {
             console.error(">>> error:", error)
@@ -50,6 +48,16 @@ export const AddFriendSection = () => {
          return
       }
       toast.error("Please enter the keyword")
+   }
+
+   const sendFriendRequest = async (userId: number, recipientId: number) => {
+      try {
+         await postSendFriendRequest(userId, recipientId)
+         toast.success("Sent friend request successfully!")
+      } catch (error) {
+         console.error(">>> error:", error)
+         toast.error(axiosErrorHanlder.handleHttpError(error).message)
+      }
    }
 
    const UserCard = ({ item }: TUserCardProps) => {
@@ -70,16 +78,9 @@ export const AddFriendSection = () => {
                <p className="text-[#a3a3a3]">{item.email}</p>
             </div>
 
-            <Tooltip title="Send add friend request" placement="right">
+            <Tooltip title="Send friend request" placement="right">
                <button
-                  onClick={async () => {
-                     console.log(">>> stuff:", { userId: user!.id, recipientId: item.id })
-                     try {
-                        await postSendFriendRequest(user!.id, item.id)
-                     } catch (error) {
-                        console.error(">>> error:", error)
-                     }
-                  }}
+                  onClick={() => sendFriendRequest(user!.id, item.id)}
                   className="absolute right-5 top-1/2 -translate-y-1/2 hover:scale-125 transition-transform cursor-pointer"
                >
                   <FontAwesomeIcon icon={faPaperPlane} className="text-white" />
@@ -91,13 +92,15 @@ export const AddFriendSection = () => {
 
    return (
       <div>
-         <button
-            onClick={async () => {
-               setShowModalAddFriend(true)
-            }}
-         >
-            Add
-         </button>
+         <Tooltip title="Add a friend" placement="bottom">
+            <button
+               onClick={() => setShowModalAddFriend(true)}
+               className="flex gap-x-2 items-center transition-colors bg-white text-black px-4 py-[6px] border-2 border-white border-solid hover:bg-transparent hover:text-white rounded-md"
+            >
+               <FontAwesomeIcon icon={faUserPlus} />
+               <span>Add Friend</span>
+            </button>
+         </Tooltip>
 
          <Modal
             title={<p className="bg-[#313131] text-white">Add Friends</p>}

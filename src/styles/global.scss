@@ -99,6 +99,35 @@ svg {
 @layer components {
    .regular-divider::before,
    .regular-divider::after {
-      border-block-start: 1px solid #989898 !important;
+      border-block-start: 1px solid var(--tdc-regular-placeholder-text-cl) !important;
+   }
+}
+
+.ant-tabs {
+   .ant-tabs-nav {
+      margin-bottom: 0;
+
+      &::before {
+         display: none;
+      }
+   }
+
+   .ant-tabs-nav-list {
+      .ant-tabs-tab {
+         .ant-tabs-tab-btn {
+            color: var(--tdc-regular-placeholder-text-cl);
+         }
+         &.ant-tabs-tab-active {
+            .ant-tabs-tab-btn {
+               color: var(--tdc-regular-white-cl);
+            }
+         }
+
+         &:hover {
+            .ant-tabs-tab-btn {
+               color: var(--tdc-regular-white-cl);
+            }
+         }
+      }
    }
 }

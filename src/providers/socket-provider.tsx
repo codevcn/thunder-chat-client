@@ -14,7 +14,6 @@ export const SocketProvider = ({ children }: { children: JSX.Element }) => {
 
    useEffect(() => {
       if (authStatus === EAuthStatus.AUTHENTICATED && user) {
-         console.log(">>> user id:", user.id)
          clientSocket.auth = {
             clientId: user.id,
          }
