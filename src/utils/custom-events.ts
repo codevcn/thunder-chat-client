@@ -1,11 +1,13 @@
 import { EEventNames } from "./enums"
 
-export class ScrollToBottomEventor {
-   static createEvent(): CustomEvent<unknown> {
-      return new CustomEvent(EEventNames.SCROLL_TO_BOTTOM_MSG)
+class CustomEventManager {
+   createEvent<T>(eventName: EEventNames, eventPayload?: T): CustomEvent<T> {
+      return new CustomEvent<T>(eventName, { detail: eventPayload })
    }
 
-   static isThisEvent(event: Event): event is CustomEvent {
+   isCustomEvent<T>(event: Event): event is CustomEvent<T> {
       return event instanceof CustomEvent
    }
 }
+
+export const customEventManager = new CustomEventManager()

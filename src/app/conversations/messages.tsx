@@ -10,14 +10,15 @@ import { fetchMessagesThunk } from "@/redux/messages/messages.thunk"
 import type { TConvMessage, TMessage, TUserWithoutPassword } from "@/utils/types"
 import { Spinner } from "@/components/spinner"
 import dayjs from "dayjs"
-import { EEventNames, ETimeGapOfStickyTimes, ETimeFormats } from "@/utils/enums"
-import { ScrollToBottomEventor } from "@/utils/custom-events"
+import { EEventNames } from "@/utils/enums"
+import { CustomEventManager } from "@/utils/custom-events"
 import { ScrollToBottomMessageBtn } from "./scroll-to-bottom-msg-btn"
 import { createPortal } from "react-dom"
 import { useUser } from "@/hooks/user"
 import { clientSocket } from "@/configs/socket"
 import { ESocketEvents } from "@/utils/events/socket-events"
 import { pushMsg } from "@/redux/messages/messages.slice"
+import { handleMessageStickyTime } from "@/utils/date-time"
 
 type TMessageProps = {
    message: TMessage
@@ -116,9 +117,7 @@ export const Messages = memo(({ conversationId }: { conversationId: number }) =>
 
    const publishScrollToBottomMsgEvent = () => {
       messages_container_ref.current?.addEventListener(EEventNames.SCROLL_TO_BOTTOM_MSG, (e) => {
-         if (ScrollToBottomEventor.isThisEvent(e)) {
-            scrollToBottomMessage()
-         }
+         scrollToBottomMessage()
       })
    }
 
@@ -150,43 +149,12 @@ export const Messages = memo(({ conversationId }: { conversationId: number }) =>
       }
    }, [])
 
-   const handleStickyTime = (pre_msg_time: string, current_msg_time: string): string | null => {
-      const pre_time_data = dayjs(pre_msg_time)
-      const current_time_data = dayjs(current_msg_time)
-      const today_time_data = dayjs()
-
-      if (current_time_data.diff(pre_time_data, "day") === 0) {
-         if (current_time_data.diff(pre_time_data, "hour") > ETimeGapOfStickyTimes.IN_HOURS) {
-            return current_time_data.format(ETimeFormats.HH_mm)
-         }
-      } else {
-         if (current_time_data.diff(today_time_data, "day") === 0) {
-            return "Today"
-         }
-
-         return current_time_data.format(ETimeFormats.MMMM_DD_YYYY)
-      }
-
-      return null
-   }
-
-   const handleStickyTimeOfFirstMsg = (current_msg_time: string): string | null => {
-      const current_time_data = dayjs(current_msg_time)
-      const today_time_data = dayjs()
-
-      if (current_time_data.diff(today_time_data, "day") === 0) {
-         return "Today"
-      }
-
-      return current_time_data.format(ETimeFormats.MMMM_DD_YYYY)
-   }
-
    const mapMessage = (messages: TConvMessage[], user: TUserWithoutPassword) =>
       messages.map((message, index) => {
-         const sticky_time =
-            index > 0
-               ? handleStickyTime(messages[index - 1].createdAt, message.createdAt)
-               : handleStickyTimeOfFirstMsg(message.createdAt)
+         const sticky_time = handleMessageStickyTime(
+            message.createdAt,
+            messages[index - 1]?.createdAt
+         )
 
          return (
             <Fragment key={message.id}>

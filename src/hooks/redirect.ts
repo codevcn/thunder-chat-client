@@ -1,5 +1,5 @@
+import { getRouteWithQueryString } from "@/utils/helpers"
 import { useRouter } from "next/navigation"
-import { getRouteWithQueryString } from "@/utils/url"
 
 export const useAuthRedirect = () => {
    const params = new URLSearchParams(window.location.search)

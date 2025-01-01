@@ -25,3 +25,8 @@ export const setNonGuardRoutes = (...routes: string[]) => {
 export function isValueInEnum<T extends object>(value: string, enumObject: T): boolean {
    return Object.values(enumObject).includes(value)
 }
+
+export const getRouteWithQueryString = (url: string = window.location.href): string => {
+   const urlObject = new URL(url)
+   return `${urlObject.pathname}${urlObject.search}`
+}

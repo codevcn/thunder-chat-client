@@ -8,11 +8,12 @@ import type { TabsProps } from "antd"
 import { useEffect, useState } from "react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faAddressBook, faBan, faCommentDots } from "@fortawesome/free-solid-svg-icons"
-import { AddFriendRequests } from "./add-friend-requests"
+import { FriendRequests } from "./friend-requests"
 import { Blocked } from "./blocked"
 import { useSearchParams } from "next/navigation"
 import { isValueInEnum } from "@/utils/helpers"
 import { EActions } from "./sharing"
+import { useRouter } from "next/navigation"
 
 const actions: TabsProps["items"] = [
    {
@@ -22,7 +23,7 @@ const actions: TabsProps["items"] = [
    },
    {
       key: EActions.add_friend_requests,
-      label: "Add Friend Invitations",
+      label: "Friend Invitations",
       icon: <FontAwesomeIcon icon={faCommentDots} />,
    },
    {
@@ -36,9 +37,10 @@ const Actions = () => {
    const [active, setActive] = useState<EActions>(EActions.friends_list)
    const searchParams = useSearchParams()
    const qsAction = searchParams.get("action")
+   const router = useRouter()
 
    const changeTab = (key: string) => {
-      setActive(key as EActions)
+      router.push(`/friends?action=${key}`)
    }
 
    useEffect(() => {
@@ -59,11 +61,11 @@ const Actions = () => {
             />
             <AddFriend />
          </div>
-         <div className="mt-5">
+         <div className="py-5">
             {active === EActions.friends_list ? (
                <FriendsList />
             ) : active === EActions.add_friend_requests ? (
-               <AddFriendRequests />
+               <FriendRequests />
             ) : (
                active === EActions.blocked && <Blocked />
             )}

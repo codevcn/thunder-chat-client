@@ -40,6 +40,11 @@ const config: Config = {
             "regular-creator-msg-time-cl": "var(--tdc-regular-creator-msg-time-cl)",
             "regular-text-secondary-cl": "var(--tdc-regular-text-secondary-cl)",
             "regular-info-bar-bgcl": "var(--tdc-regular-info-bar-bgcl)",
+            "regular-modal-content-bgcl": "var(--tdc-regular-modal-content-bgcl)",
+            "regular-red-cl": "var(--tdc-regular-red-cl)",
+            "regular-button-bgcl": "var(--tdc-regular-button-bgcl)",
+            "regular-regular-hover-bgcl": "var(--tdc-regular-hover-bgcl)",
+            "regular-green-cl": "var(--tdc-regular-green-cl)",
          },
          fontSize: {
             "user-avt-fsize": "var(--tdc-user-avt-fsize)",

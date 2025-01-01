@@ -1,5 +1,5 @@
 import type { AxiosRequestConfig } from "axios"
 
-export const request_config: AxiosRequestConfig = {
+export const requestConfig: AxiosRequestConfig = {
    withCredentials: true,
 }

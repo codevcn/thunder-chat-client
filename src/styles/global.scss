@@ -66,6 +66,10 @@
 }
 /* modal style for scrollbar | scrollbar styling - end */
 
+[hidden] {
+   display: none !important;
+}
+
 body {
    color: rgb(var(--foreground-rgb));
    background: linear-gradient(to bottom, transparent, rgb(var(--background-end-rgb)))
@@ -96,11 +100,9 @@ svg {
    display: flex;
 }
 
-@layer components {
-   .regular-divider::before,
-   .regular-divider::after {
-      border-block-start: 1px solid var(--tdc-regular-placeholder-text-cl) !important;
-   }
+.regular-divider::before,
+.regular-divider::after {
+   border-block-start: 1px solid var(--tdc-regular-placeholder-text-cl) !important;
 }
 
 .ant-tabs {

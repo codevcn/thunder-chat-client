@@ -67,25 +67,6 @@ export type TSuccess = {
    success: boolean // always true
 }
 
-export type TRegisterUserParams = {
-   email: string
-   password: string
-   firstName: string
-   lastName: string
-   birthday: Date
-}
-
-export type TLoginUserParams = {
-   email: string
-   password: string
-}
-
-export type TSearchConversationParams = {
-   email?: string
-   username?: string
-   nameOfUser?: string
-}
-
 export type TConversationCard = {
    id: number
    avatar: string
@@ -95,27 +76,8 @@ export type TConversationCard = {
    pinIndex: number
 }
 
-export type TStartConversationParams = {
-   recipientId: number
-}
-
-export type TDirectConversation = TConversation & {
-   recipient: TUserWithProfile
-}
-
 export type TUnknownObject = {
    [key: number | string]: any
 }
 
 export type TUnknownFunction<R> = (...args: any[]) => R
-
-export type TSearchUsersData = {
-   id: number
-   email: string
-   username: string | null
-   Profile: {
-      id: number
-      fullName: string
-      avatar: string | null
-   } | null
-}

@@ -1,25 +1,35 @@
 "use client"
 
-import { client_axios } from "@/configs/axios"
-import axios from "axios"
+import { getUserByEmail } from "@/apis/user"
+import { useUser } from "@/hooks/user"
+import { TUserWithProfile } from "@/utils/types"
 import Link from "next/link"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 const Account = () => {
    const [loading, setLoading] = useState<boolean>(false)
    const input_ref = useRef<HTMLTextAreaElement>(null)
    const [message, setMessage] = useState<string>()
+   const user = useUser()
+   const [data, setData] = useState<TUserWithProfile | null>(null)
 
    const test_api = async () => {
-      try {
-         setLoading(true)
-         const { data } = await axios.get("https://vcn-demo-api.onrender.com/api/home/clientOrigin")
-         setLoading(false)
-         console.log(">>> testing data >>>", data)
-      } catch (error) {
-         console.log(">>> testing error >>>", error)
+      if (user) {
+         try {
+            setLoading(true)
+            const { data } = await getUserByEmail(user?.email)
+            setLoading(false)
+            console.log(">>> testing data >>>", data)
+            setData(data)
+         } catch (error) {
+            console.error(">>> testing error >>>", error)
+         }
       }
    }
+
+   useEffect(() => {
+      test_api()
+   }, [user])
 
    const print = (value: string): string => {
       return '"' + value + '"'
@@ -42,7 +52,26 @@ const Account = () => {
       <div>
          <h2>
             <div>account</div>
+            <br />
+            <p>
+               <span className="text-regular-placeholder-text-cl">ID: </span>
+               <span>{user?.id || "None"}</span>
+            </p>
+            <br />
+            <p>
+               <span className="text-regular-placeholder-text-cl">Email: </span>
+               <span>{user?.email || "None"}</span>
+            </p>
+            <br />
+            <p>
+               <span className="text-regular-placeholder-text-cl">Full name: </span>
+               <span>{data?.Profile?.fullName || "None"}</span>
+            </p>
+            <br />
+            <br />
             <Link href={"/conversations?cid=1"}>conversation</Link>
+            <br />
+            <Link href={"/friends"}>friends</Link>
          </h2>
 
          <div className="m-5">

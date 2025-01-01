@@ -2,13 +2,15 @@
    /* colors */
    --tdc-regular-black-cl: #0f0f0f;
    --tdc-regular-white-cl: #fffffff9;
+   --tdc-regular-red-cl: #ff0000;
+   --tdc-regular-green-cl: #34e534;
    --tdc-regular-trans-cl: transparent;
    --tdc-regular-violet-cl: #766ac8;
    --tdc-regular-dark-gray-cl: #212121;
    --tdc-regular-hover-card-cl: #303030;
    --tdc-regular-icon-cl: #9ca3af;
    --tdc-regular-icon-btn-cl: #414141;
-   --tdc-regular-placeholder-text-cl: #9ca3af;
+   --tdc-regular-placeholder-text-cl: #939393;
    --tdc-regular-recipient-msg-time-cl: #747474;
    --tdc-regular-creator-msg-time-cl: #d6c3e2;
    --tdc-gradient-blue-from-cl: #8b5cf6;
@@ -16,6 +18,9 @@
    --tdc-user-avt-gradient-stops-cl: var(--tdc-gradient-blue-from), var(--tdc-gradient-violet-to);
    --tdc-regular-text-secondary-cl: #aaaaaa;
    --tdc-regular-info-bar-bgcl: #181818;
+   --tdc-regular-modal-content-bgcl: #313131;
+   --tdc-regular-button-bgcl: var(--tdc-regular-modal-content-bgcl);
+   --tdc-regular-hover-bgcl: #515151;
 
    /* widths */
    --tdc-convs-card-width: 300px;

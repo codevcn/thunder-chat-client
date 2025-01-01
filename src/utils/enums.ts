@@ -14,6 +14,7 @@ export enum EInvalidHttpErrMsgs {
 
 export enum EEventNames {
    SCROLL_TO_BOTTOM_MSG = "SCROLL_TO_BOTTOM_MSG",
+   LAST_FRIEND_REQUEST = "LAST_FRIEND_REQUEST",
 }
 
 export enum EServerErrMsgs {
@@ -22,6 +23,12 @@ export enum EServerErrMsgs {
 
 export enum ECustomHttpErrMsgs {
    SOMETHING_WENT_WRONG = "Something went wrong, please try again minutes later!",
+}
+
+export enum EFriendRequestStatus {
+   PENDING = "PENDING",
+   ACCEPTED = "ACCEPTED",
+   REJECTED = "REJECTED",
 }
 
 export enum ETimeGapOfStickyTimes {
