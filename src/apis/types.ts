@@ -16,7 +16,7 @@ export type TStartConversationParams = {
    recipientId: number
 }
 
-export type TDirectConversation = TConversation & {
+export type T1v1Conversation = TConversation & {
    recipient: TUserWithProfile
 }
 
@@ -42,6 +42,7 @@ export type TSearchUsersData = {
 export type TGetFriendRequestsData = {
    id: number
    Sender: TUserWithProfile
+   Recipient: TUserWithProfile
    createdAt: string
    status: EFriendRequestStatus
 }
@@ -60,7 +61,7 @@ export type TFriendRequestActionParams = {
 export type TGetFriendsData = {
    id: number
    senderId: number
-   createdAt: Date
+   createdAt: string
    Recipient: TUserWithProfile
 }
 
@@ -68,4 +69,10 @@ export type TGetFriendsParams = {
    userId: number
    limit: number
    lastFriendRequestId?: number
+}
+
+export type TSearchUsersParams = {
+   keyword: string
+   limit: number
+   lastUserId?: number
 }

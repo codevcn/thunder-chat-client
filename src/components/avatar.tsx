@@ -1,5 +1,6 @@
 import { Avatar } from "antd"
 import { UserOutlined } from "@ant-design/icons"
+import { JSX } from "react"
 
 type TCustomAvatarProps = Partial<{
    avatarSrc: string | null

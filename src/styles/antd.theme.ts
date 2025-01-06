@@ -16,13 +16,13 @@ export const CustomAntTheme: ThemeConfig = {
       },
    },
    token: {
-      colorPrimary: "white",
+      colorPrimary: "#fffffff9", //white
       colorPrimaryHover: "#6b7280",
       colorPrimaryBgHover: "#6b7280",
       fontSize: 16,
       purple: "#766AC8",
       colorInfo: "white",
       colorBgSpotlight: "#8b5cf6", //tooltip background-color,
-      lineHeight: 1,
+      colorPrimaryBg: "#fffffff9",
    },
 }

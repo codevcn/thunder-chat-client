@@ -1,6 +1,6 @@
 import { Flex } from "antd"
 import NImage from "next/image"
-import { useEffect, useState } from "react"
+import { JSX, useEffect, useState } from "react"
 
 type TProgressiveImageProps = {
    src: string

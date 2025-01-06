@@ -121,12 +121,13 @@ type TSendMessage1v1ErrorRes = {
 const TypeMessageBar = memo(({ conversation }: TTypeMessageBarProps) => {
    const { fetchedMsgs } = useAppSelector(({ messages }) => messages)
    const [message, setMessage] = useState<string>("")
-   const chatInputRef = useRef<TextAreaRef>(null)
 
    const typing = async (e: ChangeEvent<HTMLTextAreaElement>) => {
       const msg = e.target.value
       // stop typing when input value is "\n" after sending message
-      if (!/^\n$/.test(msg)) {
+      if (/^\n$/.test(msg)) {
+         setMessage("")
+      } else {
          setMessage(msg)
       }
    }
@@ -134,12 +135,14 @@ const TypeMessageBar = memo(({ conversation }: TTypeMessageBarProps) => {
    const sendMessage = async () => {
       const msgToSend = message?.trim()
       if (!msgToSend) return
-      console.log(">>> msg To Send >>>", `"${msgToSend}"`)
       const { recipientId, id } = conversation
       chattingService.sendMessage(
-         { message: msgToSend, receiverId: recipientId, conversationId: id },
+         recipientId,
+         msgToSend,
+         id,
+         crypto.randomUUID(),
          (res: TSendMessage1v1ErrorRes | TSuccess) => {
-            if ("isError" in res) {
+            if ("isError" in res && res.isError) {
                toast.error(res.message)
             }
          }
@@ -148,7 +151,13 @@ const TypeMessageBar = memo(({ conversation }: TTypeMessageBarProps) => {
 
    const catchEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === "Enter") {
-         sendMessage()
+         e.preventDefault()
+         if (e.shiftKey) {
+            setMessage((pre) => pre + "\n")
+         } else {
+            sendMessage()
+            setMessage("")
+         }
       }
    }
 
@@ -166,17 +175,17 @@ const TypeMessageBar = memo(({ conversation }: TTypeMessageBarProps) => {
 
                <div className="relative bg-regular-darkGray-cl w-full">
                   <Input.TextArea
-                     className="bg-transparent text-base p-3 px-1 z-10 styled-scrollbar border-transparent text-white hover:border-transparent focus:border-transparent focus:shadow-none"
+                     className="bg-transparent hover:bg-transparent leading-tight focus:bg-transparent text-base p-3 px-1 z-10 styled-scrollbar border-transparent text-white hover:border-transparent focus:border-transparent focus:shadow-none"
                      onChange={typing}
                      autoSize={{ minRows: 1, maxRows: 10 }}
-                     onKeyUp={catchEnter}
-                     ref={chatInputRef}
+                     onKeyDown={catchEnter}
+                     value={message}
                   />
-                  <div
+                  <span
                      className={`${message ? "animate-hide-placeholder" : "animate-grow-placeholder"} left-2 z-0 absolute top-1/2 -translate-y-1/2 text-regular-placeholder-text-cl`}
                   >
                      Message...
-                  </div>
+                  </span>
                </div>
 
                <div className="text-gray-500 hover:text-regular-violet-cl relative bottom-0 right-0">

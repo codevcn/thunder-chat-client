@@ -4,7 +4,7 @@ import axiosErrorHanlder from "@/utils/axios-error-hanlder"
 import toast from "react-hot-toast"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faSearch, faClose, faPaperPlane, faUserPlus } from "@fortawesome/free-solid-svg-icons"
-import { useDebounce } from "@/hooks/debounce"
+import { useDebounce, useDebounceLeading } from "@/hooks/debounce"
 import { Spinner } from "@/components/spinner"
 import { useUser } from "@/hooks/user"
 import { Modal, Divider, Input, InputRef, Tooltip } from "antd"
@@ -16,15 +16,52 @@ import { CustomAvatar } from "@/components/avatar"
 
 type TUserCardProps = {
    item: TSearchUsersData
+   loading: TLoading
+   onSendFriendRequest: (recipientId: number) => void
 }
 
+const UserCard = ({ item, loading, onSendFriendRequest }: TUserCardProps) => {
+   const profile = item.Profile
+   let avatarSrc = profile?.avatar
+   let fullName = profile?.fullName
+   const recipientId = item.id
+
+   return (
+      <div className="hover:bg-regular-icon-btn-cl flex items-center gap-x-3 rounded-md py-2 px-3 relative">
+         <CustomAvatar avatarSrc={avatarSrc} size={45} />
+         <div className="text-white">
+            {fullName && <p className="-translate-y-1.5">{fullName}</p>}
+            <p className="text-[#a3a3a3]">{item.email}</p>
+         </div>
+
+         <Tooltip title="Send friend request" placement="right">
+            {loading === `user-card-${recipientId}` ? (
+               <div className="absolute right-5 top-1/2 -translate-y-1/2">
+                  <Spinner size="small" />
+               </div>
+            ) : (
+               <button
+                  onClick={() => onSendFriendRequest(recipientId)}
+                  className="absolute right-5 top-1/2 -translate-y-1/2 hover:scale-125 transition-transform cursor-pointer"
+               >
+                  <FontAwesomeIcon icon={faPaperPlane} className="text-white" />
+               </button>
+            )}
+         </Tooltip>
+      </div>
+   )
+}
+
+type TLoading = "searching" | `user-card-${number}` | null
+
 export const AddFriend = () => {
-   const [users, setUsers] = useState<TSearchUsersData[] | null>(null)
+   const [users, setUsers] = useState<TSearchUsersData[]>([])
    const searchInputRef = useRef<InputRef>(null)
    const [showModalAddFriend, setShowModalAddFriend] = useState<boolean>(false)
    const debounce = useDebounce(300)
-   const [loading, setLoading] = useState<"searching" | null>(null)
+   const [loading, setLoading] = useState<TLoading>(null)
    const user = useUser()
+   const debounceLeading = useDebounceLeading(2000)
 
    const searchUsers = async () => {
       setLoading("searching")
@@ -50,39 +87,16 @@ export const AddFriend = () => {
       toast.error("Please enter the keyword")
    }
 
-   const sendFriendRequest = async (userId: number, recipientId: number) => {
+   const sendFriendRequest = async (recipientId: number) => {
+      setLoading(`user-card-${recipientId}`)
       try {
-         await friendService.sendFriendRequest(userId, recipientId)
+         await friendService.sendFriendRequest(user!.id, recipientId)
          toast.success("Sent friend request successfully!")
       } catch (error) {
-         console.error(">>> error:", error)
+         console.error(">>> 111 error:", error)
          toast.error(axiosErrorHanlder.handleHttpError(error).message)
       }
-   }
-
-   const UserCard = ({ item }: TUserCardProps) => {
-      const profile = item.Profile
-      let avatarSrc = profile?.avatar
-      let fullName = profile?.fullName
-
-      return (
-         <div className="hover:bg-regular-icon-btn-cl flex items-center gap-x-3 rounded-md py-2 px-3 relative">
-            <CustomAvatar avatarSrc={avatarSrc} size={45} />
-            <div className="text-white">
-               {fullName && <p className="-translate-y-1.5">{fullName}</p>}
-               <p className="text-[#a3a3a3]">{item.email}</p>
-            </div>
-
-            <Tooltip title="Send friend request" placement="right">
-               <button
-                  onClick={() => sendFriendRequest(user!.id, item.id)}
-                  className="absolute right-5 top-1/2 -translate-y-1/2 hover:scale-125 transition-transform cursor-pointer"
-               >
-                  <FontAwesomeIcon icon={faPaperPlane} className="text-white" />
-               </button>
-            </Tooltip>
-         </div>
-      )
+      setLoading(null)
    }
 
    return (
@@ -135,7 +149,14 @@ export const AddFriend = () => {
                         <Spinner color="text-white" className="h-7" />
                      </div>
                   ) : users && users.length > 0 ? (
-                     users.map((item) => <UserCard key={item.id} item={item} />)
+                     users.map((item) => (
+                        <UserCard
+                           key={item.id}
+                           item={item}
+                           loading={loading}
+                           onSendFriendRequest={debounceLeading(sendFriendRequest)}
+                        />
+                     ))
                   ) : (
                      <div className="w-full text-center mt-5 text-regular-placeholder-text-cl">
                         No Users Found.

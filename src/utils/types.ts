@@ -6,14 +6,14 @@ export type TUser = {
    email: string
    password: string
    username: string | null
-   createdAt: Date
+   createdAt: string
 }
 
 export type TProfile = {
    id: number
-   createdAt: Date
+   createdAt: string
    fullName: string
-   birthday: Date | null
+   birthday: string | null
    about: string | null
    avatar: string | null
    userId: number
@@ -26,7 +26,6 @@ export type TUserWithoutPassword = Omit<TUser, "password">
 export type TConversation = {
    id: number
    createdAt: string
-   lastMsgSentId: number | null
    creatorId: number
    recipientId: number
 }
@@ -80,4 +79,4 @@ export type TUnknownObject = {
    [key: number | string]: any
 }
 
-export type TUnknownFunction<R> = (...args: any[]) => R
+export type TUnknownFunction<P, R> = (...args: P[]) => R

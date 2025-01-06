@@ -1,16 +1,11 @@
-import type {
-   TConvMessage,
-   TConversation,
-   TDirectConversation,
-   TMessage,
-   TUserWithProfile,
-} from "@/utils/types"
+import type { TConvMessage, TConversation, TMessage, TUserWithProfile } from "@/utils/types"
 import { PayloadAction, createSlice } from "@reduxjs/toolkit"
 import {
    fetchConversationThunk,
    fetchMessagesThunk,
    startConversationThunk,
 } from "./messages.thunk"
+import type { T1v1Conversation } from "@/apis/types"
 
 type TMessagesState = {
    conversation: TConversation | null
@@ -30,14 +25,14 @@ export const messagesSlice = createSlice({
    initialState,
    name: "messages",
    reducers: {
-      pushMsg: (state, action: PayloadAction<TConvMessage>) => {
+      pushNewMessage: (state, action: PayloadAction<TConvMessage>) => {
          state.messages?.push(action.payload)
       },
    },
    extraReducers: (builder) => {
       builder.addCase(
          startConversationThunk.fulfilled,
-         (state, action: PayloadAction<TDirectConversation>) => {
+         (state, action: PayloadAction<T1v1Conversation>) => {
             const { recipient, ...conversation } = action.payload
 
             state.conversation = conversation
@@ -46,7 +41,7 @@ export const messagesSlice = createSlice({
       )
       builder.addCase(
          fetchConversationThunk.fulfilled,
-         (state, action: PayloadAction<TDirectConversation>) => {
+         (state, action: PayloadAction<T1v1Conversation>) => {
             const { recipient, ...conversation } = action.payload
 
             state.conversation = conversation
@@ -54,11 +49,10 @@ export const messagesSlice = createSlice({
          }
       )
       builder.addCase(fetchMessagesThunk.fulfilled, (state, action: PayloadAction<TMessage[]>) => {
-         const messages = action.payload
-         state.messages = messages
+         state.messages = action.payload
          state.fetchedMsgs = true
       })
    },
 })
 
-export const { pushMsg } = messagesSlice.actions
+export const { pushNewMessage } = messagesSlice.actions

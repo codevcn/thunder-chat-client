@@ -1,6 +1,7 @@
 "use client"
 
 import { getUserByEmail } from "@/apis/user"
+import { clientSocket } from "@/configs/socket"
 import { useUser } from "@/hooks/user"
 import { TUserWithProfile } from "@/utils/types"
 import Link from "next/link"
@@ -12,6 +13,12 @@ const Account = () => {
    const [message, setMessage] = useState<string>()
    const user = useUser()
    const [data, setData] = useState<TUserWithProfile | null>(null)
+
+   useEffect(() => {
+      clientSocket.socket.io.on("reconnect", (attempt) => {
+         console.log(">>> attempt:", attempt)
+      })
+   }, [])
 
    const test_api = async () => {
       if (user) {
@@ -48,6 +55,14 @@ const Account = () => {
       }
    }
 
+   const disconnectSocket = async () => {
+      clientSocket.socket.disconnect()
+   }
+
+   const connectSocket = async () => {
+      clientSocket.socket.connect()
+   }
+
    return (
       <div>
          <h2>
@@ -74,10 +89,18 @@ const Account = () => {
             <Link href={"/friends"}>friends</Link>
          </h2>
 
+         <button className="px-3 py-2 mt-3 bg-black text-white" onClick={connectSocket}>
+            connect socket
+         </button>
+         <br />
+         <button className="px-3 py-2 mt-3 bg-black text-white" onClick={disconnectSocket}>
+            disconnect socket
+         </button>
+
          <div className="m-5">
             <textarea
                className="text-black p-5 resize-none"
-               rows={10}
+               rows={3}
                onChange={onChange}
                onKeyDown={onKeyDown}
                ref={input_ref}

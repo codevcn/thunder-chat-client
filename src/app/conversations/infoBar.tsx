@@ -78,7 +78,7 @@ const ProfileInfo = ({ recipient }: { recipient: TUserWithProfile }) => {
 }
 
 export const InfoBar = () => {
-   const { infoBarIsOpened: open } = useAppSelector(({ conversations }) => conversations)
+   const { infoBarIsOpened } = useAppSelector(({ conversations }) => conversations)
    const { recipient } = useAppSelector(({ messages }) => messages)
    const dispatch = useAppDispatch()
 
@@ -88,7 +88,7 @@ export const InfoBar = () => {
 
    return (
       <Flex
-         className={`${open ? "right-0" : "-right-slide-info-mb-bar screen-large-chatting:-right-slide-info-bar"} bg-regular-info-bar-bgcl screen-large-chatting:bg-regular-darkGray-cl w-info-bar-mb-width screen-large-chatting:w-info-bar-width h-full overflow-hidden border-l-regular-hover-card-cl border-l z-[60] transition-[right] absolute duration-[0.4s] screen-large-chatting:duration-300 ease-slide-info-bar-timing`}
+         className={`${infoBarIsOpened ? "right-0" : "-right-slide-info-mb-bar screen-large-chatting:-right-slide-info-bar"} bg-regular-info-bar-bgcl screen-large-chatting:bg-regular-darkGray-cl w-info-bar-mb-width screen-large-chatting:w-info-bar-width h-full overflow-hidden border-l-regular-hover-card-cl border-l z-[60] transition-[right] absolute duration-[0.4s] screen-large-chatting:duration-300 ease-slide-info-bar-timing`}
          vertical
       >
          <Flex className="h-header-height py-[7px] px-3" align="center" gap={15}>

@@ -11,14 +11,14 @@ import type { TConvMessage, TMessage, TUserWithoutPassword } from "@/utils/types
 import { Spinner } from "@/components/spinner"
 import dayjs from "dayjs"
 import { EEventNames } from "@/utils/enums"
-import { CustomEventManager } from "@/utils/custom-events"
 import { ScrollToBottomMessageBtn } from "./scroll-to-bottom-msg-btn"
 import { createPortal } from "react-dom"
 import { useUser } from "@/hooks/user"
 import { clientSocket } from "@/configs/socket"
 import { ESocketEvents } from "@/utils/events/socket-events"
-import { pushMsg } from "@/redux/messages/messages.slice"
+import { pushNewMessage } from "@/redux/messages/messages.slice"
 import { handleMessageStickyTime } from "@/utils/date-time"
+import { customEventManager } from "@/utils/events/custom-events"
 
 type TMessageProps = {
    message: TMessage
@@ -27,10 +27,9 @@ type TMessageProps = {
 }
 
 const Message = ({ message, isNewMsg, user }: TMessageProps) => {
-   const { authorId, content, createdAt: msgTime } = message
+   const { authorId, content, createdAt } = message
 
-   const time = dayjs(msgTime).format("hh:mm")
-   const addMsgAnimation = isNewMsg ? "animate-add-message" : ""
+   const msgTime = dayjs(createdAt).format("hh:mm")
 
    return (
       <div className="Message-Container max-w-full">
@@ -38,11 +37,11 @@ const Message = ({ message, isNewMsg, user }: TMessageProps) => {
             <Flex className="w-full" justify="space-between">
                <span></span>
                <div
-                  className={`${addMsgAnimation} bg-regular-violet-cl rounded-t-2xl rounded-bl-2xl py-1.5 px-2 relative`}
+                  className={`${isNewMsg ? "animate-new-own-message" : ""} bg-regular-violet-cl rounded-t-2xl rounded-bl-2xl py-1.5 px-2 relative`}
                >
-                  <p className="text-sm inline break-all">{content}</p>
+                  <p className="text-sm inline break-all whitespace-pre">{content}</p>
                   <div className="float-right ml-3 relative right-0 top-1">
-                     <span className="text-xs text-regular-creator-msg-time-cl">{time}</span>
+                     <span className="text-xs text-regular-creator-msg-time-cl">{msgTime}</span>
                      <div className="inline-block ml-0.5">
                         <FontAwesomeIcon icon={faCheckDouble} fontSize={12} />
                      </div>
@@ -51,11 +50,11 @@ const Message = ({ message, isNewMsg, user }: TMessageProps) => {
             </Flex>
          ) : (
             <div
-               className={`${addMsgAnimation} bg-regular-darkGray-cl rounded-t-2xl rounded-br-2xl pt-1.5 pb-2 px-2 w-fit relative`}
+               className={`${isNewMsg ? "animate-new-friend-message" : ""} bg-regular-darkGray-cl rounded-t-2xl rounded-br-2xl pt-1.5 pb-2 px-2 w-fit relative`}
             >
-               <p className="text-sm inline break-all">{content}</p>
+               <p className="text-sm inline break-all whitespace-pre">{content}</p>
                <span className="text-xs text-regular-recipient-msg-time-cl float-right ml-3 relative right-0 top-2">
-                  {time}
+                  {msgTime}
                </span>
             </div>
          )}
@@ -88,6 +87,7 @@ export const Messages = memo(({ conversationId }: { conversationId: number }) =>
    const dispatch = useAppDispatch()
    const user = useUser()
    const messages_container_ref = useRef<HTMLDivElement>(null)
+   const tempFlagUseEffect = useRef<boolean>(true)
 
    const scrollToBottomMessage = async () => {
       messages_container_ref.current?.scrollTo({
@@ -116,36 +116,36 @@ export const Messages = memo(({ conversationId }: { conversationId: number }) =>
    }
 
    const publishScrollToBottomMsgEvent = () => {
-      messages_container_ref.current?.addEventListener(EEventNames.SCROLL_TO_BOTTOM_MSG, (e) => {
+      customEventManager.on(EEventNames.SCROLL_TO_BOTTOM_MSG, (payload) => {
          scrollToBottomMessage()
       })
    }
 
    useEffect(() => {
-      fetchMessages()
-      publishScrollToBottomMsgEvent()
+      if (tempFlagUseEffect.current) {
+         tempFlagUseEffect.current = false
+         fetchMessages()
+         publishScrollToBottomMsgEvent()
 
-      clientSocket.on(ESocketEvents.send_message_1v1, (data) => {
-         console.log(">>> payload:", data)
-         const { id, authorId, conversationId, createdAt, content } = data
-         dispatch(
-            pushMsg({
-               id,
-               authorId,
-               content,
-               conversationId,
-               createdAt,
-               isNewMsg: true,
-            })
-         )
-      })
+         clientSocket.socket.on(ESocketEvents.send_message_1v1, (data) => {
+            const { id, authorId, conversationId, createdAt, content } = data
+            dispatch(
+               pushNewMessage({
+                  id,
+                  authorId,
+                  content,
+                  conversationId,
+                  createdAt,
+                  isNewMsg: true,
+               })
+            )
+            clientSocket.setMessageOffset(id)
+         })
 
-      return () => {
-         messages_container_ref.current?.removeEventListener("scroll", () => {})
-         messages_container_ref.current?.removeEventListener(
-            EEventNames.SCROLL_TO_BOTTOM_MSG,
-            () => {}
-         )
+         return () => {
+            messages_container_ref.current?.removeEventListener("scroll", () => {})
+            customEventManager.off(EEventNames.SCROLL_TO_BOTTOM_MSG)
+         }
       }
    }, [])
 

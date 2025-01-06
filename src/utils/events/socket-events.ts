@@ -6,5 +6,5 @@ export enum ESocketInitEvents {
 export enum ESocketEvents {
    send_message_1v1 = "send_message:1v1",
    error = "error",
-   send_friend_request = "send_friend_request",
+   send_friend_request = "friend_request:send",
 }

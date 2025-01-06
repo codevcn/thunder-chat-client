@@ -1,13 +1,13 @@
 import { useAppSelector } from "@/hooks/redux"
 import { GAP_TO_SHOW_SCROLL_BTN } from "@/utils/constants"
-import { customEventManager } from "@/utils/custom-events"
+import { customEventManager } from "@/utils/events/custom-events"
 import { EEventNames } from "@/utils/enums"
 import { faArrowDown } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { useEffect, useState, memo } from "react"
 
 type TScrollToBottomMessageBtnProps = {
-   messagesContainerRef: React.RefObject<HTMLDivElement>
+   messagesContainerRef: React.RefObject<HTMLDivElement | null>
 }
 
 export const ScrollToBottomMessageBtn = memo(
@@ -16,9 +16,7 @@ export const ScrollToBottomMessageBtn = memo(
       const { infoBarIsOpened } = useAppSelector(({ conversations }) => conversations)
 
       const scrollToBottomMessage = () => {
-         messagesContainerRef.current?.dispatchEvent(
-            customEventManager.createEvent(EEventNames.SCROLL_TO_BOTTOM_MSG)
-         )
+         customEventManager.dispatchEvent(EEventNames.SCROLL_TO_BOTTOM_MSG)
       }
 
       useEffect(() => {

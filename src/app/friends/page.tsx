@@ -5,13 +5,11 @@ import { Navigation } from "@/components/navigation"
 import { AddFriend } from "./add-friend"
 import { Tabs } from "antd"
 import type { TabsProps } from "antd"
-import { useEffect, useState } from "react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faAddressBook, faBan, faCommentDots } from "@fortawesome/free-solid-svg-icons"
+import { faAddressBook, faBan, faEnvelope } from "@fortawesome/free-solid-svg-icons"
 import { FriendRequests } from "./friend-requests"
 import { Blocked } from "./blocked"
 import { useSearchParams } from "next/navigation"
-import { isValueInEnum } from "@/utils/helpers"
 import { EActions } from "./sharing"
 import { useRouter } from "next/navigation"
 
@@ -24,7 +22,7 @@ const actions: TabsProps["items"] = [
    {
       key: EActions.add_friend_requests,
       label: "Friend Invitations",
-      icon: <FontAwesomeIcon icon={faCommentDots} />,
+      icon: <FontAwesomeIcon icon={faEnvelope} />,
    },
    {
       key: EActions.blocked,
@@ -34,26 +32,19 @@ const actions: TabsProps["items"] = [
 ]
 
 const Actions = () => {
-   const [active, setActive] = useState<EActions>(EActions.friends_list)
    const searchParams = useSearchParams()
-   const qsAction = searchParams.get("action")
+   const qsAction = searchParams.get("action") || EActions.friends_list
    const router = useRouter()
 
    const changeTab = (key: string) => {
       router.push(`/friends?action=${key}`)
    }
 
-   useEffect(() => {
-      if (qsAction && isValueInEnum(qsAction, EActions)) {
-         setActive(qsAction as EActions)
-      }
-   }, [qsAction])
-
    return (
       <div className="w-full">
          <div className="flex mt-5 gap-x-10 justify-between h-fit w-full px-10 border-b border-regular-hover-card-cl border-solid">
             <Tabs
-               activeKey={active}
+               activeKey={qsAction}
                items={actions}
                onChange={changeTab}
                size="large"
@@ -62,12 +53,12 @@ const Actions = () => {
             <AddFriend />
          </div>
          <div className="py-5">
-            {active === EActions.friends_list ? (
+            {qsAction === EActions.friends_list ? (
                <FriendsList />
-            ) : active === EActions.add_friend_requests ? (
+            ) : qsAction === EActions.add_friend_requests ? (
                <FriendRequests />
             ) : (
-               active === EActions.blocked && <Blocked />
+               qsAction === EActions.blocked && <Blocked />
             )}
          </div>
       </div>

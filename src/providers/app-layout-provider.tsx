@@ -16,7 +16,7 @@ export const AppLayoutProvider = ({ children }: { children: React.ReactNode }) =
    useEffect(() => {
       clientSocket.on(ESocketEvents.send_friend_request, (payload) => {
          const { Profile, email } = payload
-         toast((t) => (
+         toast(() => (
             <div className="flex items-center justify-between gap-x-3">
                <FontAwesomeIcon icon={faCircleInfo} size="lg" />
                <span className="font-bold">{`User "${Profile?.fullName || email}" sent you an add friend request`}</span>
@@ -32,10 +32,12 @@ export const AppLayoutProvider = ({ children }: { children: React.ReactNode }) =
    }, [])
 
    const limitDisplayedToasts = () => {
-      toasts
-         .filter((t) => t.visible) // Only consider visible toasts
-         .filter((_, i) => i >= MAX_NUMBER_OF_TOASTS) // Is toast index over limit?
-         .forEach((t) => toast.dismiss(t.id)) // Dismiss – Use toast.remove(t.id) for no exit animation
+      setTimeout(() => {
+         toasts
+            .filter((t) => t.visible) // Only consider visible toasts
+            .filter((_, i) => i >= MAX_NUMBER_OF_TOASTS) // Is toast index over limit?
+            .forEach((t) => toast.dismiss(t.id)) // Dismiss – Use toast.remove(t.id) for no exit animation
+      }, 0)
    }
 
    useEffect(() => {

@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faMagnifyingGlass, faArrowLeft, faXmark } from "@fortawesome/free-solid-svg-icons"
 import dayjs from "dayjs"
 import { useDebounce } from "@/hooks/debounce"
-import type { TSearchConversationParams, TUserWithProfile } from "@/utils/types"
+import type { TUserWithProfile } from "@/utils/types"
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
 import { searchConversationThunk } from "@/redux/conversations/conversations-thunks"
 import { ChangeEvent, Dispatch, SetStateAction, useRef, useState } from "react"
@@ -19,6 +19,7 @@ import { startConversationThunk } from "@/redux/messages/messages.thunk"
 import { unwrapResult } from "@reduxjs/toolkit"
 import { MAX_NUMBER_OF_PINNED_CONVERSATIONS } from "@/utils/constants"
 import { PinnedConvIcon } from "@/components/icons"
+import { TSearchConversationParams } from "@/apis/types"
 
 type TResultProps = {
    convResult: TUserWithProfile

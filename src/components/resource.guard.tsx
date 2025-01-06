@@ -1,7 +1,7 @@
 "use client"
 
 import { EAuthStatus } from "@/utils/enums"
-import { useEffect, useState } from "react"
+import { JSX, useEffect, useState } from "react"
 import toast from "react-hot-toast"
 import { useRedirectToLogin } from "@/hooks/redirect"
 import { AppLoading } from "./app-loading"

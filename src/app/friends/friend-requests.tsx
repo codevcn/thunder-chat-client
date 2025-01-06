@@ -18,12 +18,12 @@ import {
 } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { Tooltip, Dropdown } from "antd"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import toast from "react-hot-toast"
-import type { MenuProps } from "antd"
-import { customEventManager } from "@/utils/custom-events"
+import { customEventManager } from "@/utils/events/custom-events"
 import type { TUserWithoutPassword } from "@/utils/types"
-import { MAX_FRIEND_REQUESTS_PAGINATION } from "@/utils/constants"
+import { EPaginations } from "@/utils/enums"
+import type { MenuProps } from "antd"
 
 type TRequestCardProps = {
    req: TGetFriendRequestsData
@@ -37,10 +37,15 @@ type TRequestCardProps = {
 }
 
 const RequestCard = ({ req, loading, onFriendRequestActions, user }: TRequestCardProps) => {
-   const { Sender, createdAt, id, status } = req
-   const { Profile, email } = Sender
-
+   const { Sender, createdAt, id, status, Recipient } = req
    const isSentRequest = user.id === Sender.id
+
+   let userInfo = Sender
+   if (isSentRequest) {
+      userInfo = Recipient
+   }
+
+   const { Profile, email } = userInfo
 
    return (
       <div className="flex justify-between items-center w-full mb-3 gap-x-5 px-4 py-3 bg-regular-modal-content-bgcl rounded-md">
@@ -54,16 +59,16 @@ const RequestCard = ({ req, loading, onFriendRequestActions, user }: TRequestCar
                   <span className="text-sm text-regular-placeholder-text-cl">{` (${handleTimeDifference(createdAt)})`}</span>
                </div>
                <div className="text-sm text-regular-placeholder-text-cl">
-                  <span>{email}</span>
+                  <span>{isSentRequest ? `Sent to ${email}` : `Received from ${email}`}</span>
                </div>
             </div>
          </div>
          {status === EFriendRequestStatus.PENDING ? (
             isSentRequest ? (
-               <span></span>
+               <div className="px-3 py-2 rounded-md text-black bg-regular-white-cl">Pending.</div>
             ) : (
                <div className="flex items-center gap-x-7">
-                  {loading === `request-card-ACCEPT-${id}` ? (
+                  {loading === `request-card-ACCEPTED-${id}` ? (
                      <Spinner size="small" />
                   ) : (
                      <Tooltip title="Accept" placement="bottom">
@@ -73,7 +78,7 @@ const RequestCard = ({ req, loading, onFriendRequestActions, user }: TRequestCar
                               onFriendRequestActions(EFriendRequestStatus.ACCEPTED, id, email)
                            }
                         >
-                           <FontAwesomeIcon icon={faCircleCheck} size="lg" />
+                           <FontAwesomeIcon icon={faCircleCheck} size="lg" className="h-5 w-5" />
                         </button>
                      </Tooltip>
                   )}
@@ -90,7 +95,7 @@ const RequestCard = ({ req, loading, onFriendRequestActions, user }: TRequestCar
                            <FontAwesomeIcon
                               icon={faTrash}
                               size="lg"
-                              className="text-regular-red-cl"
+                              className="text-regular-red-cl h-5 w-5"
                            />
                         </button>
                      </Tooltip>
@@ -98,11 +103,11 @@ const RequestCard = ({ req, loading, onFriendRequestActions, user }: TRequestCar
                </div>
             )
          ) : status === EFriendRequestStatus.ACCEPTED ? (
-            <div className="text-regular-green-cl italic opacity-70">
+            <div className="px-3 py-2 rounded-md text-white bg-regular-green-cl">
                The invitation has been accepted.
             </div>
          ) : (
-            <div className="text-regular-red-cl italic opacity-70">
+            <div className="px-3 py-2 rounded-md text-white bg-regular-red-cl">
                The invitation has been rejected.
             </div>
          )}
@@ -119,11 +124,11 @@ const LoadMoreBtn = ({ onLoadMore, hidden }: TLoadMoreBtnProps) => {
    const [isLastRequest, setIsLastRequest] = useState<boolean>(false)
 
    useEffect(() => {
-      document.addEventListener(EEventNames.LAST_FRIEND_REQUEST, (e) => {
+      customEventManager.on(EEventNames.LAST_FRIEND_REQUEST, (payload) => {
          setIsLastRequest(true)
       })
       return () => {
-         document.removeEventListener(EEventNames.LAST_FRIEND_REQUEST, () => {})
+         customEventManager.off(EEventNames.LAST_FRIEND_REQUEST, () => {})
       }
    }, [])
 
@@ -187,12 +192,14 @@ const menuFilter = (filter: EFilterLabels): MenuProps["items"] => {
 type TLoading =
    | "friend-requests"
    | `request-card-${EFriendRequestStatus.ACCEPTED | EFriendRequestStatus.REJECTED}-${number}`
+   | null
 
 export const FriendRequests = () => {
-   const [requests, setRequests] = useState<TGetFriendRequestsData[]>()
-   const [loading, setLoading] = useState<TLoading | null>(null)
+   const [requests, setRequests] = useState<TGetFriendRequestsData[]>([])
+   const [loading, setLoading] = useState<TLoading>(null)
    const user = useUser()
    const [filter, setFilter] = useState<EFilterLabels>(EFilterLabels.ALL)
+   const tempFlagUseEffect = useRef<boolean>(true)
 
    const filterRequests = (requests: TGetFriendRequestsData[]): TGetFriendRequestsData[] => {
       switch (filter) {
@@ -215,24 +222,26 @@ export const FriendRequests = () => {
       setLoading("friend-requests")
       try {
          const requestsResult = await friendService.getFriendRequests({
-            limit: MAX_FRIEND_REQUESTS_PAGINATION,
+            limit: EPaginations.MAX_FRIEND_REQUESTS_PER_PAGE,
             userId: user!.id,
             lastFriendRequestId,
          })
          if (requestsResult && requestsResult.length > 0) {
-            setRequests(requestsResult)
+            setRequests((pre) => [...pre, ...requestsResult])
          } else {
-            document.dispatchEvent(customEventManager.createEvent(EEventNames.LAST_FRIEND_REQUEST))
+            customEventManager.dispatchEvent(EEventNames.LAST_FRIEND_REQUEST)
          }
       } catch (error) {
-         console.error(">>> error:", error)
          toast.error(axiosErrorHanlder.handleHttpError(error).message)
       }
       setLoading(null)
    }
 
    useEffect(() => {
-      getFriendRequestsHandler()
+      if (tempFlagUseEffect.current) {
+         tempFlagUseEffect.current = false
+         getFriendRequestsHandler()
+      }
    }, [])
 
    const friendRequestActions = async (
@@ -260,8 +269,11 @@ export const FriendRequests = () => {
    }
 
    const onLoadMore = () => {
-      if (requests && requests.length > 0) {
-         getFriendRequestsHandler(requests[requests.length - 1].id)
+      if (requests) {
+         const requestsLen = requests.length
+         if (requestsLen > 0) {
+            getFriendRequestsHandler(requests[requestsLen - 1].id)
+         }
       }
    }
 
@@ -292,7 +304,7 @@ export const FriendRequests = () => {
                     </div>
                  )}
          </div>
-         <div className="flex w-full justify-center mt-5" hidden={!loading}>
+         <div className="flex w-full justify-center mt-5" hidden={!(loading === "friend-requests")}>
             <Spinner size="medium" />
          </div>
          <LoadMoreBtn onLoadMore={onLoadMore} hidden={loading === "friend-requests"} />

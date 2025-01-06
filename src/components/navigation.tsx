@@ -11,7 +11,7 @@ import {
    faUserGroup,
 } from "@fortawesome/free-solid-svg-icons"
 import Link from "next/link"
-import { memo } from "react"
+import { memo, JSX } from "react"
 
 type Navs = {
    label: string
@@ -66,7 +66,7 @@ export const Navigation = memo(() => {
                            href={href}
                            className="flex w-[55px] cursor-pointer transition duration-200 hover:bg-regular-hover-card-cl py-3"
                         >
-                           <div className="m-auto">{icon}</div>
+                           <div className="m-auto text-white">{icon}</div>
                         </Link>
                      ) : (
                         <div className="flex w-[55px] cursor-pointer transition duration-200 hover:bg-regular-hover-card-cl py-3">

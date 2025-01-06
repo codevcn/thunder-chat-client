@@ -8,10 +8,10 @@ import { friendService } from "@/services/friend.service"
 import axiosErrorHanlder from "@/utils/axios-error-hanlder"
 import { handleTimeDifference } from "@/utils/date-time"
 import { EEventNames } from "@/utils/enums"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import toast from "react-hot-toast"
-import { customEventManager } from "@/utils/custom-events"
-import { MAX_FRIENDS_PAGINATION } from "@/utils/constants"
+import { customEventManager } from "@/utils/events/custom-events"
+import { EPaginations } from "@/utils/enums"
 
 type TFriendCardProps = {
    friend: TGetFriendsData
@@ -52,11 +52,11 @@ const LoadMoreBtn = ({ onLoadMore, hidden }: TLoadMoreBtnProps) => {
    const [isLastFriend, setIsLastFriend] = useState<boolean>(false)
 
    useEffect(() => {
-      document.addEventListener(EEventNames.LAST_FRIEND_REQUEST, (e) => {
+      customEventManager.on(EEventNames.LAST_FRIEND_REQUEST, (payload) => {
          setIsLastFriend(true)
       })
       return () => {
-         document.removeEventListener(EEventNames.LAST_FRIEND_REQUEST, () => {})
+         customEventManager.off(EEventNames.LAST_FRIEND_REQUEST)
       }
    }, [])
 
@@ -75,9 +75,10 @@ const LoadMoreBtn = ({ onLoadMore, hidden }: TLoadMoreBtnProps) => {
 type TLoading = "friends"
 
 export const FriendsList = () => {
-   const [friends, setFriends] = useState<TGetFriendsData[]>()
+   const [friends, setFriends] = useState<TGetFriendsData[]>([])
    const [loading, setLoading] = useState<TLoading | null>(null)
    const user = useUser()
+   const tempFlagUseEffect = useRef<boolean>(true)
 
    const filteredFriends = useMemo(() => {
       return friends
@@ -87,14 +88,14 @@ export const FriendsList = () => {
       setLoading("friends")
       try {
          const result = await friendService.getFriends({
-            limit: MAX_FRIENDS_PAGINATION,
+            limit: EPaginations.MAX_FRIENDS_PER_PAGE,
             userId: user!.id,
             lastFriendRequestId,
          })
          if (result && result.length > 0) {
-            setFriends(result)
+            setFriends((pre) => [...pre, ...result])
          } else {
-            document.dispatchEvent(customEventManager.createEvent(EEventNames.LAST_FRIEND_REQUEST))
+            customEventManager.dispatchEvent(EEventNames.LAST_FRIEND_REQUEST)
          }
       } catch (error) {
          console.error(">>> error:", error)
@@ -104,12 +105,18 @@ export const FriendsList = () => {
    }
 
    useEffect(() => {
-      getFriendsHandler()
+      if (tempFlagUseEffect.current) {
+         tempFlagUseEffect.current = false
+         getFriendsHandler()
+      }
    }, [])
 
    const onLoadMore = () => {
-      if (friends && friends.length > 0) {
-         getFriendsHandler(friends[friends.length - 1].id)
+      if (friends) {
+         const friendsLen = friends.length
+         if (friendsLen > 0) {
+            getFriendsHandler(friends[friendsLen - 1].id)
+         }
       }
    }
 

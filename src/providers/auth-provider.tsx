@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { JSX, useEffect } from "react"
 import { checkAuthThunk } from "@/redux/auth/auth.thunk"
 import { EAuthStatus } from "@/utils/enums"
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"

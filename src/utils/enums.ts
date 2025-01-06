@@ -4,6 +4,12 @@ export enum EAuthStatus {
    UNAUTHENTICATED = "AUTH_STATUS_UNAUTHENTICATED",
 }
 
+export enum EPaginations {
+   MAX_FRIEND_REQUESTS_PER_PAGE = 5,
+   MAX_FRIENDS_PER_PAGE = 5,
+   MAX_SEARCH_USERS_PER_PAGE = 20,
+}
+
 export enum EConversationErrMsgs {
    CONV_NOT_FOUND = "Conversation not found",
 }

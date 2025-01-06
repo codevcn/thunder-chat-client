@@ -1,9 +1,13 @@
+import type { TSearchUsersData } from "@/apis/types"
 import { getSearchUsers } from "@/apis/user"
-import type { TSearchUsersData } from "@/utils/types"
+import { EPaginations } from "@/utils/enums"
 
 class UserService {
    async searchUsers(keyword: string): Promise<TSearchUsersData[]> {
-      const { data } = await getSearchUsers(keyword)
+      const { data } = await getSearchUsers({
+         keyword,
+         limit: EPaginations.MAX_SEARCH_USERS_PER_PAGE,
+      })
       return data
    }
 }

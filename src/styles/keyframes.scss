@@ -140,9 +140,21 @@
    }
 }
 
-@keyframes add-message {
+@keyframes new-own-message {
    0% {
       transform: translate(-3.5rem, 1rem);
+      opacity: 0;
+   }
+
+   100% {
+      transform: translate(0, 0);
+      opacity: 1;
+   }
+}
+
+@keyframes new-friend-message {
+   0% {
+      transform: translate(3.5rem, 1rem);
       opacity: 0;
    }
 
