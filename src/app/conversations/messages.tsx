@@ -6,8 +6,8 @@ import { Flex } from "antd"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faCheckDouble } from "@fortawesome/free-solid-svg-icons"
 import { useEffect, memo } from "react"
-import { fetchMessagesThunk } from "@/redux/messages/messages.thunk"
-import type { TConvMessage, TMessage, TUserWithoutPassword } from "@/utils/types"
+import { fetchDirectMessagesThunk } from "@/redux/messages/messages.thunk"
+import type { TDirectMessage, TUserWithoutPassword } from "@/utils/types"
 import { Spinner } from "@/components/spinner"
 import dayjs from "dayjs"
 import { EEventNames } from "@/utils/enums"
@@ -16,12 +16,12 @@ import { createPortal } from "react-dom"
 import { useUser } from "@/hooks/user"
 import { clientSocket } from "@/configs/socket"
 import { ESocketEvents } from "@/utils/events/socket-events"
-import { pushNewMessage } from "@/redux/messages/messages.slice"
+import { pushNewMessages } from "@/redux/messages/messages.slice"
 import { handleMessageStickyTime } from "@/utils/date-time"
 import { customEventManager } from "@/utils/events/custom-events"
 
 type TMessageProps = {
-   message: TMessage
+   message: TDirectMessage
    user: TUserWithoutPassword
    isNewMsg: boolean
 }
@@ -82,12 +82,17 @@ const StickyTime = ({ sticky_time }: { sticky_time: string }) => {
    )
 }
 
-export const Messages = memo(({ conversationId }: { conversationId: number }) => {
+type TMessagesProps = {
+   directChatId: number
+}
+
+export const Messages = memo(({ directChatId }: TMessagesProps) => {
    const { messages, fetchedMsgs } = useAppSelector(({ messages }) => messages)
    const dispatch = useAppDispatch()
    const user = useUser()
    const messages_container_ref = useRef<HTMLDivElement>(null)
    const tempFlagUseEffect = useRef<boolean>(true)
+   console.log(">>> old messages:", messages)
 
    const scrollToBottomMessage = async () => {
       messages_container_ref.current?.scrollTo({
@@ -111,8 +116,8 @@ export const Messages = memo(({ conversationId }: { conversationId: number }) =>
       sendMsgScrollAnimate()
    }, [messages])
 
-   const fetchMessages = async () => {
-      await dispatch(fetchMessagesThunk(conversationId))
+   const fetchDirectMessages = async () => {
+      await dispatch(fetchDirectMessagesThunk(directChatId))
    }
 
    const publishScrollToBottomMsgEvent = () => {
@@ -124,22 +129,33 @@ export const Messages = memo(({ conversationId }: { conversationId: number }) =>
    useEffect(() => {
       if (tempFlagUseEffect.current) {
          tempFlagUseEffect.current = false
-         fetchMessages()
+         fetchDirectMessages()
          publishScrollToBottomMsgEvent()
 
-         clientSocket.socket.on(ESocketEvents.send_message_1v1, (data) => {
-            const { id, authorId, conversationId, createdAt, content } = data
+         clientSocket.socket.on(ESocketEvents.send_message_direct, (newMessage) => {
+            const { id, authorId, createdAt, content } = newMessage
             dispatch(
-               pushNewMessage({
-                  id,
-                  authorId,
-                  content,
-                  conversationId,
-                  createdAt,
-                  isNewMsg: true,
-               })
+               pushNewMessages([
+                  {
+                     id,
+                     authorId,
+                     content,
+                     directChatId,
+                     createdAt,
+                     isNewMsg: true,
+                  },
+               ])
             )
-            clientSocket.setMessageOffset(id)
+            clientSocket.setMessageOffset(new Date(createdAt), directChatId)
+         })
+
+         clientSocket.socket.on(ESocketEvents.recovered_connection, (newMessages) => {
+            console.log(">>> new messages:", newMessages)
+            if (newMessages && newMessages.length > 0) {
+               dispatch(pushNewMessages(newMessages))
+               const { createdAt } = newMessages.at(-1)!
+               clientSocket.setMessageOffset(new Date(createdAt), directChatId)
+            }
          })
 
          return () => {
@@ -149,7 +165,7 @@ export const Messages = memo(({ conversationId }: { conversationId: number }) =>
       }
    }, [])
 
-   const mapMessage = (messages: TConvMessage[], user: TUserWithoutPassword) =>
+   const mapMessage = (messages: TDirectMessage[], user: TUserWithoutPassword) =>
       messages.map((message, index) => {
          const sticky_time = handleMessageStickyTime(
             message.createdAt,

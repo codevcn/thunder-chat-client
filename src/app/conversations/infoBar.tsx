@@ -79,7 +79,7 @@ const ProfileInfo = ({ recipient }: { recipient: TUserWithProfile }) => {
 
 export const InfoBar = () => {
    const { infoBarIsOpened } = useAppSelector(({ conversations }) => conversations)
-   const { recipient } = useAppSelector(({ messages }) => messages)
+   const recipient = useAppSelector(({ messages }) => messages.directChat?.Recipient)
    const dispatch = useAppDispatch()
 
    const handleOpenInfoBar = (open: boolean) => {

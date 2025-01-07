@@ -6,17 +6,18 @@ export type TWsErrorResponse = {
    httpStatus: HttpStatus
 }
 
-export type TNewMessage1v1 = {
+export type TNewDirectMessage = {
    id: number
    content: string
    authorId: number
-   conversationId: number
+   directChatId: number
    createdAt: string
 }
 
 export type TChattingPayload = {
    receiverId: number
    message: string
-   conversationId: number
+   directChatId: number
    token: string
+   timestamp: Date
 }

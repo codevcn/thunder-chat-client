@@ -1,7 +1,12 @@
-import { conversationService } from "@/services/conversations.service"
+import { directChatService } from "@/services/direct-chat.service"
 import { createAsyncThunk } from "@reduxjs/toolkit"
 
-export const searchConversationThunk = createAsyncThunk(
-   "conversations/search",
-   conversationService.searchConversation
+export const startDirectChatThunk = createAsyncThunk(
+   "messages/start",
+   directChatService.startDirectChat
+)
+
+export const fetchDirectChatThunk = createAsyncThunk(
+   "messages/fetchDirectChat",
+   directChatService.fetchDirectChat
 )

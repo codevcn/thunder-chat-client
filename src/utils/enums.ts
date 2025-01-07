@@ -10,8 +10,8 @@ export enum EPaginations {
    MAX_SEARCH_USERS_PER_PAGE = 20,
 }
 
-export enum EConversationErrMsgs {
-   CONV_NOT_FOUND = "Conversation not found",
+export enum EDirectChatErrMsgs {
+   CONV_NOT_FOUND = "Direct Chat not found",
 }
 
 export enum EInvalidHttpErrMsgs {

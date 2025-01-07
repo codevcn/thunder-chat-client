@@ -20,10 +20,11 @@ class ClientSocket {
       }
    }
 
-   setMessageOffset(messageId: number): void {
+   setMessageOffset(lastMsgTimestamp: Date, directChatId: number): void {
       this.socket.auth = {
          ...(this.socket.auth || {}),
-         msgOffset: messageId,
+         messageOffset: lastMsgTimestamp,
+         directChatId,
       }
    }
 }

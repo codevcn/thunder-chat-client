@@ -14,7 +14,7 @@ export const AppLayoutProvider = ({ children }: { children: React.ReactNode }) =
    const { toasts } = useToasterStore()
 
    useEffect(() => {
-      clientSocket.on(ESocketEvents.send_friend_request, (payload) => {
+      clientSocket.socket.on(ESocketEvents.send_friend_request, (payload) => {
          const { Profile, email } = payload
          toast(() => (
             <div className="flex items-center justify-between gap-x-3">

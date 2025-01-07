@@ -1,7 +1,7 @@
-export class ConversationError extends Error {
+export class DirectChatError extends Error {
    constructor(message: string) {
       super(message)
 
-      this.name = "Conversation Error"
+      this.name = "Direct Chat Error"
    }
 }

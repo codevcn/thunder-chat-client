@@ -1,6 +1,6 @@
 "use client"
 
-import { Conversations } from "./conversations"
+import { DirectChats } from "./conversations"
 import { Chat } from "./chat"
 import { Flex } from "antd"
 import { useEffect } from "react"
@@ -33,7 +33,7 @@ const ConversationPage = () => {
          <Navigation />
 
          <Flex className="w-full relative z-20">
-            <Conversations />
+            <DirectChats />
 
             <Chat />
          </Flex>

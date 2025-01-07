@@ -1,11 +1,11 @@
-import { getFetchMessages } from "@/apis/messages"
+import { getfetchDirectMessages } from "@/apis/messages"
 
 // >>> fix this: remove
 import { dev_test_values } from "@/providers/test"
 
 class MessageService {
-   async fetchMessages(conversationId: number) {
-      // const { data } = await getFetchMessages(conversationId)
+   async fetchDirectMessages(conversationId: number) {
+      // const { data } = await getfetchDirectMessages(conversationId)
       // return data
       return await dev_test_values.getTestMessages()
    }

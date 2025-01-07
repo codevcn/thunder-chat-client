@@ -1,24 +1,28 @@
 import { clientSocket } from "@/configs/socket"
 import { MAX_TIMEOUT_MESSAGING } from "@/utils/constants"
 import { ESocketEvents } from "@/utils/events/socket-events"
-import type { TUnknownFunction } from "@/utils/types"
+import type { TSendDirectMessageErrorRes, TSuccess } from "@/utils/types"
 
 class ChattingService {
-   async sendMessage<P>(
+   async sendMessage(
       receiverId: number,
       message: string,
-      conversationId: number,
+      directChatId: number,
       token: string,
-      callback: TUnknownFunction<P, void>
+      timestamp: Date,
+      callback: (data: TSendDirectMessageErrorRes | TSuccess) => void
    ): Promise<void> {
       clientSocket.socket
          .timeout(MAX_TIMEOUT_MESSAGING)
          .emit(
-            ESocketEvents.send_message_1v1,
-            { message, receiverId, conversationId, token },
+            ESocketEvents.send_message_direct,
+            { message, receiverId, directChatId, token, timestamp },
             (error, data) => {
                if (error) {
-                  this.sendMessage(receiverId, message, conversationId, token, callback)
+                  console.log(">>> try again send message:", token)
+                  this.sendMessage(receiverId, message, directChatId, token, timestamp, callback)
+               } else {
+                  callback(data)
                }
             }
          )

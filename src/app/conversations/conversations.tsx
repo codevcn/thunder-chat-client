@@ -7,26 +7,24 @@ import dayjs from "dayjs"
 import { useDebounce } from "@/hooks/debounce"
 import type { TUserWithProfile } from "@/utils/types"
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
-import { searchConversationThunk } from "@/redux/conversations/conversations-thunks"
+import { startDirectChatThunk } from "@/redux/conversations/conversations-thunks"
 import { ChangeEvent, Dispatch, SetStateAction, useRef, useState } from "react"
 import validator from "validator"
 import { Spinner } from "@/components/spinner"
 import { IconButton } from "@/components/icon-button"
-import { clearSearchResult } from "@/redux/conversations/conversations-slice"
 import { useRouter } from "next/navigation"
-import { sortConversationsByPinned } from "@/redux/conversations/conversations-selectors"
-import { startConversationThunk } from "@/redux/messages/messages.thunk"
+import { sortDirectChatsByPinned } from "@/redux/conversations/conversations-selectors"
 import { unwrapResult } from "@reduxjs/toolkit"
 import { MAX_NUMBER_OF_PINNED_CONVERSATIONS } from "@/utils/constants"
 import { PinnedConvIcon } from "@/components/icons"
-import { TSearchConversationParams } from "@/apis/types"
+import { TSearchDirectChatParams } from "@/apis/types"
 
 type TResultProps = {
    convResult: TUserWithProfile
-   handleStartConversation: (id: number) => void
+   handleStartDirectChat: (id: number) => void
 }
 
-const Result = ({ convResult, handleStartConversation }: TResultProps) => {
+const Result = ({ convResult, handleStartDirectChat }: TResultProps) => {
    const { Profile, id } = convResult
    const fullName = Profile?.fullName || "Unnamed"
 
@@ -34,7 +32,7 @@ const Result = ({ convResult, handleStartConversation }: TResultProps) => {
       <Tooltip title="Click to open a chat" placement="right">
          <Flex
             className="w-full p-3 py-2 cursor-pointer hover:bg-regular-hover-card-cl rounded-xl gap-3"
-            onClick={() => handleStartConversation(id)}
+            onClick={() => handleStartDirectChat(id)}
          >
             <div>
                {Profile && Profile.avatar ? (
@@ -57,15 +55,15 @@ type TResultsProps = {
 }
 
 const Results = ({ loading }: TResultsProps) => {
-   const { searchResults } = useAppSelector(({ conversations }) => conversations)
+   const [searchResults, setSearchResults] = useState<TUserWithProfile[] | null>(null)
    const router = useRouter()
    const dispatch = useAppDispatch()
 
-   const startConversation = async (id: number) => {
-      const res = await dispatch(startConversationThunk({ recipientId: id }))
+   const startDirectChat = async (id: number) => {
+      const res = await dispatch(startDirectChatThunk({ recipientId: id }))
       const conv_data = unwrapResult(res)
 
-      router.push("/conversations/" + conv_data.id)
+      router.push("/directChats/" + conv_data.id)
    }
 
    return searchResults && searchResults.length > 0 ? (
@@ -73,7 +71,7 @@ const Results = ({ loading }: TResultsProps) => {
          <Result
             key={result.id}
             convResult={result}
-            handleStartConversation={() => startConversation(result.id)}
+            handleStartDirectChat={() => startDirectChat(result.id)}
          />
       ))
    ) : (
@@ -83,8 +81,8 @@ const Results = ({ loading }: TResultsProps) => {
    )
 }
 
-const ConversationCards = () => {
-   const conversations = useAppSelector(sortConversationsByPinned)
+const DirectChatCards = () => {
+   const directChats = useAppSelector(sortDirectChatsByPinned)
 
    const getPinIndexClass = (pinIndex: number): string => {
       switch (pinIndex) {
@@ -100,9 +98,9 @@ const ConversationCards = () => {
    }
 
    return (
-      conversations &&
-      conversations.length > 0 &&
-      conversations.map(({ id, avatar, lastMessageTime, pinIndex, subtitle, title }) => (
+      directChats &&
+      directChats.length > 0 &&
+      directChats.map(({ id, avatar, lastMessageTime, pinIndex, subtitle, title }) => (
          <div
             className={`flex gap-x-2 items-center px-3 py-3 w-full cursor-pointer hover:bg-regular-hover-card-cl rounded-xl ${getPinIndexClass(pinIndex)}`}
             key={id}
@@ -122,7 +120,7 @@ const ConversationCards = () => {
                   {pinIndex &&
                      pinIndex !== -1 &&
                      pinIndex <= MAX_NUMBER_OF_PINNED_CONVERSATIONS && (
-                        <Tooltip title="This conversation was pinned" placement="bottom">
+                        <Tooltip title="This directChat was pinned" placement="bottom">
                            <div>
                               <PinnedConvIcon className="h-[21px] w-[21px]" color="#766ac8" />
                            </div>
@@ -144,13 +142,13 @@ type TSearchProps = {
 const Search = ({ setIsTyping, setSearching, isTyping }: TSearchProps) => {
    const input_ref = useRef<HTMLInputElement>(null)
    const debounce = useDebounce(300)
-   const dispatch = useAppDispatch()
+   // const dispatch = useAppDispatch()
 
    const search = async (e: ChangeEvent<HTMLInputElement>) => {
       let search_value = e.target.value.trim()
       if (!search_value) return
 
-      let search_data: TSearchConversationParams = {}
+      let search_data: TSearchDirectChatParams = {}
 
       if (validator.isEmail(search_value)) {
          search_data.email = search_value
@@ -161,7 +159,7 @@ const Search = ({ setIsTyping, setSearching, isTyping }: TSearchProps) => {
       }
 
       setSearching(true)
-      await dispatch(searchConversationThunk(search_data))
+      // await dispatch(searchDirectChatThunk(search_data))
       setSearching(false)
    }
 
@@ -172,7 +170,7 @@ const Search = ({ setIsTyping, setSearching, isTyping }: TSearchProps) => {
 
    const clearInput = () => {
       if (input_ref.current?.value) input_ref.current.value = ""
-      dispatch(clearSearchResult({}))
+      // dispatch(clearSearchResult({}))
    }
 
    return (
@@ -215,7 +213,7 @@ const Search = ({ setIsTyping, setSearching, isTyping }: TSearchProps) => {
    )
 }
 
-export const Conversations = () => {
+export const DirectChats = () => {
    const [isTyping, setIsTyping] = useState<boolean>(false)
    const [searching, setSearching] = useState<boolean>(false)
 
@@ -237,7 +235,7 @@ export const Conversations = () => {
             <div
                className={`${isTyping ? "animate-zoom-fade-out" : "animate-zoom-fade-in"} !flex flex-col w-full absolute top-0 left-0 z-30 px-2 h-full overflow-x-hidden overflow-y-auto styled-scrollbar`}
             >
-               <ConversationCards />
+               <DirectChatCards />
             </div>
          </div>
       </Flex>

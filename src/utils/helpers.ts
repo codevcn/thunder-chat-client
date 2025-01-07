@@ -1,12 +1,12 @@
 import dayjs from "dayjs"
-import { THE_LAST_CONVERSATION_ID_NAME } from "./constants"
+import { THE_LAST_DIRECT_CHAT_ID_NAME } from "./constants"
 
-export const storeConversationIdAtLocal = (id: string) => {
-   localStorage.setItem(THE_LAST_CONVERSATION_ID_NAME, id)
+export const storeDirectChatIdAtLocal = (id: string) => {
+   localStorage.setItem(THE_LAST_DIRECT_CHAT_ID_NAME, id)
 }
 
-export const getConversationIdFromLocal = () => {
-   return localStorage.getItem(THE_LAST_CONVERSATION_ID_NAME)
+export const getDirectChatIdFromLocal = () => {
+   return localStorage.getItem(THE_LAST_DIRECT_CHAT_ID_NAME)
 }
 
 export const setLastSeen = (date: string) => {

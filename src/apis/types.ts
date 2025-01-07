@@ -1,23 +1,23 @@
 import { EFriendRequestStatus } from "@/utils/enums"
-import type { TConversation, TUserWithProfile } from "@/utils/types"
+import type { TDirectChat, TUserWithProfile } from "@/utils/types"
 
 export type TLoginUserParams = {
    email: string
    password: string
 }
 
-export type TSearchConversationParams = {
+export type TSearchDirectChatParams = {
    email?: string
    username?: string
    nameOfUser?: string
 }
 
-export type TStartConversationParams = {
+export type TStartDirectChatParams = {
    recipientId: number
 }
 
-export type T1v1Conversation = TConversation & {
-   recipient: TUserWithProfile
+export type TDirectChatData = TDirectChat & {
+   Recipient: TUserWithProfile
 }
 
 export type TRegisterUserParams = {

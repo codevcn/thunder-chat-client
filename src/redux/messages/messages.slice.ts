@@ -1,22 +1,18 @@
-import type { TConvMessage, TConversation, TMessage, TUserWithProfile } from "@/utils/types"
+import type { TDirectMessage } from "@/utils/types"
 import { PayloadAction, createSlice } from "@reduxjs/toolkit"
-import {
-   fetchConversationThunk,
-   fetchMessagesThunk,
-   startConversationThunk,
-} from "./messages.thunk"
-import type { T1v1Conversation } from "@/apis/types"
+import { fetchDirectMessagesThunk } from "./messages.thunk"
+import type { TDirectChatData } from "@/apis/types"
+import type { TNewDirectMessage } from "@/utils/events/types"
+import { fetchDirectChatThunk, startDirectChatThunk } from "../conversations/conversations-thunks"
 
 type TMessagesState = {
-   conversation: TConversation | null
-   recipient: TUserWithProfile | null
-   messages: TConvMessage[] | null
+   directChat: TDirectChatData | null
+   messages: TDirectMessage[] | null
    fetchedMsgs: boolean
 }
 
 const initialState: TMessagesState = {
-   conversation: null,
-   recipient: null,
+   directChat: null,
    messages: null,
    fetchedMsgs: false,
 }
@@ -25,34 +21,31 @@ export const messagesSlice = createSlice({
    initialState,
    name: "messages",
    reducers: {
-      pushNewMessage: (state, action: PayloadAction<TConvMessage>) => {
-         state.messages?.push(action.payload)
+      pushNewMessages: (state, action: PayloadAction<TDirectMessage[]>) => {
+         state.messages?.push(...action.payload)
       },
    },
    extraReducers: (builder) => {
       builder.addCase(
-         startConversationThunk.fulfilled,
-         (state, action: PayloadAction<T1v1Conversation>) => {
-            const { recipient, ...conversation } = action.payload
-
-            state.conversation = conversation
-            state.recipient = recipient
+         startDirectChatThunk.fulfilled,
+         (state, action: PayloadAction<TDirectChatData>) => {
+            state.directChat = action.payload
          }
       )
       builder.addCase(
-         fetchConversationThunk.fulfilled,
-         (state, action: PayloadAction<T1v1Conversation>) => {
-            const { recipient, ...conversation } = action.payload
-
-            state.conversation = conversation
-            state.recipient = recipient
+         fetchDirectChatThunk.fulfilled,
+         (state, action: PayloadAction<TDirectChatData>) => {
+            state.directChat = action.payload
          }
       )
-      builder.addCase(fetchMessagesThunk.fulfilled, (state, action: PayloadAction<TMessage[]>) => {
-         state.messages = action.payload
-         state.fetchedMsgs = true
-      })
+      builder.addCase(
+         fetchDirectMessagesThunk.fulfilled,
+         (state, action: PayloadAction<TNewDirectMessage[]>) => {
+            state.messages = action.payload
+            state.fetchedMsgs = true
+         }
+      )
    },
 })
 
-export const { pushNewMessage } = messagesSlice.actions
+export const { pushNewMessages } = messagesSlice.actions

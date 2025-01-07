@@ -1,4 +1,5 @@
 import { AxiosError } from "axios"
+import type { TNewDirectMessage } from "./events/types"
 
 // DB entities
 export type TUser = {
@@ -23,7 +24,7 @@ export type TUserWithProfile = TUser & { Profile: Omit<TProfile, "id" | "userId"
 
 export type TUserWithoutPassword = Omit<TUser, "password">
 
-export type TConversation = {
+export type TDirectChat = {
    id: number
    createdAt: string
    creatorId: number
@@ -35,15 +36,16 @@ export type TMessage = {
    content: string
    createdAt: string
    authorId: number
-   conversationId: number
+   directChatId: number | null
+   groupChatId: number | null
 }
 
 // Common types
-export type TConvMessage = TMessage & {
+export type TDirectMessage = TNewDirectMessage & {
    isNewMsg?: boolean
 }
 
-export type TConversationWithMessages = TConversation & { messages: TMessage[] }
+export type TDirectChatWithMessages = TDirectChat & { messages: TMessage[] }
 
 export type THttpErrorResBody =
    | {
@@ -66,7 +68,7 @@ export type TSuccess = {
    success: boolean // always true
 }
 
-export type TConversationCard = {
+export type TDirectChatCard = {
    id: number
    avatar: string
    title: string
@@ -80,3 +82,8 @@ export type TUnknownObject = {
 }
 
 export type TUnknownFunction<P, R> = (...args: P[]) => R
+
+export type TSendDirectMessageErrorRes = {
+   isError: boolean
+   message: string
+}

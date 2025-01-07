@@ -9,8 +9,7 @@ import { faMagnifyingGlass, faPhone, faEllipsisVertical } from "@fortawesome/fre
 import { IconButton } from "@/components/icon-button"
 import { Messages } from "./messages"
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
-import { useEffect, useState, memo, ChangeEvent, useRef } from "react"
-import { fetchConversationThunk } from "@/redux/messages/messages.thunk"
+import { useEffect, useState, memo, ChangeEvent } from "react"
 import { useSearchParams } from "next/navigation"
 import validator from "validator"
 import {
@@ -24,9 +23,11 @@ import { InfoBar } from "./infoBar"
 import { openInfoBar } from "@/redux/conversations/conversations-slice"
 import { setLastSeen } from "@/utils/helpers"
 import { chattingService } from "@/services/chatting.service"
-import { TextAreaRef } from "antd/es/input/TextArea"
-import type { TConversation, TSuccess } from "@/utils/types"
+import type { TDirectChat, TSuccess } from "@/utils/types"
 import toast from "react-hot-toast"
+import { fetchDirectChatThunk } from "@/redux/conversations/conversations-thunks"
+import { clientSocket } from "@/configs/socket"
+import { useUser } from "@/hooks/user"
 
 type THeaderProps = {
    infoBarIsOpened: boolean
@@ -34,7 +35,7 @@ type THeaderProps = {
 }
 
 const Header = ({ infoBarIsOpened, onOpenInfoBar }: THeaderProps) => {
-   const { recipient } = useAppSelector(({ messages }) => messages)
+   const recipient = useAppSelector(({ messages }) => messages.directChat?.Recipient)
 
    return (
       <Flex
@@ -110,17 +111,13 @@ const Header = ({ infoBarIsOpened, onOpenInfoBar }: THeaderProps) => {
 }
 
 type TTypeMessageBarProps = {
-   conversation: TConversation
+   directChat: TDirectChat
 }
 
-type TSendMessage1v1ErrorRes = {
-   isError: boolean
-   message: string
-}
-
-const TypeMessageBar = memo(({ conversation }: TTypeMessageBarProps) => {
+const TypeMessageBar = memo(({ directChat }: TTypeMessageBarProps) => {
    const { fetchedMsgs } = useAppSelector(({ messages }) => messages)
    const [message, setMessage] = useState<string>("")
+   const user = useUser()
 
    const typing = async (e: ChangeEvent<HTMLTextAreaElement>) => {
       const msg = e.target.value
@@ -135,13 +132,14 @@ const TypeMessageBar = memo(({ conversation }: TTypeMessageBarProps) => {
    const sendMessage = async () => {
       const msgToSend = message?.trim()
       if (!msgToSend) return
-      const { recipientId, id } = conversation
+      const { recipientId, id, creatorId } = directChat
       chattingService.sendMessage(
-         recipientId,
+         user!.id === recipientId ? creatorId : recipientId,
          msgToSend,
          id,
          crypto.randomUUID(),
-         (res: TSendMessage1v1ErrorRes | TSuccess) => {
+         new Date(),
+         (res) => {
             if ("isError" in res && res.isError) {
                toast.error(res.message)
             }
@@ -216,11 +214,29 @@ const TypeMessageBar = memo(({ conversation }: TTypeMessageBarProps) => {
    )
 })
 
+const TestDisconnectSocket = () => {
+   const handleDisOrConnect = async () => {
+      if (clientSocket.socket.connected) {
+         clientSocket.socket.disconnect()
+      } else {
+         clientSocket.socket.connect()
+      }
+   }
+
+   return (
+      <div className="fixed top-0 left-1/2">
+         <button className="px-3 py-2 bg-black text-white" onClick={handleDisOrConnect}>
+            Dis / connect
+         </button>
+      </div>
+   )
+}
+
 export const Chat = () => {
-   const { conversation } = useAppSelector(({ messages }) => messages)
+   const { directChat } = useAppSelector(({ messages }) => messages)
    const dispatch = useAppDispatch()
    const searchParams = useSearchParams()
-   const [conversationId, setConversationId] = useState<number>()
+   const [directChatId, setDirectChatId] = useState<number>()
    const { infoBarIsOpened } = useAppSelector(({ conversations }) => conversations)
 
    const hanldeOpenInfoBar = async (open: boolean) => {
@@ -228,39 +244,38 @@ export const Chat = () => {
    }
 
    useEffect(() => {
-      const conversationId = searchParams.get("cid")
-      if (conversationId && validator.isNumeric(conversationId)) {
-         const conv_id = parseInt(conversationId)
+      const directChatId = searchParams.get("cid")
+      if (directChatId && validator.isNumeric(directChatId)) {
+         const conv_id = parseInt(directChatId)
 
-         dispatch(fetchConversationThunk(conv_id))
+         dispatch(fetchDirectChatThunk(conv_id))
 
-         setConversationId(conv_id)
+         setDirectChatId(conv_id)
       }
    }, [])
 
    return (
-      conversationId &&
-      conversation && (
+      directChatId &&
+      directChat && (
          <Flex className="screen-medium-chatting:w-chat-n-info-container-width w-full box-border overflow-hidden relative">
             <Flex
                className="Chatting w-full box-border h-screen bg-no-repeat bg-transparent bg-cover bg-center relative"
                vertical
                align="center"
             >
+               <TestDisconnectSocket />
                <Header infoBarIsOpened={infoBarIsOpened} onOpenInfoBar={hanldeOpenInfoBar} />
-
                <Flex
                   className={`${infoBarIsOpened ? "screen-large-chatting:translate-x-slide-chat-container screen-large-chatting:w-msgs-container-width" : "translate-x-0 w-full"} h-chat-container-height transition duration-300 ease-slide-info-bar-timing overflow-hidden`}
                   vertical
                   justify="space-between"
                   align="center"
                >
-                  <Messages conversationId={conversationId} />
+                  <Messages directChatId={directChatId} />
 
-                  <TypeMessageBar conversation={conversation} />
+                  <TypeMessageBar directChat={directChat} />
                </Flex>
             </Flex>
-
             <InfoBar />
          </Flex>
       )
