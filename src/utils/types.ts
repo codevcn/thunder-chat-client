@@ -1,5 +1,5 @@
-import { AxiosError } from "axios"
-import type { TNewDirectMessage } from "./events/types"
+import type { AxiosError, HttpStatusCode } from "axios"
+import type { TChattingPayload } from "./events/types"
 
 // DB entities
 export type TUser = {
@@ -31,21 +31,20 @@ export type TDirectChat = {
    recipientId: number
 }
 
-export type TMessage = {
+export type TDirectMessage = {
    id: number
-   content: string
    createdAt: string
+   content: string
    authorId: number
-   directChatId: number | null
-   groupChatId: number | null
+   directChatId: number
 }
 
 // Common types
-export type TDirectMessage = TNewDirectMessage & {
+export type TStateDirectMessage = TDirectMessage & {
    isNewMsg?: boolean
 }
 
-export type TDirectChatWithMessages = TDirectChat & { messages: TMessage[] }
+export type TDirectChatWithMessages = TDirectChat & { messages: TDirectMessage[] }
 
 export type THttpErrorResBody =
    | {
@@ -86,4 +85,16 @@ export type TUnknownFunction<P, R> = (...args: P[]) => R
 export type TSendDirectMessageErrorRes = {
    isError: boolean
    message: string
+}
+
+export type TOfflineMessage = TChattingPayload
+
+export type TSendMessageCallback = (data: TSendDirectMessageErrorRes | TSuccess) => void
+
+export type THandledAxiosError = {
+   originalError: unknown
+   statusCode: HttpStatusCode
+   message: string
+   isUserError: boolean
+   clientMessage: string
 }

@@ -1,13 +1,10 @@
-import { getfetchDirectMessages } from "@/apis/messages"
-
-// >>> fix this: remove
-import { dev_test_values } from "@/providers/test"
+import { getFetchDirectMessages } from "@/apis/messages"
+import type { TGetDirectMessagesData, TGetDirectMsgsParamsDTO } from "@/apis/types"
 
 class MessageService {
-   async fetchDirectMessages(conversationId: number) {
-      // const { data } = await getfetchDirectMessages(conversationId)
-      // return data
-      return await dev_test_values.getTestMessages()
+   async fetchDirectMessages(params: TGetDirectMsgsParamsDTO): Promise<TGetDirectMessagesData> {
+      const { data } = await getFetchDirectMessages(params)
+      return data
    }
 }
 

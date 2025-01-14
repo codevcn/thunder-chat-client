@@ -29,6 +29,9 @@ export const AppLayoutProvider = ({ children }: { children: React.ReactNode }) =
             </div>
          ))
       })
+      return () => {
+         clientSocket.socket.off(ESocketEvents.send_friend_request)
+      }
    }, [])
 
    const limitDisplayedToasts = () => {

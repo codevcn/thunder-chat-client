@@ -23,7 +23,7 @@ import { InfoBar } from "./infoBar"
 import { openInfoBar } from "@/redux/conversations/conversations-slice"
 import { setLastSeen } from "@/utils/helpers"
 import { chattingService } from "@/services/chatting.service"
-import type { TDirectChat, TSuccess } from "@/utils/types"
+import type { TDirectChat } from "@/utils/types"
 import toast from "react-hot-toast"
 import { fetchDirectChatThunk } from "@/redux/conversations/conversations-thunks"
 import { clientSocket } from "@/configs/socket"
@@ -139,9 +139,12 @@ const TypeMessageBar = memo(({ directChat }: TTypeMessageBarProps) => {
          id,
          crypto.randomUUID(),
          new Date(),
-         (res) => {
-            if ("isError" in res && res.isError) {
-               toast.error(res.message)
+         (data) => {
+            if ("success" in data && data.success) {
+               chattingService.setAcknowledgmentFlag(true)
+               chattingService.recursiveSendingQueueMessages()
+            } else if ("isError" in data && data.isError) {
+               console.error(">>> error:", data)
             }
          }
       )
@@ -246,11 +249,9 @@ export const Chat = () => {
    useEffect(() => {
       const directChatId = searchParams.get("cid")
       if (directChatId && validator.isNumeric(directChatId)) {
-         const conv_id = parseInt(directChatId)
-
-         dispatch(fetchDirectChatThunk(conv_id))
-
-         setDirectChatId(conv_id)
+         const convId = parseInt(directChatId)
+         setDirectChatId(convId)
+         dispatch(fetchDirectChatThunk(convId))
       }
    }, [])
 

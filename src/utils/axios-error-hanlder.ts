@@ -1,6 +1,6 @@
 import { AxiosError } from "axios"
 import { MAX_LEN_OF_ERROR_MESSAGE } from "./constants"
-import type { THttpErrorResBody } from "./types"
+import type { THandledAxiosError, THttpErrorResBody } from "./types"
 import { EInvalidHttpErrMsgs, EServerErrMsgs } from "./enums"
 import { HttpStatusCode } from "axios"
 
@@ -8,12 +8,12 @@ class AxiosErrorHanlder {
    handleHttpError(
       originalError: unknown | Error | AxiosError<THttpErrorResBody>,
       clientMessage: string = "Unknown Error!"
-   ) {
+   ): THandledAxiosError {
       let statusCode: HttpStatusCode = HttpStatusCode.InternalServerError
       let message: string = clientMessage
       let isUserError: boolean = false
 
-      if (originalError instanceof AxiosError) {
+      if (this.isAxiosError(originalError)) {
          const response_of_error = originalError.response
 
          if (response_of_error) {
@@ -52,6 +52,10 @@ class AxiosErrorHanlder {
          isUserError,
          clientMessage,
       }
+   }
+
+   isAxiosError<T = any, D = any>(error: any): error is AxiosError<T, D> {
+      return error instanceof AxiosError
    }
 }
 

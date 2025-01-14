@@ -1,6 +1,9 @@
 import { client_axios } from "@/configs/axios"
-import type { TMessage } from "@/utils/types"
 import { requestConfig } from "./init"
+import type { TGetDirectMessagesData, TGetDirectMsgsParamsDTO } from "./types"
 
-export const getfetchDirectMessages = (directChatId: number) =>
-   client_axios.get<TMessage[]>("message/messages/" + directChatId, requestConfig)
+export const getFetchDirectMessages = (params: TGetDirectMsgsParamsDTO) =>
+   client_axios.get<TGetDirectMessagesData>("message/get-direct-messages/", {
+      ...requestConfig,
+      params,
+   })

@@ -1,14 +1,19 @@
-import type { TSendDirectMessageErrorRes, TSuccess, TUserWithProfile } from "../types"
+import type {
+   TDirectMessage,
+   TSendDirectMessageErrorRes,
+   TSuccess,
+   TUserWithProfile,
+} from "../types"
 import { ESocketEvents, ESocketInitEvents } from "./socket-events"
-import type { TChattingPayload, TNewDirectMessage, TWsErrorResponse } from "./types"
+import type { TChattingPayload, TWsErrorResponse } from "./types"
 
 export interface IListenSocketEvents {
-   [ESocketInitEvents.client_connected]: (message: string) => void
+   [ESocketInitEvents.connect]: () => void
    [ESocketInitEvents.connect_error]: (payload: unknown) => void
    [ESocketEvents.error]: (error: TWsErrorResponse) => void
-   [ESocketEvents.send_message_direct]: (newMessage: TNewDirectMessage) => void
+   [ESocketEvents.send_message_direct]: (newMessage: TDirectMessage) => void
    [ESocketEvents.send_friend_request]: (sender: TUserWithProfile) => void
-   [ESocketEvents.recovered_connection]: (messages: TNewDirectMessage[]) => void
+   [ESocketEvents.recovered_connection]: (messages: TDirectMessage[]) => void
 }
 
 export interface IEmitSocketEvents {

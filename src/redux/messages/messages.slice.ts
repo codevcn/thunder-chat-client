@@ -1,13 +1,12 @@
-import type { TDirectMessage } from "@/utils/types"
-import { PayloadAction, createSlice } from "@reduxjs/toolkit"
+import type { TStateDirectMessage } from "@/utils/types"
+import { PayloadAction, createSlice, current } from "@reduxjs/toolkit"
 import { fetchDirectMessagesThunk } from "./messages.thunk"
-import type { TDirectChatData } from "@/apis/types"
-import type { TNewDirectMessage } from "@/utils/events/types"
+import type { TDirectChatData, TGetDirectMessagesData } from "@/apis/types"
 import { fetchDirectChatThunk, startDirectChatThunk } from "../conversations/conversations-thunks"
 
 type TMessagesState = {
    directChat: TDirectChatData | null
-   messages: TDirectMessage[] | null
+   messages: TStateDirectMessage[] | null
    fetchedMsgs: boolean
 }
 
@@ -21,8 +20,12 @@ export const messagesSlice = createSlice({
    initialState,
    name: "messages",
    reducers: {
-      pushNewMessages: (state, action: PayloadAction<TDirectMessage[]>) => {
-         state.messages?.push(...action.payload)
+      pushNewMessages: (state, action: PayloadAction<TStateDirectMessage[]>) => {
+         const currentMessages = current(state).messages
+         state.messages =
+            currentMessages && currentMessages.length > 0
+               ? [...currentMessages, ...action.payload]
+               : action.payload
       },
    },
    extraReducers: (builder) => {
@@ -40,8 +43,12 @@ export const messagesSlice = createSlice({
       )
       builder.addCase(
          fetchDirectMessagesThunk.fulfilled,
-         (state, action: PayloadAction<TNewDirectMessage[]>) => {
-            state.messages = action.payload
+         (state, action: PayloadAction<TGetDirectMessagesData>) => {
+            const currentMessages = current(state).messages
+            state.messages =
+               currentMessages && currentMessages.length > 0
+                  ? [...action.payload.directMessages, ...currentMessages]
+                  : action.payload.directMessages
             state.fetchedMsgs = true
          }
       )

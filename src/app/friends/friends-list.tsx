@@ -6,7 +6,7 @@ import { Spinner } from "@/components/spinner"
 import { useUser } from "@/hooks/user"
 import { friendService } from "@/services/friend.service"
 import axiosErrorHanlder from "@/utils/axios-error-hanlder"
-import { handleTimeDifference } from "@/utils/date-time"
+import { displayTimeDifference } from "@/utils/date-time"
 import { EEventNames } from "@/utils/enums"
 import { useEffect, useMemo, useRef, useState } from "react"
 import toast from "react-hot-toast"
@@ -37,7 +37,7 @@ const FriendCard = ({ friend }: TFriendCardProps) => {
             </div>
          </div>
          <div className="text-regular-placeholder-text-cl italic">
-            {`Was friend ${handleTimeDifference(createdAt)}`}
+            {`Was friend ${displayTimeDifference(createdAt)}`}
          </div>
       </div>
    )
@@ -78,36 +78,44 @@ export const FriendsList = () => {
    const [friends, setFriends] = useState<TGetFriendsData[]>([])
    const [loading, setLoading] = useState<TLoading | null>(null)
    const user = useUser()
-   const tempFlagUseEffect = useRef<boolean>(true)
+   const tempFlagUseEffectRef = useRef<boolean>(true)
+   const mountedRef = useRef<boolean>(true)
 
    const filteredFriends = useMemo(() => {
       return friends
    }, [friends])
 
-   const getFriendsHandler = async (lastFriendRequestId?: number) => {
+   const getFriendsHandler = async (lastFriendId?: number) => {
       setLoading("friends")
+      let friends: TGetFriendsData[] | null = null
       try {
-         const result = await friendService.getFriends({
-            limit: EPaginations.MAX_FRIENDS_PER_PAGE,
+         friends = await friendService.getFriends({
+            limit: EPaginations.FRIENDS_PAGE_SIZE,
             userId: user!.id,
-            lastFriendRequestId,
+            lastFriendId,
          })
-         if (result && result.length > 0) {
-            setFriends((pre) => [...pre, ...result])
-         } else {
-            customEventManager.dispatchEvent(EEventNames.LAST_FRIEND_REQUEST)
-         }
       } catch (error) {
          console.error(">>> error:", error)
          toast.error(axiosErrorHanlder.handleHttpError(error).message)
       }
-      setLoading(null)
+      if (mountedRef.current) {
+         if (friends && friends.length > 0) {
+            setFriends((pre) => [...pre, ...friends])
+         } else {
+            customEventManager.dispatchEvent(EEventNames.LAST_FRIEND_REQUEST)
+         }
+         setLoading(null)
+      }
    }
 
    useEffect(() => {
-      if (tempFlagUseEffect.current) {
-         tempFlagUseEffect.current = false
+      mountedRef.current = true
+      if (tempFlagUseEffectRef.current) {
+         tempFlagUseEffectRef.current = false
          getFriendsHandler()
+      }
+      return () => {
+         mountedRef.current = false
       }
    }, [])
 

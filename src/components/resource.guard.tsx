@@ -9,7 +9,11 @@ import { usePathname } from "next/navigation"
 import { useAuth } from "@/hooks/auth"
 import { useUser } from "@/hooks/user"
 
-const Guard = ({ children }: { children: JSX.Element }) => {
+type TGuardProps = {
+   children: JSX.Element
+}
+
+const Guard = ({ children }: TGuardProps) => {
    const { authStatus } = useAuth()
    const user = useUser()
    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
@@ -33,13 +37,12 @@ const Guard = ({ children }: { children: JSX.Element }) => {
    return <AppLoading />
 }
 
-export const RouteGuard = ({
-   children,
-   nonGuardRoutes,
-}: {
+type TRouteGuardProps = {
    children: JSX.Element
    nonGuardRoutes: string[]
-}) => {
+}
+
+export const RouteGuard = ({ children, nonGuardRoutes }: TRouteGuardProps) => {
    if (nonGuardRoutes.includes(usePathname())) {
       return children
    }

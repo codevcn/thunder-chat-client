@@ -13,15 +13,6 @@ export const setLastSeen = (date: string) => {
    return dayjs(date).format("MM/DD/YYYY, h:mm A")
 }
 
-/**
- * function to set routes don't need guard
- * @param routes are routes start with letter "/"
- * @returns routes
- */
-export const setNonGuardRoutes = (...routes: string[]) => {
-   return routes
-}
-
 export function isValueInEnum<T extends object>(value: string, enumObject: T): boolean {
    return Object.values(enumObject).includes(value)
 }

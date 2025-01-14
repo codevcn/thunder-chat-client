@@ -1,5 +1,5 @@
-import { EFriendRequestStatus } from "@/utils/enums"
-import type { TDirectChat, TUserWithProfile } from "@/utils/types"
+import type { EFriendRequestStatus, ESortTypes } from "@/utils/enums"
+import type { TDirectChat, TDirectMessage, TUserWithProfile } from "@/utils/types"
 
 export type TLoginUserParams = {
    email: string
@@ -68,11 +68,23 @@ export type TGetFriendsData = {
 export type TGetFriendsParams = {
    userId: number
    limit: number
-   lastFriendRequestId?: number
+   lastFriendId?: number
 }
 
 export type TSearchUsersParams = {
    keyword: string
    limit: number
    lastUserId?: number
+}
+
+export type TGetDirectMsgsParamsDTO = {
+   msgTime: Date
+   directChatId: number
+   limit: number
+   sortType: ESortTypes
+}
+
+export type TGetDirectMessagesData = {
+   hasMoreMessages: boolean
+   directMessages: TDirectMessage[]
 }

@@ -1,6 +1,5 @@
 import dayjs from "dayjs"
-import type { TDirectChatCard, TMessage } from "@/utils/types"
-import { TNewDirectMessage } from "@/utils/events/types"
+import type { TDirectChatCard, TDirectMessage } from "@/utils/types"
 
 const getQueryStringWithPathname = () => {
    // Lấy URL hiện tại
@@ -35,9 +34,9 @@ const random_a_number = (min: number, max: number): number => {
    return Math.floor(Math.random() * (max - min + 1) + min)
 }
 
-const generate_messages = (len: number): TMessage[] => {
+const generate_messages = (len: number): TDirectMessage[] => {
    const sequence = Array.from(Array(len).keys())
-   return sequence.map<TMessage>((_, idx) => ({
+   return sequence.map<TDirectMessage>((_, idx) => ({
       authorId: random_a_number(1, 100),
       content: random_text(20),
       directChatId: random_a_number(1, 100),
@@ -59,7 +58,7 @@ const random_between_two_numbers = (num_1: number, num_2: number) => {
    return Math.floor(Math.random() * (num_2 - num_1 + 1) + num_1)
 }
 
-const unsorted_messages: TNewDirectMessage[] = [
+const unsorted_messages: TDirectMessage[] = [
    {
       authorId: 1,
       content: "vpYC0qntcB3yswf9 L8l",
@@ -289,7 +288,7 @@ type TInvalidMessages = {
    item: null | object
 }
 
-const check_valid_messages = (list: TMessage[]): TInvalidMessages => {
+const check_valid_messages = (list: TDirectMessage[]): TInvalidMessages => {
    const valids = new Set()
    const first_item = list[0]
 
@@ -297,7 +296,7 @@ const check_valid_messages = (list: TMessage[]): TInvalidMessages => {
 
    for (let key in first_item) {
       for (let item of list) {
-         const val = item[key as keyof TMessage]
+         const val = item[key as keyof TDirectMessage]
          if (valids.has(val) && key !== "directChatId") {
             console.log(">>> count:", count)
             return { success: false, key, value: val, item }
@@ -424,7 +423,7 @@ const directChats: TDirectChatCard[] = [
    },
 ]
 
-const getTestMessages = async (): Promise<TNewDirectMessage[]> => {
+const getTestMessages = async (): Promise<TDirectMessage[]> => {
    await new Promise((resolve) => {
       setTimeout(() => {
          resolve("")

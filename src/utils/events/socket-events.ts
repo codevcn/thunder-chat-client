@@ -1,6 +1,6 @@
 export enum ESocketInitEvents {
-   client_connected = "client_connected",
    connect_error = "connect_error",
+   connect = "connect",
 }
 
 export enum ESocketEvents {

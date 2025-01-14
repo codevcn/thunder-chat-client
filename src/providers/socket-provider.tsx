@@ -7,18 +7,20 @@ import toast from "react-hot-toast"
 import { ESocketEvents, ESocketInitEvents } from "@/utils/events/socket-events"
 import { useAuth } from "@/hooks/auth"
 import { useUser } from "@/hooks/user"
+import { chattingService } from "@/services/chatting.service"
 
 export const SocketProvider = ({ children }: { children: JSX.Element }) => {
    const { authStatus } = useAuth()
    const user = useUser()
-   const tempFlagUseEffect = useRef<boolean>(true)
+   const tempFlagUseEffectRef = useRef<boolean>(true)
 
    useEffect(() => {
-      if (tempFlagUseEffect.current) {
-         tempFlagUseEffect.current = false
+      if (tempFlagUseEffectRef.current) {
+         tempFlagUseEffectRef.current = false
          if (authStatus === EAuthStatus.AUTHENTICATED && user) {
-            clientSocket.socket.on(ESocketInitEvents.client_connected, (payload) => {
+            clientSocket.socket.on(ESocketInitEvents.connect, () => {
                console.log(">>> Socket connected to server")
+               chattingService.sendOfflineMessages()
             })
 
             clientSocket.socket.on(ESocketInitEvents.connect_error, (error) => {
@@ -35,12 +37,11 @@ export const SocketProvider = ({ children }: { children: JSX.Element }) => {
          } else if (authStatus === EAuthStatus.UNAUTHENTICATED) {
             clientSocket.socket.disconnect()
          }
-
-         return () => {
-            clientSocket.socket.off(ESocketInitEvents.client_connected, () => {})
-            clientSocket.socket.off(ESocketInitEvents.connect_error, () => {})
-            clientSocket.socket.off(ESocketEvents.error, () => {})
-         }
+      }
+      return () => {
+         clientSocket.socket.off(ESocketInitEvents.connect)
+         clientSocket.socket.off(ESocketInitEvents.connect_error)
+         clientSocket.socket.off(ESocketEvents.error)
       }
    }, [authStatus])
 

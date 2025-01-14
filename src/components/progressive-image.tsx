@@ -22,12 +22,16 @@ export const ProgressiveImage = ({
    const [imgSrc, setImgSrc] = useState<string>()
 
    useEffect(() => {
+      let mounted: boolean = true
       const image = new Image()
-
       image.src = src
-
       image.onload = () => {
-         setImgSrc(image.src)
+         if (mounted) {
+            setImgSrc(image.src)
+         }
+      }
+      return () => {
+         mounted = false
       }
    }, [src])
 

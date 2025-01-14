@@ -1,6 +1,6 @@
 "use client"
 
-import { getUserByEmail } from "@/apis/user"
+import { client_axios } from "@/configs/axios"
 import { clientSocket } from "@/configs/socket"
 import { useUser } from "@/hooks/user"
 import { TUserWithProfile } from "@/utils/types"
@@ -21,22 +21,12 @@ const Account = () => {
    }, [])
 
    const test_api = async () => {
-      if (user) {
-         try {
-            setLoading(true)
-            const { data } = await getUserByEmail(user?.email)
-            setLoading(false)
-            console.log(">>> testing data >>>", data)
-            setData(data)
-         } catch (error) {
-            console.error(">>> testing error >>>", error)
-         }
+      try {
+         await client_axios.get("healthcheck")
+      } catch (error) {
+         console.error(">>> error:", error)
       }
    }
-
-   useEffect(() => {
-      test_api()
-   }, [user])
 
    const print = (value: string): string => {
       return '"' + value + '"'

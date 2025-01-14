@@ -6,7 +6,7 @@ import { Spinner } from "@/components/spinner"
 import { useUser } from "@/hooks/user"
 import { friendService } from "@/services/friend.service"
 import axiosErrorHanlder from "@/utils/axios-error-hanlder"
-import { handleTimeDifference } from "@/utils/date-time"
+import { displayTimeDifference } from "@/utils/date-time"
 import { EEventNames, EFriendRequestStatus } from "@/utils/enums"
 import {
    faArrowLeft,
@@ -56,7 +56,7 @@ const RequestCard = ({ req, loading, onFriendRequestActions, user }: TRequestCar
             <div className="h-fit">
                <div>
                   <span className="mb-1 font-bold">{Profile?.fullName || "Unnamed"}</span>
-                  <span className="text-sm text-regular-placeholder-text-cl">{` (${handleTimeDifference(createdAt)})`}</span>
+                  <span className="text-sm text-regular-placeholder-text-cl">{` (${displayTimeDifference(createdAt)})`}</span>
                </div>
                <div className="text-sm text-regular-placeholder-text-cl">
                   <span>{isSentRequest ? `Sent to ${email}` : `Received from ${email}`}</span>
@@ -128,7 +128,7 @@ const LoadMoreBtn = ({ onLoadMore, hidden }: TLoadMoreBtnProps) => {
          setIsLastRequest(true)
       })
       return () => {
-         customEventManager.off(EEventNames.LAST_FRIEND_REQUEST, () => {})
+         customEventManager.off(EEventNames.LAST_FRIEND_REQUEST)
       }
    }, [])
 
@@ -199,7 +199,8 @@ export const FriendRequests = () => {
    const [loading, setLoading] = useState<TLoading>(null)
    const user = useUser()
    const [filter, setFilter] = useState<EFilterLabels>(EFilterLabels.ALL)
-   const tempFlagUseEffect = useRef<boolean>(true)
+   const tempFlagUseEffectRef = useRef<boolean>(true)
+   const mountedRef = useRef<boolean>(true)
 
    const filterRequests = (requests: TGetFriendRequestsData[]): TGetFriendRequestsData[] => {
       switch (filter) {
@@ -220,27 +221,35 @@ export const FriendRequests = () => {
 
    const getFriendRequestsHandler = async (lastFriendRequestId?: number) => {
       setLoading("friend-requests")
+      let requests: TGetFriendRequestsData[] | null = null
       try {
-         const requestsResult = await friendService.getFriendRequests({
-            limit: EPaginations.MAX_FRIEND_REQUESTS_PER_PAGE,
+         requests = await friendService.getFriendRequests({
+            limit: EPaginations.FRIEND_REQUESTS_PAGE_SIZE,
             userId: user!.id,
             lastFriendRequestId,
          })
-         if (requestsResult && requestsResult.length > 0) {
-            setRequests((pre) => [...pre, ...requestsResult])
+      } catch (error) {
+         console.error(">>> error:", error)
+         toast.error(axiosErrorHanlder.handleHttpError(error).message)
+      }
+      if (mountedRef.current) {
+         if (requests && requests.length > 0) {
+            setRequests((pre) => [...pre, ...requests])
          } else {
             customEventManager.dispatchEvent(EEventNames.LAST_FRIEND_REQUEST)
          }
-      } catch (error) {
-         toast.error(axiosErrorHanlder.handleHttpError(error).message)
+         setLoading(null)
       }
-      setLoading(null)
    }
 
    useEffect(() => {
-      if (tempFlagUseEffect.current) {
-         tempFlagUseEffect.current = false
+      mountedRef.current = true
+      if (tempFlagUseEffectRef.current) {
+         tempFlagUseEffectRef.current = false
          getFriendRequestsHandler()
+      }
+      return () => {
+         mountedRef.current = false
       }
    }, [])
 

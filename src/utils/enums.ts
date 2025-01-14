@@ -5,9 +5,10 @@ export enum EAuthStatus {
 }
 
 export enum EPaginations {
-   MAX_FRIEND_REQUESTS_PER_PAGE = 5,
-   MAX_FRIENDS_PER_PAGE = 5,
-   MAX_SEARCH_USERS_PER_PAGE = 20,
+   FRIEND_REQUESTS_PAGE_SIZE = 5,
+   FRIENDS_PAGE_SIZE = 5,
+   SEARCH_USERS_PAGE_SIZE = 20,
+   DIRECT_MESSAGES_PAGE_SIZE = 20,
 }
 
 export enum EDirectChatErrMsgs {
@@ -19,7 +20,9 @@ export enum EInvalidHttpErrMsgs {
 }
 
 export enum EEventNames {
-   SCROLL_TO_BOTTOM_MSG = "SCROLL_TO_BOTTOM_MSG",
+   SCROLL_TO_BOTTOM_MSG_UI = "SCROLL_TO_BOTTOM_MSG:UI",
+   SCROLL_TO_BOTTOM_MSG_ACTION = "SCROLL_TO_BOTTOM_MSG:ACTION",
+   SCROLL_OUT_OF_BOTTOM = "SCROLL_OUT_OF_BOTTOM",
    LAST_FRIEND_REQUEST = "LAST_FRIEND_REQUEST",
 }
 
@@ -37,11 +40,6 @@ export enum EFriendRequestStatus {
    REJECTED = "REJECTED",
 }
 
-export enum ETimeGapOfStickyTimes {
-   IN_HOURS = 1,
-   IN_DAYS = 1,
-}
-
 export enum ETimeFormats {
    MMMM_DD_YYYY = "MMMM DD, YYYY",
    HH_mm = "HH:mm",
@@ -51,6 +49,11 @@ export enum ECommonStatus {
    SUCCESS = "success",
    FAIL = "fail",
    ERROR = "error",
+}
+
+export enum ESortTypes {
+   ASC = "ASC",
+   DESC = "DESC",
 }
 
 export enum HttpStatus {

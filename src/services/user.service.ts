@@ -6,7 +6,7 @@ class UserService {
    async searchUsers(keyword: string): Promise<TSearchUsersData[]> {
       const { data } = await getSearchUsers({
          keyword,
-         limit: EPaginations.MAX_SEARCH_USERS_PER_PAGE,
+         limit: EPaginations.SEARCH_USERS_PAGE_SIZE,
       })
       return data
    }

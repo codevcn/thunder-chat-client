@@ -1,0 +1,32 @@
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Document</title>
+   </head>
+
+   <body>
+      <div id="res"></div>
+      <br />
+      <button id="btn">plus</button>
+      <button id="add" onclick="addListener()">add listener</button>
+      <button id="rev">remove</button>
+      <script>
+         const arr = new Map()
+         let count = 0
+         const btn = document.getElementById("btn")
+         const addListener = () => {
+            const ref = (e) => {
+               count++
+               document.getElementById("res").innerHTML = "oke" + count
+            }
+            arr.set("oke", ref)
+            btn.addEventListener("click", arr.get("oke"))
+         }
+         const rev = document.getElementById("rev")
+         rev.addEventListener("click", () => {
+            btn.removeEventListener("click", arr.get("oke"))
+         })
+      </script>
+   </body>
+</html>

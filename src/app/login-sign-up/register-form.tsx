@@ -11,7 +11,7 @@ import {
    faEyeSlash,
    faPaperPlane,
 } from "@fortawesome/free-solid-svg-icons"
-import { get_days_in_month, get_years_list } from "@/utils/date-time"
+import { getDaysInMonth, getYearsList } from "@/utils/date-time"
 import { PASSWORD_REGEX } from "@/utils/regex"
 import { postRegisterUser } from "@/apis/user"
 import axios from "axios"
@@ -80,7 +80,7 @@ const DateOfBirth = ({ onSetData }: { onSetData: TSetDataHandler }) => {
                            placeholder="Select day"
                            size="large"
                            onChange={(value: string) => handleChangeDate(value, "day")}
-                           options={get_days_in_month(dayMonthYear.month).map((day) => ({
+                           options={getDaysInMonth(dayMonthYear.month).map((day) => ({
                               value: day,
                               label: day,
                            }))}
@@ -120,7 +120,7 @@ const DateOfBirth = ({ onSetData }: { onSetData: TSetDataHandler }) => {
                            size="large"
                            placeholder="Select year"
                            onChange={(value: string) => handleChangeDate(value, "year")}
-                           options={get_years_list(50).map((year) => ({
+                           options={getYearsList(50).map((year) => ({
                               value: year,
                               label: year,
                            }))}

@@ -1,7 +1,7 @@
 import dayjs from "dayjs"
-import { ETimeFormats, ETimeGapOfStickyTimes } from "./enums"
+import { ETimeFormats } from "./enums"
 
-enum Month {
+enum EMonths {
    JAN = 1,
    FEB,
    MAR,
@@ -16,67 +16,50 @@ enum Month {
    DEC,
 }
 
-export const get_days_in_month = (month: Month, year: number = -1): number[] => {
-   const month_with_31_days = [1, 3, 5, 7, 8, 10, 12]
-
+export const getDaysInMonth = (month: EMonths, year: number = -1): number[] => {
+   const monthWith31Days = [1, 3, 5, 7, 8, 10, 12]
    const days =
-      month === 2 ? (is_leap_year(year) ? 29 : 28) : month_with_31_days.includes(month) ? 31 : 30
-
+      month === 2 ? (isLeapYear(year) ? 29 : 28) : monthWith31Days.includes(month) ? 31 : 30
    return Array.from(Array(days).keys()).map((num) => num + 1)
 }
 
-export const is_leap_year = (year: number): boolean => {
+export const isLeapYear = (year: number): boolean => {
    if ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) return true
-
    return false
 }
 
-export const get_years_list = (
-   gap: number,
-   end_year: number = new Date().getFullYear()
-): number[] => {
+export const getYearsList = (gap: number, endYear: number = new Date().getFullYear()): number[] => {
    const years_set: number[] = []
 
-   for (let i = end_year - gap; i < end_year; i++) {
+   for (let i = endYear - gap; i < endYear; i++) {
       years_set.push(i)
    }
 
    return years_set
 }
 
-export const format_date_mysql = (year: number, month: number, day: number): string => {
-   return dayjs(new Date(year, month - 1, day)).format("YYYY-MM-DD")
-}
-
-export const handleMessageStickyTime = (
-   current_msg_time: Date | string,
-   pre_msg_time?: Date | string
+export const displayMessageStickyTime = (
+   currentMsgTime: Date | string,
+   preMsgTime?: Date | string
 ): string | null => {
-   if (pre_msg_time) {
-      const pre_time_data = dayjs(pre_msg_time)
-      const current_time_data = dayjs(current_msg_time)
-      const today_time_data = dayjs()
-      if (current_time_data.diff(pre_time_data, "day") === 0) {
-         if (current_time_data.diff(pre_time_data, "hour") > ETimeGapOfStickyTimes.IN_HOURS) {
-            return current_time_data.format(ETimeFormats.HH_mm)
+   const currDate = dayjs(currentMsgTime)
+   if (preMsgTime) {
+      const preDate = dayjs(preMsgTime)
+      const today = dayjs()
+      if (preDate.isSame(today, "day") && currDate.isSame(today, "day")) {
+         if (currDate.diff(preDate, "minute") < 30) {
+            return null
          }
-      } else {
-         if (current_time_data.diff(today_time_data, "day") === 0) {
-            return "Today"
-         }
-         return current_time_data.format(ETimeFormats.MMMM_DD_YYYY)
+         return currDate.format(ETimeFormats.HH_mm)
       }
-      return null
+      if (currDate.diff(preDate, "hour") < 1) {
+         return null
+      }
    }
-   const current_time_data = dayjs(current_msg_time)
-   const today_time_data = dayjs()
-   if (current_time_data.diff(today_time_data, "day") === 0) {
-      return "Today"
-   }
-   return current_time_data.format(ETimeFormats.MMMM_DD_YYYY)
+   return currDate.format(ETimeFormats.MMMM_DD_YYYY)
 }
 
-export const handleTimeDifference = (originalTime: Date | string) => {
+export const displayTimeDifference = (originalTime: Date | string): string => {
    const now = dayjs()
    const convertedTime = dayjs(originalTime)
    const diffInMinutes = now.diff(convertedTime, "minute")
