@@ -5,7 +5,7 @@ import { CustomAvatar } from "@/components/avatar"
 import { Spinner } from "@/components/spinner"
 import { useUser } from "@/hooks/user"
 import { friendService } from "@/services/friend.service"
-import axiosErrorHanlder from "@/utils/axios-error-hanlder"
+import axiosErrorHandler from "@/utils/axios-error-handler"
 import { displayTimeDifference } from "@/utils/date-time"
 import { EEventNames } from "@/utils/enums"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -79,7 +79,6 @@ export const FriendsList = () => {
    const [loading, setLoading] = useState<TLoading | null>(null)
    const user = useUser()
    const tempFlagUseEffectRef = useRef<boolean>(true)
-   const mountedRef = useRef<boolean>(true)
 
    const filteredFriends = useMemo(() => {
       return friends
@@ -87,35 +86,34 @@ export const FriendsList = () => {
 
    const getFriendsHandler = async (lastFriendId?: number) => {
       setLoading("friends")
-      let friends: TGetFriendsData[] | null = null
-      try {
-         friends = await friendService.getFriends({
+      friendService
+         .getFriends({
             limit: EPaginations.FRIENDS_PAGE_SIZE,
             userId: user!.id,
             lastFriendId,
          })
-      } catch (error) {
-         console.error(">>> error:", error)
-         toast.error(axiosErrorHanlder.handleHttpError(error).message)
-      }
-      if (mountedRef.current) {
-         if (friends && friends.length > 0) {
-            setFriends((pre) => [...pre, ...friends])
-         } else {
-            customEventManager.dispatchEvent(EEventNames.LAST_FRIEND_REQUEST)
-         }
-         setLoading(null)
-      }
+         .then((friends) => {
+            if (friends && friends.length > 0) {
+               setFriends((pre) => [...pre, ...friends])
+            } else {
+               customEventManager.dispatchEvent(EEventNames.LAST_FRIEND_REQUEST)
+            }
+         })
+         .catch((error) => {
+            console.error(">>> error:", error)
+            toast.error(axiosErrorHandler.handleHttpError(error).message)
+         })
+         .finally(() => {
+            setLoading(null)
+         })
    }
 
    useEffect(() => {
-      mountedRef.current = true
       if (tempFlagUseEffectRef.current) {
          tempFlagUseEffectRef.current = false
-         getFriendsHandler()
-      }
-      return () => {
-         mountedRef.current = false
+         if (!friends || friends.length === 0) {
+            getFriendsHandler()
+         }
       }
    }, [])
 

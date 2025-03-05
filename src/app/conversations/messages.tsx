@@ -18,7 +18,7 @@ import { ESocketEvents } from "@/utils/events/socket-events"
 import { pushNewMessages } from "@/redux/messages/messages.slice"
 import { displayMessageStickyTime } from "@/utils/date-time"
 import { customEventManager } from "@/utils/events/custom-events"
-import axiosErrorHanlder from "@/utils/axios-error-hanlder"
+import axiosErrorHandler from "@/utils/axios-error-handler"
 import toast from "react-hot-toast"
 import { SHOW_SCROLL_BTN_THRESHOLD } from "@/utils/constants"
 import type { TGetDirectMessagesData } from "@/apis/types"
@@ -110,13 +110,12 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
    const [loading, setLoading] = useState<TMessagesLoadingState>()
    const user = useUser()
    const chatBox = useRef<HTMLDivElement>(null)
-   const msgTimeRef = useRef<Date>(new Date())
    const hasMoreMessagesRef = useRef<boolean>(true)
    const firstScrollToBottom = useRef<boolean>(true)
    const finalMessageId = useRef<number>(-1)
+   const msgTimeRef = useRef<Date>(new Date())
    const dispatch = useAppDispatch()
    const tempFlagUseEffectRef = useRef<boolean>(true)
-   const mountedRef = useRef<boolean>(true)
 
    const scrollToBottomMessage = () => {
       const chatBoxEle = chatBox.current
@@ -134,16 +133,24 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
 
    const scrollToBottomMessageHandler = () => {
       if (messages && messages.length > 0) {
-         if (firstScrollToBottom.current) {
-            firstScrollToBottom.current = false
-            scrollToBottomMessage()
-         }
-         const finalMessage = messages.at(-1)!
-         if (finalMessageId.current !== finalMessage.id) {
-            finalMessageId.current = finalMessage.id
-            if (finalMessage.authorId === user!.id) {
-               const chatBoxEle = chatBox.current
-               if (chatBoxEle) {
+         const chatBoxEle = chatBox.current
+         if (chatBoxEle) {
+            if (firstScrollToBottom.current) {
+               firstScrollToBottom.current = false
+               chatBoxEle.scrollTo({
+                  top: chatBoxEle.scrollHeight,
+                  behavior: "instant",
+               })
+            }
+            const finalMessage = messages.at(-1)!
+            if (finalMessageId.current !== finalMessage.id) {
+               finalMessageId.current = finalMessage.id
+               if (chatBoxEle.scrollTop + chatBoxEle.clientHeight > chatBoxEle.scrollHeight - 100) {
+                  chatBoxEle.scrollTo({
+                     top: chatBoxEle.scrollHeight,
+                     behavior: "smooth",
+                  })
+               } else if (finalMessage.authorId === user!.id) {
                   chatBoxEle.scrollTo({
                      top: chatBoxEle.scrollHeight,
                      behavior: "smooth",
@@ -154,37 +161,41 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
       }
    }
 
+   const setMsgTime = () => {
+      if (messages && messages.length > 0) {
+         msgTimeRef.current = new Date(messages[0].createdAt)
+      }
+   }
+
    useEffect(() => {
-      console.log(">>> current messages:", messages)
+      console.log(">>> messages:", messages)
+      setMsgTime()
       scrollToBottomMessageHandler()
    }, [messages])
 
    const fetchDirectMessages = async (directChatId: number, msgTime: Date) => {
       setLoading("loading-messages")
-      let result: TGetDirectMessagesData | null = null
-      try {
-         result = await dispatch(
-            fetchDirectMessagesThunk({
-               directChatId,
-               msgTime,
-               limit: EPaginations.DIRECT_MESSAGES_PAGE_SIZE,
-               sortType: ESortTypes.ASC,
-            })
-         ).unwrap()
-      } catch (error) {
-         console.error(">>> fetchDirectMessages error:", error)
-         toast.error(axiosErrorHanlder.handleHttpError(error).message)
-      }
-      if (mountedRef.current) {
-         if (result) {
-            hasMoreMessagesRef.current = result.hasMoreMessages
-            const { directMessages } = result
-            if (directMessages && directMessages.length > 0) {
-               msgTimeRef.current = new Date(directMessages[0].createdAt)
+      dispatch(
+         fetchDirectMessagesThunk({
+            directChatId,
+            msgTime,
+            limit: EPaginations.DIRECT_MESSAGES_PAGE_SIZE,
+            sortType: ESortTypes.ASC,
+         })
+      )
+         .unwrap()
+         .then((result) => {
+            if (result) {
+               hasMoreMessagesRef.current = result.hasMoreMessages
             }
-         }
-         setLoading(undefined)
-      }
+         })
+         .catch((error) => {
+            console.error(">>> fetchDirectMessages error:", error)
+            toast.error(axiosErrorHandler.handleHttpError(error).message)
+         })
+         .finally(() => {
+            setLoading(undefined)
+         })
    }
 
    function scrollChatBoxListner(this: HTMLDivElement, e: Event) {
@@ -208,7 +219,6 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
    }
 
    const listenSendDirectMessage = () => {
-      console.log(">>> run this listen comming message:", messages)
       clientSocket.socket.on(ESocketEvents.send_message_direct, (newMessage) => {
          const { id, authorId, createdAt, content } = newMessage
          dispatch(
@@ -238,20 +248,18 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
    }
 
    useEffect(() => {
-      console.log(">>> run this fetching messages:", tempFlagUseEffectRef.current)
-      mountedRef.current = true
+      console.log(">>> run this fetching messages")
       if (tempFlagUseEffectRef.current) {
          tempFlagUseEffectRef.current = false
          if (!messages || messages.length === 0) {
             fetchDirectMessages(directChatId, msgTimeRef.current)
          }
-         listenScrollChatBox()
-         listenSendDirectMessage()
-         listenRecoverdConnection()
       }
+      listenScrollChatBox()
+      listenSendDirectMessage()
+      listenRecoverdConnection()
       return () => {
          console.log(">>> run this clear events")
-         mountedRef.current = false
          chatBox.current?.removeEventListener("scroll", scrollChatBoxListner)
          customEventManager.off(EEventNames.SCROLL_TO_BOTTOM_MSG_ACTION)
          clientSocket.socket.off(ESocketEvents.recovered_connection)

@@ -45,7 +45,7 @@ export const Navigation = memo(() => {
    return (
       <div className="w-[55px] h-screen">
          <Flex
-            className="fixed left-0 top-0 z-20 screen-medium-chatting:flex bg-regular-darkGray-cl border-r border-r-regular-hover-card-cl pt-6 pb-3 w-[inherit] h-[inherit] box-border"
+            className="fixed left-0 top-0 z-20 screen-medium-chatting:flex bg-regular-darkGray-cl border-r border-solid border-r-regular-hover-card-cl pt-6 pb-3 w-[inherit] h-[inherit] box-border"
             justify="space-between"
             vertical
             gap="middle"

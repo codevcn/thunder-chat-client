@@ -4,7 +4,7 @@ import type { THandledAxiosError, THttpErrorResBody } from "./types"
 import { EInvalidHttpErrMsgs, EServerErrMsgs } from "./enums"
 import { HttpStatusCode } from "axios"
 
-class AxiosErrorHanlder {
+class AxiosErrorHandler {
    handleHttpError(
       originalError: unknown | Error | AxiosError<THttpErrorResBody>,
       clientMessage: string = "Unknown Error!"
@@ -59,6 +59,6 @@ class AxiosErrorHanlder {
    }
 }
 
-const axiosErrorHanlder = new AxiosErrorHanlder()
+const axiosErrorHandler = new AxiosErrorHandler()
 
-export default axiosErrorHanlder
+export default axiosErrorHandler

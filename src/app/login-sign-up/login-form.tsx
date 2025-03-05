@@ -15,7 +15,7 @@ import toast from "react-hot-toast"
 import axios from "axios"
 import { Form, Input } from "antd"
 import { useAuthRedirect } from "@/hooks/redirect"
-import axiosErrorHanlder from "@/utils/axios-error-hanlder"
+import axiosErrorHandler from "@/utils/axios-error-handler"
 
 type TLogInUserForm = {
    email: string
@@ -28,7 +28,6 @@ const LoginForm = ({ typedEmail }: { typedEmail: string }) => {
 
    const loginUser = async (form_data: TLogInUserForm) => {
       setLoading(true)
-
       try {
          await postLoginUser({
             email: typedEmail,
@@ -37,11 +36,9 @@ const LoginForm = ({ typedEmail }: { typedEmail: string }) => {
          redirect({ refresh: true })
       } catch (error) {
          if (axios.isAxiosError(error)) {
-            toast.error(axiosErrorHanlder.handleHttpError(error).message)
+            toast.error(axiosErrorHandler.handleHttpError(error).message)
          }
       }
-
-      setLoading(false)
    }
 
    return (

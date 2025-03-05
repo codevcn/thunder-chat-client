@@ -1,9 +1,9 @@
-import { HttpStatus } from "../enums"
+import { HttpStatusCode } from "axios"
 
 export type TWsErrorResponse = {
    isError: boolean
    message: string
-   httpStatus: HttpStatus
+   httpStatus: HttpStatusCode
 }
 
 export type TChattingPayload = {

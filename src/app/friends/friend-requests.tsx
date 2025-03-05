@@ -5,7 +5,7 @@ import { CustomAvatar } from "@/components/avatar"
 import { Spinner } from "@/components/spinner"
 import { useUser } from "@/hooks/user"
 import { friendService } from "@/services/friend.service"
-import axiosErrorHanlder from "@/utils/axios-error-hanlder"
+import axiosErrorHandler from "@/utils/axios-error-handler"
 import { displayTimeDifference } from "@/utils/date-time"
 import { EEventNames, EFriendRequestStatus } from "@/utils/enums"
 import {
@@ -200,7 +200,6 @@ export const FriendRequests = () => {
    const user = useUser()
    const [filter, setFilter] = useState<EFilterLabels>(EFilterLabels.ALL)
    const tempFlagUseEffectRef = useRef<boolean>(true)
-   const mountedRef = useRef<boolean>(true)
 
    const filterRequests = (requests: TGetFriendRequestsData[]): TGetFriendRequestsData[] => {
       switch (filter) {
@@ -221,35 +220,34 @@ export const FriendRequests = () => {
 
    const getFriendRequestsHandler = async (lastFriendRequestId?: number) => {
       setLoading("friend-requests")
-      let requests: TGetFriendRequestsData[] | null = null
-      try {
-         requests = await friendService.getFriendRequests({
+      friendService
+         .getFriendRequests({
             limit: EPaginations.FRIEND_REQUESTS_PAGE_SIZE,
             userId: user!.id,
             lastFriendRequestId,
          })
-      } catch (error) {
-         console.error(">>> error:", error)
-         toast.error(axiosErrorHanlder.handleHttpError(error).message)
-      }
-      if (mountedRef.current) {
-         if (requests && requests.length > 0) {
-            setRequests((pre) => [...pre, ...requests])
-         } else {
-            customEventManager.dispatchEvent(EEventNames.LAST_FRIEND_REQUEST)
-         }
-         setLoading(null)
-      }
+         .then((requests) => {
+            if (requests && requests.length > 0) {
+               setRequests((pre) => [...pre, ...requests])
+            } else {
+               customEventManager.dispatchEvent(EEventNames.LAST_FRIEND_REQUEST)
+            }
+         })
+         .catch((error) => {
+            console.error(">>> error:", error)
+            toast.error(axiosErrorHandler.handleHttpError(error).message)
+         })
+         .finally(() => {
+            setLoading(null)
+         })
    }
 
    useEffect(() => {
-      mountedRef.current = true
       if (tempFlagUseEffectRef.current) {
          tempFlagUseEffectRef.current = false
-         getFriendRequestsHandler()
-      }
-      return () => {
-         mountedRef.current = false
+         if (!requests || requests.length === 0) {
+            getFriendRequestsHandler()
+         }
       }
    }, [])
 
@@ -268,7 +266,7 @@ export const FriendRequests = () => {
          }
       } catch (error) {
          console.error(">>> error:", error)
-         toast.error(axiosErrorHanlder.handleHttpError(error).message)
+         toast.error(axiosErrorHandler.handleHttpError(error).message)
       }
       setLoading(null)
    }

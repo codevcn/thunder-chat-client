@@ -1,6 +1,6 @@
 "use client"
 
-import axiosErrorHanlder from "@/utils/axios-error-hanlder"
+import axiosErrorHandler from "@/utils/axios-error-handler"
 import toast from "react-hot-toast"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faSearch, faClose, faPaperPlane, faUserPlus } from "@fortawesome/free-solid-svg-icons"
@@ -72,7 +72,7 @@ export const AddFriend = () => {
             setUsers(users)
          } catch (error) {
             console.error(">>> error:", error)
-            toast.error(axiosErrorHanlder.handleHttpError(error).message)
+            toast.error(axiosErrorHandler.handleHttpError(error).message)
          }
       }
       setLoading(null)
@@ -94,7 +94,7 @@ export const AddFriend = () => {
          toast.success("Sent friend request successfully!")
       } catch (error) {
          console.error(">>> 111 error:", error)
-         toast.error(axiosErrorHanlder.handleHttpError(error).message)
+         toast.error(axiosErrorHandler.handleHttpError(error).message)
       }
       setLoading(null)
    }
