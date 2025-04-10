@@ -1,0 +1,4 @@
+login:{
+    - email: exam@mail.ru
+    - pass: asd123X
+}

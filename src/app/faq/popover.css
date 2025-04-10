@@ -1,0 +1,13 @@
+.popover {
+   position: absolute;
+   z-index: 1000;
+   background-color: white;
+   border: 1px solid #ccc;
+   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.popover-content {
+   padding: 10px;
+   min-width: 200px; /* Tùy chỉnh kích thước */
+   color: black;
+}
