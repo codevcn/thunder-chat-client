@@ -2,12 +2,12 @@
 
 import { JSX, useEffect, useRef } from "react"
 import { EAuthStatus } from "@/utils/enums"
-import { clientSocket } from "@/configs/socket"
 import toast from "react-hot-toast"
-import { ESocketEvents, ESocketInitEvents } from "@/utils/events/socket-events"
 import { useAuth } from "@/hooks/auth"
 import { useUser } from "@/hooks/user"
 import { chattingService } from "@/services/chatting.service"
+import { ESocketEvents, ESocketInitEvents } from "@/utils/socket/events"
+import { clientSocket } from "@/utils/socket/client-socket"
 
 export const SocketProvider = ({ children }: { children: JSX.Element }) => {
    const { authStatus } = useAuth()

@@ -1,7 +1,5 @@
 "use client"
 
-import { clientSocket } from "@/configs/socket"
-import { ESocketEvents } from "@/utils/events/socket-events"
 import Link from "next/link"
 import { useEffect, useRef } from "react"
 import toast, { useToasterStore } from "react-hot-toast"
@@ -10,6 +8,8 @@ import { MAX_NUMBER_OF_TOASTS } from "@/utils/constants"
 import { EActions } from "@/app/friends/sharing"
 import { localStorageManager } from "@/utils/local-storage"
 import { RootLayoutContext } from "@/contexts/root-layout.context"
+import { clientSocket } from "@/utils/socket/client-socket"
+import { ESocketEvents } from "@/utils/socket/events"
 
 export const AppLayoutProvider = ({ children }: { children: React.ReactNode }) => {
    const { toasts } = useToasterStore()
@@ -37,14 +37,6 @@ export const AppLayoutProvider = ({ children }: { children: React.ReactNode }) =
       })
    }
 
-   useEffect(() => {
-      listenFriendRequest()
-      setLastPageAccessed()
-      return () => {
-         clientSocket.socket.off(ESocketEvents.send_friend_request)
-      }
-   }, [])
-
    const limitDisplayedToasts = () => {
       setTimeout(() => {
          toasts
@@ -55,14 +47,20 @@ export const AppLayoutProvider = ({ children }: { children: React.ReactNode }) =
    }
 
    useEffect(() => {
+      listenFriendRequest()
+      setLastPageAccessed()
+      return () => {
+         clientSocket.socket.off(ESocketEvents.send_friend_request)
+      }
+   }, [])
+
+   useEffect(() => {
       limitDisplayedToasts()
    }, [toasts])
 
    return (
       <div ref={appRootRef} id="App-Root" className="bg-regular-dark-gray-cl">
-         <RootLayoutContext.Provider value={{ appRootRef }}>
-            {children}
-         </RootLayoutContext.Provider>
+         <RootLayoutContext.Provider value={{ appRootRef }}>{children}</RootLayoutContext.Provider>
       </div>
    )
 }

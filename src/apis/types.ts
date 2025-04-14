@@ -7,16 +7,6 @@ export type TLoginUserParams = {
    keepSigned: boolean
 }
 
-export type TSearchDirectChatParams = {
-   email?: string
-   username?: string
-   nameOfUser?: string
-}
-
-export type TStartDirectChatParams = {
-   recipientId: number
-}
-
 export type TDirectChatData = TDirectChat & {
    Recipient: TUserWithProfile
 }

@@ -1,13 +1,14 @@
-import { client_axios } from "@/configs/axios"
-import type { TUserWithProfile } from "@/utils/types"
-import { requestConfig } from "./init"
-import type { TDirectChatData, TSearchDirectChatParams, TStartDirectChatParams } from "./types"
-
-export const postSearchDirectChat = (data: TSearchDirectChatParams) =>
-   client_axios.post<TUserWithProfile[]>("/direct-chat/search", data, requestConfig)
-
-export const postStartDirectChat = (data: TStartDirectChatParams) =>
-   client_axios.post<TDirectChatData>("/direct-chat/start", data, requestConfig)
+import { clientAxios, clientSideAxios, requestConfig } from "@/configs/axios"
+import type { TDirectChatData } from "./types"
+import { TGetEmojisRes } from "@/app/api/types"
 
 export const getFetchDirectChat = (id: number) =>
-   client_axios.get<TDirectChatData>("/direct-chat/fetch/" + id, requestConfig)
+   clientAxios.get<TDirectChatData>("/direct-chat/fetch/" + id, requestConfig)
+
+export const getFetchEmojis = () =>
+   clientSideAxios.get<TGetEmojisRes>("/api/emojis", {
+      ...requestConfig,
+      headers: {
+         "Cache-Control": "no-store",
+      },
+   })

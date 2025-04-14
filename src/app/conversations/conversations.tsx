@@ -15,7 +15,6 @@ import { useRouter } from "next/navigation"
 import { sortDirectChatsByPinned } from "@/redux/conversations/conversations-selectors"
 import { unwrapResult } from "@reduxjs/toolkit"
 import { MAX_NUMBER_OF_PINNED_CONVERSATIONS } from "@/utils/constants"
-import { TSearchDirectChatParams } from "@/apis/types"
 import Image from "next/image"
 
 type TResultProps = {
@@ -28,7 +27,7 @@ const Result = ({ convResult, handleStartDirectChat }: TResultProps) => {
    const fullName = Profile?.fullName || "Unnamed"
 
    return (
-      <CustomTooltip title="Click to open a chat" side="right">
+      <CustomTooltip title="Click to open a chat" placement="right">
          <div
             className="flex w-full p-3 py-2 cursor-pointer hover:bg-regular-hover-card-cl rounded-xl gap-3"
             onClick={() => handleStartDirectChat(id)}
@@ -119,7 +118,7 @@ const ChatCards = () => {
                   {pinIndex &&
                      pinIndex !== -1 &&
                      pinIndex <= MAX_NUMBER_OF_PINNED_CONVERSATIONS && (
-                        <CustomTooltip title="This directChat was pinned" side="bottom">
+                        <CustomTooltip title="This directChat was pinned" placement="bottom">
                            <Image
                               src="/icons/pinned-conv.svg"
                               alt="Pinned Icon"
@@ -224,7 +223,7 @@ export const Conversations = () => {
 
    return (
       <div
-         id="NAME-Conversations-List"
+         id="QUERY-conversations-list"
          className="screen-medium-chatting:flex flex-col hidden w-convs-list py-3 box-border h-full bg-regular-dark-gray-cl border-regular-hover-card-cl border-r"
       >
          <SearchBar setIsTyping={setIsTyping} setSearching={setSearching} isTyping={isTyping} />

@@ -1,6 +1,7 @@
 import dayjs from "dayjs"
 import { THE_LAST_DIRECT_CHAT_ID_NAME } from "./constants"
 import type { TFormData } from "./types"
+import DOMPurify from "dompurify"
 
 export const storeDirectChatIdAtLocal = (id: string) => {
    localStorage.setItem(THE_LAST_DIRECT_CHAT_ID_NAME, id)
@@ -49,4 +50,8 @@ export const pureNavigator = (url: string) => {
 
 export const getCurrentLocationPath = (): string => {
    return window.location.pathname
+}
+
+export const santizeMsgContent = (htmlStr: string): string => {
+   return DOMPurify.sanitize(htmlStr)
 }

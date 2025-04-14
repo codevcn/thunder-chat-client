@@ -1,7 +1,7 @@
-import { clientSocket } from "@/configs/socket"
 import { MAX_TIMEOUT_MESSAGING } from "@/utils/constants"
-import { ESocketEvents } from "@/utils/events/socket-events"
-import type { TChattingPayload } from "@/utils/events/types"
+import { clientSocket } from "@/utils/socket/client-socket"
+import { ESocketEvents } from "@/utils/socket/events"
+import type { TChattingPayload } from "@/utils/socket/types"
 import type { TOfflineMessage, TSendMessageCallback } from "@/utils/types"
 
 class ChattingService {

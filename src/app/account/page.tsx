@@ -1,6 +1,6 @@
 "use client"
 
-import { client_axios } from "@/configs/axios"
+import { clientAxios } from "@/configs/axios"
 import { clientSocket } from "@/configs/socket"
 import { useUser } from "@/hooks/user"
 import { TUserWithProfile } from "@/utils/types"
@@ -22,7 +22,7 @@ const Account = () => {
 
    const test_api = async () => {
       try {
-         await client_axios.get("healthcheck")
+         await clientAxios.get("healthcheck")
       } catch (error) {
          console.error(">>> error:", error)
       }

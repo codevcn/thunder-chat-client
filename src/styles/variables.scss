@@ -24,6 +24,7 @@
    --tdc-regular-button-bgcl: var(--tdc-regular-modal-content-bgcl);
    --tdc-regular-hover-bgcl: #515151;
    --tdc-regular-divider-cl: #80808060;
+   --tdc-emoji-picker-bgcl: #2a2a2a;
 
    /* widths */
    --tdc-convs-card-width: 300px;
@@ -34,11 +35,13 @@
    --tdc-messages-list-width: 560px;
    --tdc-type-message-bar-width: 540px;
    --tdc-msgs-container-width: calc(100% - var(--tdc-info-bar-width));
+   --tdc-emoji-picker-width: 324px;
 
    /* heights */
    --tdc-header-height: 3.5rem;
    --tdc-chat-container-height: 100%;
-   --tdc-type-msg-bar-height: 54px;
+   --tdc-type-msg-bar-height: 50px;
+   --tdc-emoji-picker-height: 365px;
 
    /* transitions */
    --tdc-slide-info-bar-timing: cubic-bezier(0.33, 1, 0.68, 1);

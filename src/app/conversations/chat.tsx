@@ -28,7 +28,7 @@ const Header = ({ infoBarIsOpened, onOpenInfoBar }: THeaderProps) => {
    return (
       <div className="flex justify-between gap-2 px-6 py-1.5 bg-regular-dark-gray-cl w-full box-border h-header">
          {recipient ? (
-            <CustomTooltip title="View user info" side="bottom">
+            <CustomTooltip title="View user info" placement="bottom">
                <div className="flex gap-2 cursor-pointer" onClick={() => onOpenInfoBar(true)}>
                   {recipient.Profile && recipient.Profile.avatar ? (
                      <CustomAvatar src={recipient.Profile.avatar} imgSize={45} />
@@ -64,7 +64,7 @@ const Header = ({ infoBarIsOpened, onOpenInfoBar }: THeaderProps) => {
          <div
             className={`${infoBarIsOpened ? "screen-large-chatting:translate-x-slide-header-icons" : "translate-x-0"} flex items-center gap-2 transition duration-300 ease-slide-info-bar-timing`}
          >
-            <CustomTooltip title="Search this chat" side="bottom" align="end">
+            <CustomTooltip title="Search this chat" placement="bottom" align="end">
                <div>
                   <IconButton className="flex justify-center items-center text-regular-icon-cl w-[40px] h-[40px]">
                      <Search />
@@ -72,7 +72,7 @@ const Header = ({ infoBarIsOpened, onOpenInfoBar }: THeaderProps) => {
                </div>
             </CustomTooltip>
 
-            <CustomTooltip title="Call" side="bottom" align="end">
+            <CustomTooltip title="Call" placement="bottom" align="end">
                <div>
                   <IconButton className="flex justify-center items-center text-regular-icon-cl w-[40px] h-[40px]">
                      <Phone />
@@ -80,7 +80,7 @@ const Header = ({ infoBarIsOpened, onOpenInfoBar }: THeaderProps) => {
                </div>
             </CustomTooltip>
 
-            <CustomTooltip title="More actions" side="bottom" align="end">
+            <CustomTooltip title="More actions" placement="bottom" align="end">
                <div>
                   <IconButton className="flex justify-center items-center text-regular-icon-cl w-[40px] h-[40px]">
                      <MoreVertical />

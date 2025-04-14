@@ -42,7 +42,7 @@ const UserCard = ({ item, loading, onSendFriendRequest }: TUserCardProps) => {
             <p className="text-[#a3a3a3]">{item.email}</p>
          </div>
 
-         <CustomTooltip title="Send friend request" side="right">
+         <CustomTooltip title="Send friend request" placement="right">
             {loading === `user-card-${recipientId}` ? (
                <div className="absolute right-5 top-1/2 -translate-y-1/2">
                   <Spinner size="small" />

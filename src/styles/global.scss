@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@mixin emoji-style {
+   display: inline-block;
+   height: 20px;
+   width: 20px;
+   padding-left: 1px;
+   padding-right: 1px;
+   box-sizing: content-box;
+   line-height: 1.5;
+   margin: 0 1px -5px;
+   vertical-align: 0;
+}
+
 :root {
    --foreground-rgb: 0, 0, 0;
    --background-start-rgb: 214, 219, 220;
@@ -92,35 +104,6 @@ svg {
    display: flex;
 }
 
-.ant-tabs {
-   .ant-tabs-nav {
-      margin-bottom: 0;
-
-      &::before {
-         display: none;
-      }
-   }
-
-   .ant-tabs-nav-list {
-      .ant-tabs-tab {
-         .ant-tabs-tab-btn {
-            color: var(--tdc-regular-placeholder-cl);
-         }
-         &.ant-tabs-tab-active {
-            .ant-tabs-tab-btn {
-               color: var(--tdc-regular-white-cl);
-            }
-         }
-
-         &:hover {
-            .ant-tabs-tab-btn {
-               color: var(--tdc-regular-white-cl);
-            }
-         }
-      }
-   }
-}
-
 @layer base {
    :root {
       --background: 0 0% 100%;
@@ -207,5 +190,26 @@ svg {
             }
          }
       }
+   }
+
+   .no-scrollbar {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+
+      &::-webkit-scrollbar {
+         display: none;
+      }
+   }
+}
+
+#STYLE-text-field {
+   .STYLE-emoji-img {
+      @include emoji-style;
+   }
+}
+
+#STYLE-messages-container {
+   .STYLE-emoji-img {
+      @include emoji-style;
    }
 }

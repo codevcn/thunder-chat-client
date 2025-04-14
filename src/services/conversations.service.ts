@@ -1,8 +1,8 @@
-class ConversationService{
+class ConversationsService {
    // async searchConversations(payload: TSearchDirectChatParams): Promise<TUserWithProfile[]> {
    //    const { data } = await postSearchDirectChat(payload)
    //    return data
    // }
 }
 
-export const conversationService = new ConversationService()
+export const conversationsService = new ConversationsService()

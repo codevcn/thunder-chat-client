@@ -1,10 +1,9 @@
 import type { TSuccess, TUserWithoutPassword } from "@/utils/types"
-import { client_axios } from "@/configs/axios"
-import { requestConfig } from "./init"
+import { clientAxios, requestConfig } from "@/configs/axios"
 import type { TLoginUserParams } from "./types"
 
 export const postLoginUser = (data: TLoginUserParams) =>
-   client_axios.post<TSuccess>("/auth/login", data, requestConfig)
+   clientAxios.post<TSuccess>("/auth/login", data, requestConfig)
 
 export const getCheckAuth = () =>
-   client_axios.get<TUserWithoutPassword>("/auth/check-auth", requestConfig)
+   clientAxios.get<TUserWithoutPassword>("/auth/check-auth", requestConfig)

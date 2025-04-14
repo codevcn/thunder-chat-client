@@ -6,6 +6,8 @@ import { useEffect } from "react"
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
 import { setChatBackground } from "@/redux/settings/settings.slice"
 import { Navigation } from "@/components/layout/navigation"
+import { eventEmitter } from "@/utils/event-emitter/event-emitter"
+import { EInternalEvents } from "@/utils/event-emitter/events"
 
 const ChatBackground = () => {
    const chatBackground = useAppSelector(({ settings }) => settings.theme.chatBackground)
@@ -24,6 +26,17 @@ const ChatBackground = () => {
 }
 
 const ConversationPage = () => {
+   const handleClickOnLayout = (e: MouseEvent) => {
+      eventEmitter.emit(EInternalEvents.CLICK_ON_LAYOUT, e)
+   }
+
+   useEffect(() => {
+      document.body.addEventListener("click", handleClickOnLayout)
+      return () => {
+         document.body.removeEventListener("click", handleClickOnLayout)
+      }
+   }, [])
+
    return (
       <div className="bg-regular-black-cl w-full h-screen relative">
          <ChatBackground />

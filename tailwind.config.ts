@@ -46,11 +46,12 @@ const config: Config = {
             "regular-modal-content-bgcl": "var(--tdc-regular-modal-content-bgcl)",
             "regular-red-cl": "var(--tdc-regular-red-cl)",
             "regular-button-bgcl": "var(--tdc-regular-button-bgcl)",
-            "regular-regular-hover-bgcl": "var(--tdc-regular-hover-bgcl)",
+            "regular-hover-bgcl": "var(--tdc-regular-hover-bgcl)",
             "regular-green-cl": "var(--tdc-regular-green-cl)",
             "regular-divider-cl": "var(--tdc-regular-divider-cl)",
             "regular-tooltip-bgcl": "var(--tdc-regular-tooltip-bgcl)",
             "regular-border-cl": "var(--tdc-regular-border-cl)",
+            "emoji-picker-bgcl": "var(--tdc-emoji-picker-bgcl)",
             background: "hsl(var(--background))",
             foreground: "hsl(var(--foreground))",
             card: {
@@ -104,11 +105,13 @@ const config: Config = {
             "messages-list": "var(--tdc-messages-list-width)",
             "msgs-container": "var(--tdc-msgs-container-width)",
             "type-message-bar": "var(--tdc-type-message-bar-width)",
+            "emoji-picker": "var(--tdc-emoji-picker-width)",
          },
          height: {
             header: "var(--tdc-header-height)",
             "chat-container": "var(--tdc-chat-container-height)",
             "type-msg-bar": "var(--tdc-type-msg-bar-height)",
+            "emoji-picker": "var(--tdc-emoji-picker-height)",
          },
          inset: {
             "slide-info-bar": "var(--tdc-info-bar-width)",
@@ -124,8 +127,8 @@ const config: Config = {
          animation: {
             "grow-icon": "grow-icon 0.4s forwards ease-out",
             "hide-icon": "hide-icon 0.4s forwards ease-out",
-            "hide-placeholder": "hide-placeholder 0.3s forwards ease-in",
-            "grow-placeholder": "grow-placeholder 0.3s forwards ease-out",
+            "hide-placeholder": "hide-placeholder 0.15s forwards ease-in",
+            "grow-placeholder": "grow-placeholder 0.15s forwards ease-out",
             "zoom-fade-in": "zoom-in 0.15s forwards ease, fade-in 0.15s forwards ease",
             "zoom-fade-out": "zoom-out 0.15s forwards ease, fade-out 0.15s forwards ease",
             "super-zoom-out-fade-in":
@@ -136,6 +139,7 @@ const config: Config = {
             "appear-zoom-in-s40": "appear-zoom-in-s40 0.15s forwards linear",
             "new-friend-message": "new-friend-message 0.2s var(--tdc-new-message-timing) 1 0.01s",
             "new-own-message": "new-own-message 0.2s var(--tdc-new-message-timing) 1 0.01s",
+            "scale-up": "scale-up 0.2s ease-out forwards",
          },
          borderRadius: {
             lg: "var(--radius)",

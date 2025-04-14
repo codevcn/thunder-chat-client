@@ -19,13 +19,6 @@ export enum EInvalidHttpErrMsgs {
    INVALID_REQUEST = "Invalid request",
 }
 
-export enum EEventNames {
-   SCROLL_TO_BOTTOM_MSG_UI = "SCROLL_TO_BOTTOM_MSG:UI",
-   SCROLL_TO_BOTTOM_MSG_ACTION = "SCROLL_TO_BOTTOM_MSG:ACTION",
-   SCROLL_OUT_OF_BOTTOM = "SCROLL_OUT_OF_BOTTOM",
-   LAST_FRIEND_REQUEST = "LAST_FRIEND_REQUEST",
-}
-
 export enum EServerErrMsgs {
    BAD_NETWORK_OR_ERROR = "Bad network or error from server.",
 }

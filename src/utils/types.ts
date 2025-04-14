@@ -106,3 +106,9 @@ export type TLastPageAccessed = {
    current: string
    previous: string
 }
+
+export type TEmoji = {
+   src: string
+   alt: string
+   name: string
+}

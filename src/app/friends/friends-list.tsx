@@ -7,7 +7,7 @@ import { useUser } from "@/hooks/user"
 import { friendService } from "@/services/friend.service"
 import axiosErrorHandler from "@/utils/axios-error-handler"
 import { displayTimeDifference } from "@/utils/date-time"
-import { EEventNames } from "@/utils/enums"
+import { EInternalEvents } from "@/utils/enums"
 import { useEffect, useMemo, useRef, useState } from "react"
 import toast from "react-hot-toast"
 import { customEventManager } from "@/utils/events/custom-events"
@@ -52,11 +52,11 @@ const LoadMoreBtn = ({ onLoadMore, hidden }: TLoadMoreBtnProps) => {
    const [isLastFriend, setIsLastFriend] = useState<boolean>(false)
 
    useEffect(() => {
-      customEventManager.on(EEventNames.LAST_FRIEND_REQUEST, (payload) => {
+      customEventManager.on(EInternalEvents.LAST_FRIEND_REQUEST, (payload) => {
          setIsLastFriend(true)
       })
       return () => {
-         customEventManager.off(EEventNames.LAST_FRIEND_REQUEST)
+         customEventManager.off(EInternalEvents.LAST_FRIEND_REQUEST)
       }
    }, [])
 
@@ -64,7 +64,7 @@ const LoadMoreBtn = ({ onLoadMore, hidden }: TLoadMoreBtnProps) => {
       <div className="flex mt-7" hidden={isLastFriend || hidden}>
          <button
             onClick={onLoadMore}
-            className="hover:bg-regular-regular-hover-bgcl m-auto cursor-pointer px-5 py-2 rounded-md bg-regular-button-bgcl"
+            className="hover:bg-regular-hover-bgcl m-auto cursor-pointer px-5 py-2 rounded-md bg-regular-button-bgcl"
          >
             Load More
          </button>
@@ -96,7 +96,7 @@ export const FriendsList = () => {
             if (friends && friends.length > 0) {
                setFriends((pre) => [...pre, ...friends])
             } else {
-               customEventManager.dispatchEvent(EEventNames.LAST_FRIEND_REQUEST)
+               customEventManager.dispatchEvent(EInternalEvents.LAST_FRIEND_REQUEST)
             }
          })
          .catch((error) => {

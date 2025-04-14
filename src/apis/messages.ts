@@ -1,9 +1,8 @@
-import { client_axios } from "@/configs/axios"
-import { requestConfig } from "./init"
+import { clientAxios, requestConfig } from "@/configs/axios"
 import type { TGetDirectMessagesData, TGetDirectMsgsParamsDTO } from "./types"
 
 export const getFetchDirectMessages = (params: TGetDirectMsgsParamsDTO) =>
-   client_axios.get<TGetDirectMessagesData>("message/get-direct-messages/", {
+   clientAxios.get<TGetDirectMessagesData>("message/get-direct-messages/", {
       ...requestConfig,
       params,
    })

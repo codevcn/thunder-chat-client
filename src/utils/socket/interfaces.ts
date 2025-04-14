@@ -4,7 +4,7 @@ import type {
    TSuccess,
    TUserWithProfile,
 } from "../types"
-import { ESocketEvents, ESocketInitEvents } from "./socket-events"
+import { ESocketEvents, ESocketInitEvents } from "./events"
 import type { TChattingPayload, TWsErrorResponse } from "./types"
 
 export interface IListenSocketEvents {

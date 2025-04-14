@@ -37,7 +37,7 @@ export const Navigation = memo(() => {
    return (
       <div className="screen-medium-chatting:flex hidden w-[55.5px] h-screen">
          <div className="flex justify-between flex-col gap-4 bg-regular-dark-gray-cl pt-6 pb-3 w-[inherit] h-[inherit]">
-            <CustomTooltip title="Account" side="right">
+            <CustomTooltip title="Account" placement="right">
                <Link
                   href="/account"
                   className="flex w-[55px] cursor-pointer transition duration-200 hover:bg-regular-hover-card-cl py-3"
@@ -50,7 +50,7 @@ export const Navigation = memo(() => {
 
             <div className="flex items-center flex-col w-full">
                {navs.map(({ label, href, icon }) => (
-                  <CustomTooltip key={label} side="right" title={label}>
+                  <CustomTooltip key={label} placement="right" title={label}>
                      {href ? (
                         <Link
                            href={href}
@@ -67,7 +67,7 @@ export const Navigation = memo(() => {
                ))}
             </div>
 
-            <CustomTooltip side="right" title="Settings">
+            <CustomTooltip placement="right" title="Settings">
                <div className="flex w-[55px] cursor-pointer transition duration-200 hover:bg-regular-hover-card-cl py-3">
                   <div className="m-auto">
                      <Settings size={20} color="white" />

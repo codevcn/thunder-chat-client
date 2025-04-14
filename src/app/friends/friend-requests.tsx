@@ -7,7 +7,7 @@ import { useUser } from "@/hooks/user"
 import { friendService } from "@/services/friend.service"
 import axiosErrorHandler from "@/utils/axios-error-handler"
 import { displayTimeDifference } from "@/utils/date-time"
-import { EEventNames, EFriendRequestStatus } from "@/utils/enums"
+import { EInternalEvents, EFriendRequestStatus } from "@/utils/enums"
 import { ArrowLeft, ArrowRight, Repeat, CheckCircle, Filter, Trash } from "lucide-react"
 // import { Tooltip, Dropdown } from "antd"
 import { CustomTooltip } from "@/components/materials"
@@ -67,7 +67,7 @@ const RequestCard = ({ req, loading, onFriendRequestActions, user }: TRequestCar
                   {loading === `request-card-ACCEPTED-${id}` ? (
                      <Spinner size="small" />
                   ) : (
-                     <CustomTooltip title="Accept" side="bottom">
+                     <CustomTooltip title="Accept" placement="bottom">
                         <button
                            className="hover:scale-125 transition-transform"
                            onClick={() =>
@@ -81,7 +81,7 @@ const RequestCard = ({ req, loading, onFriendRequestActions, user }: TRequestCar
                   {loading === `request-card-REJECTED-${id}` ? (
                      <Spinner size="small" />
                   ) : (
-                     <CustomTooltip title="Reject" side="bottom">
+                     <CustomTooltip title="Reject" placement="bottom">
                         <button
                            className="hover:scale-125 transition-transform"
                            onClick={() =>
@@ -116,11 +116,11 @@ const LoadMoreBtn = ({ onLoadMore, hidden }: TLoadMoreBtnProps) => {
    const [isLastRequest, setIsLastRequest] = useState<boolean>(false)
 
    useEffect(() => {
-      customEventManager.on(EEventNames.LAST_FRIEND_REQUEST, (payload) => {
+      customEventManager.on(EInternalEvents.LAST_FRIEND_REQUEST, (payload) => {
          setIsLastRequest(true)
       })
       return () => {
-         customEventManager.off(EEventNames.LAST_FRIEND_REQUEST)
+         customEventManager.off(EInternalEvents.LAST_FRIEND_REQUEST)
       }
    }, [])
 
@@ -128,7 +128,7 @@ const LoadMoreBtn = ({ onLoadMore, hidden }: TLoadMoreBtnProps) => {
       <div className="flex mt-7" hidden={isLastRequest || hidden}>
          <button
             onClick={onLoadMore}
-            className="hover:bg-regular-regular-hover-bgcl m-auto cursor-pointer px-5 py-2 rounded-md bg-regular-button-bgcl"
+            className="hover:bg-regular-hover-bgcl m-auto cursor-pointer px-5 py-2 rounded-md bg-regular-button-bgcl"
          >
             Load More
          </button>
@@ -188,7 +188,7 @@ export const FriendRequests = () => {
             if (requests && requests.length > 0) {
                setRequests((pre) => [...pre, ...requests])
             } else {
-               customEventManager.dispatchEvent(EEventNames.LAST_FRIEND_REQUEST)
+               customEventManager.dispatchEvent(EInternalEvents.LAST_FRIEND_REQUEST)
             }
          })
          .catch((error) => {

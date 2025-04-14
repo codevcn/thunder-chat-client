@@ -1,3 +1,5 @@
+import { eventEmitter } from "@/utils/event-emitter/event-emitter"
+import { EInternalEvents } from "@/utils/event-emitter/events"
 import { useEffect } from "react"
 
 type AutoResizeTextFieldProps = {
@@ -14,8 +16,11 @@ type AutoResizeTextFieldProps = {
    style: React.CSSProperties
    lineHeight: number
    onBlur: () => void
-   initialHeight:number
+   initialHeight: number
+   textSize: number
 }>
+
+const emptyPlaceholderHTML: string = `<span class="QUERY-empty-placeholder"></span>`
 
 export const AutoResizeTextField: React.FC<AutoResizeTextFieldProps> = ({
    onContentChange,
@@ -31,30 +36,24 @@ export const AutoResizeTextField: React.FC<AutoResizeTextFieldProps> = ({
    onBlur,
    textFieldRef,
    initialHeight,
+   textSize = 14,
 }) => {
    const setTextFieldContent = (textContent: string, textFieldEle?: HTMLDivElement) => {
       if (textFieldEle) {
-         textFieldEle.innerText = textContent
+         textFieldEle.innerHTML = textContent
       }
    }
 
-   // Khởi tạo giá trị ban đầu và chiều cao
-   useEffect(() => {
-      const textFieldEle = textFieldRef.current
-      if (textFieldEle) {
-         setTextFieldContent(initialValue, textFieldEle)
-         adjustHeight()
-      }
-   }, [])
+   const getEmptyPlaceholder = (textFieldEle: HTMLDivElement) =>
+      textFieldEle.querySelector(".QUERY-empty-placeholder")
 
    // Điều chỉnh chiều cao dựa trên nội dung
-   const adjustHeight = () => {
+   const adjustHeight = (textFieldEle: HTMLDivElement) => {
       setTimeout(() => {
-         const textFieldEle = textFieldRef.current
          if (textFieldEle) {
             textFieldEle.style.height = "auto"
             const newHeight = Math.min(
-               Math.max(textFieldEle.scrollHeight, lineHeight * 14),
+               Math.max(textFieldEle.scrollHeight, lineHeight * textSize, initialHeight || 0),
                maxHeight
             )
             textFieldEle.style.height = `${newHeight}px`
@@ -65,54 +64,85 @@ export const AutoResizeTextField: React.FC<AutoResizeTextFieldProps> = ({
    }
 
    // Xử lý khi nhập liệu
-   const handleInput = (e: React.FormEvent<HTMLDivElement>) => {
-      const textFieldEle = e.currentTarget
-      const textContent = textFieldEle.innerText
-      if (textContent.trim().length === 0) {
-         setTextFieldContent(" ", textFieldEle) // Thêm khoảng trắng để giữ con trỏ
+   const handleInput = (textFieldEle: HTMLDivElement) => {
+      const content = textFieldEle.innerHTML
+      if (content && content.length > 0) {
+         // Nếu có nội dung thì xóa placeholder
+         textFieldEle.querySelector(".QUERY-empty-placeholder")?.remove()
+      }
+      // Kiểm tra nội dung có chứa thẻ img hay không
+      if (!content.includes("<img")) {
+         const tempDiv = document.createElement("div")
+         tempDiv.innerHTML = content
+         if (tempDiv.innerText.trim().length === 0) {
+            // Nếu nội dung không chứa thẻ img và không có nội dung nào khác thì đặt content thành 1 thẻ html (để giữ caret)
+            setTextFieldContent(emptyPlaceholderHTML, textFieldEle)
+         }
       }
       if (onContentChange) {
-         onContentChange(textContent) // Gọi hàm khi có sự thay đổi nội dung
+         // Gọi hàm khi có sự thay đổi nội dung (kiểm tra trước xem content có trống không)
+         if (getEmptyPlaceholder(textFieldEle)) {
+            onContentChange("")
+         } else {
+            onContentChange(textFieldEle.innerHTML.trim())
+         }
       }
-      adjustHeight()
+      adjustHeight(textFieldEle)
    }
 
    // Xử lý sự kiện nhấn phím
    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
       if (e.key === "Enter") {
          e.preventDefault()
+         const textFieldEle = e.currentTarget
          if (e.shiftKey) {
             document.execCommand("insertLineBreak")
-            adjustHeight()
          } else {
-            const textFieldEle = textFieldRef.current
-            if (textFieldEle) {
-               if (onEnterPress) {
-                  onEnterPress(textFieldEle.innerText) // Lấy text hiện tại
-               }
-               setTextFieldContent(" ", textFieldEle) // Clear nội dung
-               adjustHeight() // Cập nhật chiều cao về minHeight
+            if (onEnterPress) {
+               onEnterPress(textFieldEle.innerHTML) // Lấy text hiện tại
+            }
+            setTextFieldContent(emptyPlaceholderHTML, textFieldEle) // Clear nội dung
+            if (onContentChange) {
+               onContentChange("") // Gọi hàm khi có sự thay đổi nội dung
             }
          }
+         adjustHeight(textFieldEle)
       }
    }
 
-   // Xử lý placeholder
+   // Xử lý blur
    const handleBlur = () => {
-      const textFieldEle = textFieldRef.current
-      if (textFieldEle && !textFieldEle.innerText) {
-         setTextFieldContent("", textFieldEle)
-         if (onBlur) {
-            onBlur()
-         }
+      if (onBlur) {
+         onBlur()
       }
    }
+
+   // Lắng nghe sự kiện chỉnh sửa text field content
+   const listenTextFieldEdited = (textFieldEle: HTMLDivElement) => {
+      eventEmitter.on(EInternalEvents.MSG_TEXTFIELD_EDITED, (msgData) => {
+         textFieldEle.innerHTML += msgData.textContent
+         handleInput(textFieldEle)
+      })
+   }
+
+   // Khởi tạo component
+   useEffect(() => {
+      const textFieldEle = textFieldRef.current
+      if (textFieldEle) {
+         listenTextFieldEdited(textFieldEle)
+         setTextFieldContent(initialValue, textFieldEle)
+         adjustHeight(textFieldEle)
+      }
+      return () => {
+         eventEmitter.off(EInternalEvents.MSG_TEXTFIELD_EDITED)
+      }
+   }, [])
 
    return (
       <div
          ref={textFieldRef}
          contentEditable
-         onInput={handleInput}
+         onInput={(e) => handleInput(e.currentTarget as HTMLDivElement)}
          onKeyDown={handleKeyDown}
          onBlur={handleBlur}
          style={{
@@ -126,6 +156,7 @@ export const AutoResizeTextField: React.FC<AutoResizeTextFieldProps> = ({
             wordWrap: "break-word",
             wordBreak: "break-all",
             height: initialHeight,
+            fontSize: `${textSize}px`,
          }}
          className={className}
          data-placeholder={placeholder}

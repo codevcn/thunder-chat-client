@@ -1,5 +1,5 @@
-import type { IEmitSocketEvents, IListenSocketEvents } from "@/utils/events/events-interfaces"
-import { ESocketNamespaces } from "@/utils/events/socket-namespaces"
+import type { IEmitSocketEvents, IListenSocketEvents } from "./interfaces"
+import { ESocketNamespaces } from "./namespaces"
 import { io, Socket } from "socket.io-client"
 
 class ClientSocket {

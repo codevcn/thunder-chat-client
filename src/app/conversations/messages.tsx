@@ -8,18 +8,20 @@ import { fetchDirectMessagesThunk } from "@/redux/messages/messages.thunk"
 import type { TStateDirectMessage, TUserWithoutPassword } from "@/utils/types"
 import { Spinner } from "@/components/materials/spinner"
 import dayjs from "dayjs"
-import { EEventNames, EPaginations, ESortTypes, ETimeFormats } from "@/utils/enums"
+import { EPaginations, ESortTypes, ETimeFormats } from "@/utils/enums"
 import { ScrollToBottomMessageBtn } from "./scroll-to-bottom-msg-btn"
 import { createPortal } from "react-dom"
 import { useUser } from "@/hooks/user"
-import { clientSocket } from "@/configs/socket"
-import { ESocketEvents } from "@/utils/events/socket-events"
 import { pushNewMessages } from "@/redux/messages/messages.slice"
 import { displayMessageStickyTime } from "@/utils/date-time"
-import { customEventManager } from "@/utils/events/custom-events"
 import axiosErrorHandler from "@/utils/axios-error-handler"
 import toast from "react-hot-toast"
 import { SHOW_SCROLL_BTN_THRESHOLD } from "@/utils/constants"
+import { EInternalEvents } from "@/utils/event-emitter/events"
+import { clientSocket } from "@/utils/socket/client-socket"
+import { ESocketEvents } from "@/utils/socket/events"
+import { eventEmitter } from "@/utils/event-emitter/event-emitter"
+import { santizeMsgContent } from "@/utils/helpers"
 
 type TMessageProps = {
    message: TStateDirectMessage
@@ -39,10 +41,11 @@ const Message = ({ message, isNewMsg, user }: TMessageProps) => {
                <div
                   className={`${isNewMsg ? "animate-new-own-message" : ""} max-w-[70%] w-max bg-regular-violet-cl rounded-t-2xl rounded-bl-2xl py-1.5 pb-1 px-2`}
                >
-                  <p className="text-end break-words whitespace-pre-wrap text-sm inline break-all">
-                     {content}
-                  </p>
-                  <div className="flex justify-end items-center gap-x-1 mt-1 w-max">
+                  <div
+                     className="text-end break-words whitespace-pre-wrap text-sm inline"
+                     dangerouslySetInnerHTML={{ __html: santizeMsgContent(content) }}
+                  ></div>
+                  <div className="flex justify-end items-center gap-x-1 mt-1.5 w-max">
                      <span className="text-xs text-regular-creator-msg-time-cl leading-none">
                         {msgTime}
                      </span>
@@ -57,10 +60,11 @@ const Message = ({ message, isNewMsg, user }: TMessageProps) => {
                <div
                   className={`${isNewMsg ? "animate-new-friend-message" : ""} max-w-[70%] w-max bg-regular-dark-gray-cl rounded-t-2xl rounded-br-2xl pt-1.5 pb-1 px-2 relative`}
                >
-                  <p className="max-w-full break-words whitespace-pre-wrap text-sm inline break-all">
-                     {content}
-                  </p>
-                  <div className="flex justify-end items-center mt-1">
+                  <div
+                     className="max-w-full break-words whitespace-pre-wrap text-sm inline"
+                     dangerouslySetInnerHTML={{ __html: santizeMsgContent(content) }}
+                  ></div>
+                  <div className="flex justify-end items-center mt-1.5">
                      <span className="text-xs text-regular-creator-msg-time-cl">{msgTime}</span>
                   </div>
                </div>
@@ -186,7 +190,7 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
 
    const fetchDirectMessages = async (directChatId: number, msgTime: Date) => {
       const chatBoxEle = chatBox.current
-      if(!chatBoxEle) return
+      if (!chatBoxEle) return
       setLoading("loading-messages")
       const scrollHeightBefore = chatBoxEle.scrollHeight // Chiều cao trước khi thêm
       const scrollTopBefore = chatBoxEle.scrollTop // Vị trí cuộn từ top
@@ -216,11 +220,11 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
          })
    }
 
-   function scrollChatBoxListner(this: HTMLDivElement, e: Event) {
+   function scrollChatBoxListner(this: HTMLDivElement, _: Event) {
       if (this.scrollHeight - this.scrollTop < this.clientHeight + SHOW_SCROLL_BTN_THRESHOLD) {
-         customEventManager.dispatchEvent(EEventNames.SCROLL_TO_BOTTOM_MSG_UI)
+         eventEmitter.emit(EInternalEvents.SCROLL_TO_BOTTOM_MSG_UI)
       } else {
-         customEventManager.dispatchEvent(EEventNames.SCROLL_OUT_OF_BOTTOM)
+         eventEmitter.emit(EInternalEvents.SCROLL_OUT_OF_BOTTOM)
          // Check if the user scrolled to the top then fetch more messages
          if (this.scrollTop === 0 && hasMoreMessages.current && !loading) {
             fetchDirectMessages(directChatId, msgTime.current)
@@ -231,7 +235,7 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
    const listenScrollGetMoreMessages = () => {
       if (chatBox.current) {
          chatBox.current.addEventListener("scroll", scrollChatBoxListner)
-         customEventManager.on(EEventNames.SCROLL_TO_BOTTOM_MSG_ACTION, (payload) => {
+         eventEmitter.on(EInternalEvents.SCROLL_TO_BOTTOM_MSG_ACTION, () => {
             scrollToBottomMessage()
          })
       }
@@ -278,7 +282,7 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
       listenRecoverdConnection()
       return () => {
          chatBox.current?.removeEventListener("scroll", scrollChatBoxListner)
-         customEventManager.off(EEventNames.SCROLL_TO_BOTTOM_MSG_ACTION)
+         eventEmitter.off(EInternalEvents.SCROLL_TO_BOTTOM_MSG_ACTION)
          clientSocket.socket.off(ESocketEvents.recovered_connection)
          clientSocket.socket.off(ESocketEvents.send_message_direct)
       }
@@ -294,7 +298,10 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
          >
             {fetchedMsgs && user ? (
                messages && messages.length > 0 ? (
-                  <div className="flex flex-col justify-end items-center py-3 box-border w-messages-list gap-y-2">
+                  <div
+                     id="STYLE-messages-container"
+                     className="flex flex-col justify-end items-center py-3 box-border w-messages-list gap-y-2"
+                  >
                      {hasMoreMessages.current && loading === "loading-messages" && (
                         <div className="flex w-full justify-center">
                            <Spinner size="small" />
