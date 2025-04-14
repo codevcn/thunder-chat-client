@@ -2,6 +2,8 @@ import { eventEmitter } from "@/utils/event-emitter/event-emitter"
 import { EInternalEvents } from "@/utils/event-emitter/events"
 import { useEffect } from "react"
 
+const EMPTY_PLACEHOLDER_HTML: string = `<span class="QUERY-empty-placeholder"></span>`
+
 type AutoResizeTextFieldProps = {
    textFieldRef: React.RefObject<HTMLDivElement | null>
 } & Partial<{
@@ -20,12 +22,10 @@ type AutoResizeTextFieldProps = {
    textSize: number
 }>
 
-const emptyPlaceholderHTML: string = `<span class="QUERY-empty-placeholder"></span>`
-
 export const AutoResizeTextField: React.FC<AutoResizeTextFieldProps> = ({
    onContentChange,
    onEnterPress,
-   initialValue = "",
+   initialValue,
    placeholder = "Type something...",
    maxHeight = 300,
    minHeight,
@@ -76,7 +76,7 @@ export const AutoResizeTextField: React.FC<AutoResizeTextFieldProps> = ({
          tempDiv.innerHTML = content
          if (tempDiv.innerText.trim().length === 0) {
             // Nếu nội dung không chứa thẻ img và không có nội dung nào khác thì đặt content thành 1 thẻ html (để giữ caret)
-            setTextFieldContent(emptyPlaceholderHTML, textFieldEle)
+            setTextFieldContent(EMPTY_PLACEHOLDER_HTML, textFieldEle)
          }
       }
       if (onContentChange) {
@@ -101,7 +101,7 @@ export const AutoResizeTextField: React.FC<AutoResizeTextFieldProps> = ({
             if (onEnterPress) {
                onEnterPress(textFieldEle.innerHTML) // Lấy text hiện tại
             }
-            setTextFieldContent(emptyPlaceholderHTML, textFieldEle) // Clear nội dung
+            setTextFieldContent(EMPTY_PLACEHOLDER_HTML, textFieldEle) // Clear nội dung
             if (onContentChange) {
                onContentChange("") // Gọi hàm khi có sự thay đổi nội dung
             }
@@ -130,7 +130,11 @@ export const AutoResizeTextField: React.FC<AutoResizeTextFieldProps> = ({
       const textFieldEle = textFieldRef.current
       if (textFieldEle) {
          listenTextFieldEdited(textFieldEle)
-         setTextFieldContent(initialValue, textFieldEle)
+         if (initialValue) {
+            setTextFieldContent(initialValue, textFieldEle)
+         } else {
+            setTextFieldContent(EMPTY_PLACEHOLDER_HTML, textFieldEle)
+         }
          adjustHeight(textFieldEle)
       }
       return () => {

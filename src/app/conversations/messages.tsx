@@ -1,9 +1,8 @@
 "use client"
 
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
-import { useRef, Fragment, useState } from "react"
+import { useRef, useState, useEffect, memo, useCallback } from "react"
 import { CheckCheck } from "lucide-react"
-import { useEffect, memo } from "react"
 import { fetchDirectMessagesThunk } from "@/redux/messages/messages.thunk"
 import type { TStateDirectMessage, TUserWithoutPassword } from "@/utils/types"
 import { Spinner } from "@/components/materials/spinner"
@@ -22,69 +21,9 @@ import { clientSocket } from "@/utils/socket/client-socket"
 import { ESocketEvents } from "@/utils/socket/events"
 import { eventEmitter } from "@/utils/event-emitter/event-emitter"
 import { santizeMsgContent } from "@/utils/helpers"
+import { useQueue } from "@/hooks/queue"
 
-type TMessageProps = {
-   message: TStateDirectMessage
-   user: TUserWithoutPassword
-   isNewMsg: boolean
-}
-
-const Message = ({ message, isNewMsg, user }: TMessageProps) => {
-   const { authorId, content, createdAt } = message
-
-   const msgTime = dayjs(createdAt).format(ETimeFormats.HH_mm)
-
-   return (
-      <div className="w-full text-regular-white-cl">
-         {user.id === authorId ? (
-            <div className="flex justify-end w-full">
-               <div
-                  className={`${isNewMsg ? "animate-new-own-message" : ""} max-w-[70%] w-max bg-regular-violet-cl rounded-t-2xl rounded-bl-2xl py-1.5 pb-1 px-2`}
-               >
-                  <div
-                     className="text-end break-words whitespace-pre-wrap text-sm inline"
-                     dangerouslySetInnerHTML={{ __html: santizeMsgContent(content) }}
-                  ></div>
-                  <div className="flex justify-end items-center gap-x-1 mt-1.5 w-max">
-                     <span className="text-xs text-regular-creator-msg-time-cl leading-none">
-                        {msgTime}
-                     </span>
-                     <div className="flex ml-0.5">
-                        <CheckCheck size={15} />
-                     </div>
-                  </div>
-               </div>
-            </div>
-         ) : (
-            <div className="flex justify-start w-full">
-               <div
-                  className={`${isNewMsg ? "animate-new-friend-message" : ""} max-w-[70%] w-max bg-regular-dark-gray-cl rounded-t-2xl rounded-br-2xl pt-1.5 pb-1 px-2 relative`}
-               >
-                  <div
-                     className="max-w-full break-words whitespace-pre-wrap text-sm inline"
-                     dangerouslySetInnerHTML={{ __html: santizeMsgContent(content) }}
-                  ></div>
-                  <div className="flex justify-end items-center mt-1.5">
-                     <span className="text-xs text-regular-creator-msg-time-cl">{msgTime}</span>
-                  </div>
-               </div>
-            </div>
-         )}
-      </div>
-   )
-}
-
-const NoMessagesYet = () => {
-   return (
-      <div className="flex-col items-center gap-y-1 m-auto text-base w-2/4 cursor-pointer">
-         <p className="font-bold">No messages here yet...</p>
-         <p className="text-center">Send a message or tap on the greeting below.</p>
-         <p className="bg-regular-violet-cl font-bold p-5 py-2 mt-2 rounded-lg hover:scale-105 transition">
-            SAY HELLO!
-         </p>
-      </div>
-   )
-}
+const SCROLL_ON_MESSAGES_THRESHOLD: number = 100
 
 type TStickyTimeProps = {
    stickyTime: string
@@ -98,6 +37,76 @@ const StickyTime = ({ stickyTime }: TStickyTimeProps) => {
    )
 }
 
+type TMessageProps = {
+   message: TStateDirectMessage
+   user: TUserWithoutPassword
+   stickyTime: string | null
+}
+
+const Message = memo(({ message, user, stickyTime }: TMessageProps) => {
+   const { authorId, content, createdAt, isNewMsg, id } = message
+
+   const msgTime = dayjs(createdAt).format(ETimeFormats.HH_mm)
+
+   return (
+      <>
+         {stickyTime && <StickyTime stickyTime={stickyTime} />}
+
+         <div
+            className={`${isNewMsg ? "QUERY-unread-message" : ""} w-full text-regular-white-cl`}
+            data-msg-id={id}
+         >
+            {user.id === authorId ? (
+               <div className="flex justify-end w-full">
+                  <div
+                     className={`${isNewMsg ? "animate-new-own-message" : ""} max-w-[70%] w-max bg-regular-violet-cl rounded-t-2xl rounded-bl-2xl py-1.5 pb-1 px-2`}
+                  >
+                     <div
+                        className="text-end break-words whitespace-pre-wrap text-sm inline"
+                        dangerouslySetInnerHTML={{ __html: santizeMsgContent(content) }}
+                     ></div>
+                     <div className="flex justify-end items-center gap-x-1 mt-1.5 w-max">
+                        <span className="text-xs text-regular-creator-msg-time-cl leading-none">
+                           {msgTime}
+                        </span>
+                        <div className="flex ml-0.5">
+                           <CheckCheck size={15} />
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            ) : (
+               <div className="flex justify-start w-full">
+                  <div
+                     className={`${isNewMsg ? "animate-new-friend-message" : ""} max-w-[70%] w-max bg-regular-dark-gray-cl rounded-t-2xl rounded-br-2xl pt-1.5 pb-1 px-2 relative`}
+                  >
+                     <div
+                        className="max-w-full break-words whitespace-pre-wrap text-sm inline"
+                        dangerouslySetInnerHTML={{ __html: santizeMsgContent(content) }}
+                     ></div>
+                     <div className="flex justify-end items-center mt-1.5">
+                        <span className="text-xs text-regular-creator-msg-time-cl">{msgTime}</span>
+                     </div>
+                  </div>
+               </div>
+            )}
+         </div>
+      </>
+   )
+})
+
+const NoMessagesYet = () => {
+   return (
+      <div className="flex-col items-center gap-y-1 m-auto text-base w-2/4 cursor-pointer">
+         <p className="font-bold">No messages here yet...</p>
+         <p className="text-center">Send a message or tap on the greeting below.</p>
+         <p className="bg-regular-violet-cl font-bold p-5 py-2 mt-2 rounded-lg hover:scale-105 transition">
+            SAY HELLO!
+         </p>
+      </div>
+   )
+}
+
 type TMappedMessagesProps = {
    messages: TStateDirectMessage[]
    user: TUserWithoutPassword
@@ -107,12 +116,7 @@ const MappedMessages = ({ messages, user }: TMappedMessagesProps) =>
    messages.map((message, index) => {
       const stickyTime = displayMessageStickyTime(message.createdAt, messages[index - 1]?.createdAt)
 
-      return (
-         <Fragment key={message.id}>
-            {stickyTime && <StickyTime stickyTime={stickyTime} />}
-            <Message message={message} key={message.id} isNewMsg={!!message.isNewMsg} user={user} />
-         </Fragment>
-      )
+      return <Message message={message} key={message.id} user={user} stickyTime={stickyTime} />
    })
 
 type TMessagesProps = {
@@ -121,56 +125,72 @@ type TMessagesProps = {
 
 type TMessagesLoadingState = "loading-messages"
 
+type TMsgInCheckingQueue = {
+   id: number
+   element: HTMLElement
+}
+
 export const Messages = memo(({ directChatId }: TMessagesProps) => {
    const { messages, fetchedMsgs } = useAppSelector(({ messages }) => messages)
    const [loading, setLoading] = useState<TMessagesLoadingState>()
    const user = useUser()
-   const chatBox = useRef<HTMLDivElement>(null)
+   const messagesContainer = useRef<HTMLDivElement>(null)
    const hasMoreMessages = useRef<boolean>(true)
    const firstScrollToBottom = useRef<boolean>(true)
    const finalMessageId = useRef<number>(-1)
    const msgTime = useRef<Date>(new Date())
    const dispatch = useAppDispatch()
    const tempFlagUseEffectRef = useRef<boolean>(true)
+   const msgcheckingQueue = useQueue<TMsgInCheckingQueue>()
 
+   // Xử lý cuộn xuống dưới khi nhấn nút
    const scrollToBottomMessage = () => {
-      const chatBoxEle = chatBox.current
-      if (chatBoxEle) {
-         chatBoxEle.scrollTo({
-            top: chatBoxEle.scrollHeight - chatBoxEle.clientHeight - 100,
+      const msgsContainerEle = messagesContainer.current
+      if (msgsContainerEle) {
+         msgsContainerEle.scrollTo({
+            top: msgsContainerEle.scrollHeight - msgsContainerEle.clientHeight - 100,
             behavior: "instant",
          })
-         chatBoxEle.scrollTo({
-            top: chatBoxEle.scrollHeight,
+         msgsContainerEle.scrollTo({
+            top: msgsContainerEle.scrollHeight,
             behavior: "smooth",
          })
       }
    }
 
-   const scrollToBottomMessageHandler = () => {
+   // Xử lý cuộn xuống dưới khi danh sách tin nhắn thay đổi
+   const scrollToBottomOnMessages = () => {
       if (messages && messages.length > 0) {
-         const chatBoxEle = chatBox.current
-         if (chatBoxEle) {
+         const msgsContainerEle = messagesContainer.current
+         if (msgsContainerEle) {
             if (firstScrollToBottom.current) {
+               // Cuộn xuống dưới khi lần đầu tiên tải tin nhắn
                firstScrollToBottom.current = false
-               chatBoxEle.scrollTo({
-                  top: chatBoxEle.scrollHeight,
+               msgsContainerEle.scrollTo({
+                  top: msgsContainerEle.scrollHeight,
                   behavior: "instant",
                })
-            }
-            const finalMessage = messages.at(-1)!
-            if (finalMessageId.current !== finalMessage.id) {
-               finalMessageId.current = finalMessage.id
-               if (chatBoxEle.scrollTop + chatBoxEle.clientHeight > chatBoxEle.scrollHeight - 100) {
-                  chatBoxEle.scrollTo({
-                     top: chatBoxEle.scrollHeight,
-                     behavior: "smooth",
-                  })
-               } else if (finalMessage.authorId === user!.id) {
-                  chatBoxEle.scrollTo({
-                     top: chatBoxEle.scrollHeight,
-                     behavior: "smooth",
-                  })
+            } else {
+               const finalMessage = messages.at(-1)!
+               if (finalMessageId.current !== finalMessage.id) {
+                  // Chỉ cuộn khi có tin nhắn mới
+                  finalMessageId.current = finalMessage.id
+                  if (
+                     msgsContainerEle.scrollTop + msgsContainerEle.clientHeight >
+                     msgsContainerEle.scrollHeight - SCROLL_ON_MESSAGES_THRESHOLD
+                  ) {
+                     // Cuộn khi có tin nhắn mới và màn hình chỉ đang cách mép dưới 100px
+                     msgsContainerEle.scrollTo({
+                        top: msgsContainerEle.scrollHeight,
+                        behavior: "smooth",
+                     })
+                  } else if (finalMessage.authorId === user!.id) {
+                     // Cuộn khi người dùng gửi tin nhắn
+                     msgsContainerEle.scrollTo({
+                        top: msgsContainerEle.scrollHeight,
+                        behavior: "smooth",
+                     })
+                  }
                }
             }
          }
@@ -183,17 +203,12 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
       }
    }
 
-   useEffect(() => {
-      setMsgTime()
-      scrollToBottomMessageHandler()
-   }, [messages])
-
    const fetchDirectMessages = async (directChatId: number, msgTime: Date) => {
-      const chatBoxEle = chatBox.current
-      if (!chatBoxEle) return
+      const msgsContainerEle = messagesContainer.current
+      if (!msgsContainerEle) return
       setLoading("loading-messages")
-      const scrollHeightBefore = chatBoxEle.scrollHeight // Chiều cao trước khi thêm
-      const scrollTopBefore = chatBoxEle.scrollTop // Vị trí cuộn từ top
+      const scrollHeightBefore = msgsContainerEle.scrollHeight // Chiều cao trước khi thêm
+      const scrollTopBefore = msgsContainerEle.scrollTop // Vị trí cuộn từ top
       dispatch(
          fetchDirectMessagesThunk({
             directChatId,
@@ -212,10 +227,10 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
             toast.error(axiosErrorHandler.handleHttpError(error).message)
          })
          .finally(() => {
-            const scrollHeightAfter = chatBoxEle.scrollHeight // Chiều cao sau khi thêm
+            const scrollHeightAfter = msgsContainerEle.scrollHeight // Chiều cao sau khi thêm
             const heightAdded = scrollHeightAfter - scrollHeightBefore // Chênh lệch chiều cao
             // Giữ nguyên khoảng cách từ lúc bắt đầu cuộn trước khi thêm các tin nhắn mới
-            chatBoxEle.scrollTop = scrollTopBefore + heightAdded
+            msgsContainerEle.scrollTop = scrollTopBefore + heightAdded
             setLoading(undefined)
          })
    }
@@ -233,12 +248,13 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
    }
 
    const listenScrollGetMoreMessages = () => {
-      if (chatBox.current) {
-         chatBox.current.addEventListener("scroll", scrollChatBoxListner)
-         eventEmitter.on(EInternalEvents.SCROLL_TO_BOTTOM_MSG_ACTION, () => {
-            scrollToBottomMessage()
-         })
-      }
+      messagesContainer.current?.addEventListener("scroll", scrollChatBoxListner)
+   }
+
+   const listenScrollToBottomMsg = () => {
+      eventEmitter.on(EInternalEvents.SCROLL_TO_BOTTOM_MSG_ACTION, () => {
+         scrollToBottomMessage()
+      })
    }
 
    const listenSendDirectMessage = () => {
@@ -270,6 +286,72 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
       })
    }
 
+   const checkIsInVisibleView = (messageEle: HTMLElement): boolean => {
+      const msgsContainerEle = messagesContainer.current
+      if (msgsContainerEle) {
+         return (
+            messageEle.offsetTop > msgsContainerEle.scrollTop &&
+            messageEle.offsetTop + messageEle.offsetHeight <
+               msgsContainerEle.scrollTop + msgsContainerEle.clientHeight
+         )
+      }
+      return false
+   }
+
+   const handleDisplayUnreadMessage = (messageEle: HTMLElement) => {
+      if (checkIsInVisibleView(messageEle)) {
+         messageEle.classList.remove("QUERY-unread-message", "bg-pink-200")
+      } else {
+         messageEle.classList.add("bg-pink-200")
+      }
+   }
+
+   const checkUnreadMessage = () => {
+      if (messages && messages.length > 0) {
+         const unreadMessages =
+            messagesContainer.current?.querySelectorAll<HTMLElement>(".QUERY-unread-message")
+         if (unreadMessages && unreadMessages.length > 0) {
+            for (const message of unreadMessages) {
+               const msgId = parseInt(message.dataset.msgId || "0")
+               if (!msgcheckingQueue.isDuplicate(msgId)) {
+                  msgcheckingQueue.enqueue({ id: msgId, element: message })
+               }
+            }
+            while (!msgcheckingQueue.isEmpty()) {
+               const message = msgcheckingQueue.dequeue()
+               if (message) {
+                  handleDisplayUnreadMessage(message.element)
+               }
+            }
+         }
+      }
+   }
+
+   const handleScrollMsgsContainer = useCallback(() => {
+      const unreadMessages =
+         messagesContainer.current?.querySelectorAll<HTMLElement>(".QUERY-unread-message")
+      if (unreadMessages && unreadMessages.length > 0) {
+         for (const msg of unreadMessages) {
+            handleDisplayUnreadMessage(msg)
+         }
+      }
+   }, [])
+
+   const listenOnScrollMsgsContainer = () => {
+      const msgsContainerEle = messagesContainer.current
+      if (msgsContainerEle) {
+         msgsContainerEle.addEventListener("scroll", handleScrollMsgsContainer)
+      }
+   }
+
+   useEffect(() => {
+      setMsgTime()
+      requestAnimationFrame(() => {
+         scrollToBottomOnMessages()
+         checkUnreadMessage()
+      })
+   }, [messages])
+
    useEffect(() => {
       if (tempFlagUseEffectRef.current) {
          tempFlagUseEffectRef.current = false
@@ -277,11 +359,14 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
             fetchDirectMessages(directChatId, msgTime.current)
          }
       }
+      listenOnScrollMsgsContainer()
       listenScrollGetMoreMessages()
+      listenScrollToBottomMsg()
       listenSendDirectMessage()
       listenRecoverdConnection()
       return () => {
-         chatBox.current?.removeEventListener("scroll", scrollChatBoxListner)
+         messagesContainer.current?.removeEventListener("scroll", scrollChatBoxListner)
+         messagesContainer.current?.removeEventListener("scroll", handleScrollMsgsContainer)
          eventEmitter.off(EInternalEvents.SCROLL_TO_BOTTOM_MSG_ACTION)
          clientSocket.socket.off(ESocketEvents.recovered_connection)
          clientSocket.socket.off(ESocketEvents.send_message_direct)
@@ -294,12 +379,12 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
 
          <div
             className="flex flex-col items-center w-full h-full overflow-y-scroll overflow-x-hidden styled-scrollbar px-3 box-border"
-            ref={chatBox}
+            ref={messagesContainer}
          >
             {fetchedMsgs && user ? (
                messages && messages.length > 0 ? (
                   <div
-                     id="STYLE-messages-container"
+                     id="STYLE-user-messages"
                      className="flex flex-col justify-end items-center py-3 box-border w-messages-list gap-y-2"
                   >
                      {hasMoreMessages.current && loading === "loading-messages" && (

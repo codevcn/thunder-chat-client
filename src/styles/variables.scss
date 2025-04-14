@@ -33,15 +33,19 @@
    --tdc-info-bar-mb-width: 420px;
    --tdc-chat-n-info-container-width: calc(100% - var(--tdc-convs-card-width));
    --tdc-messages-list-width: 560px;
-   --tdc-type-message-bar-width: 540px;
+   --tdc-type-message-bar-width: var(--tdc-messages-list-width);
    --tdc-msgs-container-width: calc(100% - var(--tdc-info-bar-width));
    --tdc-emoji-picker-width: 324px;
+   --tdc-type-msg-bar-emoji-width: 20px;
+   --tdc-user-msg-emoji-width: 22px;
 
    /* heights */
    --tdc-header-height: 3.5rem;
    --tdc-chat-container-height: 100%;
    --tdc-type-msg-bar-height: 50px;
    --tdc-emoji-picker-height: 365px;
+   --tdc-type-msg-bar-emoji-height: 20px;
+   --tdc-user-msg-emoji-height: 22px;
 
    /* transitions */
    --tdc-slide-info-bar-timing: cubic-bezier(0.33, 1, 0.68, 1);

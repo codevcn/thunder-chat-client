@@ -18,7 +18,7 @@ import { EInternalEvents } from "@/utils/event-emitter/events"
 const LazyEmojiPicker = lazy(() => import("../../components/materials/emoji-picker"))
 
 const Fallback = () => (
-   <div className="rounded-lg overflow-hidden bg-emoji-picker-bgcl w-emoji-picker h-emoji-picker"></div>
+   <div className="rounded-lg overflow-hidden bg-emoji-picker-bgcl w-full h-full"></div>
 )
 
 type TAddEmojiProps = {
@@ -77,7 +77,7 @@ const AddEmoji = ({ textFieldRef }: TAddEmojiProps) => {
          addEmojiPopover.style.cssText = `top: ${top}px; left: ${left}px; position: fixed; z-index: 99;`
 
          requestAnimationFrame(() => {
-            addEmojiPopover.classList.add("animate-scale-up", "origin-bottom-left")
+            addEmojiPopover.classList.add("animate-scale-up", "origin-bottom")
          })
       }
    }
@@ -92,7 +92,10 @@ const AddEmoji = ({ textFieldRef }: TAddEmojiProps) => {
       <div className="flex text-gray-500 hover:text-regular-violet-cl relative bottom-0 left-0 cursor-pointer">
          {showPicker &&
             createPortal(
-               <div ref={addEmojiPopoverRef} className="fixed top-0 left-0" id="oke-vcn">
+               <div
+                  ref={addEmojiPopoverRef}
+                  className="fixed top-0 left-0 h-emoji-picker w-emoji-picker"
+               >
                   <Suspense fallback={<Fallback />}>
                      <LazyEmojiPicker
                         onSelectEmoji={handleSelectEmoji}
@@ -136,7 +139,12 @@ const MessageTextField = ({
    }
 
    const sendMessage = (msgToSend: string) => {
-      if (!msgToSend || msgToSend.length === 0) return
+      if (
+         !msgToSend ||
+         msgToSend.length === 0 ||
+         textFieldRef.current?.querySelector(".QUERY-empty-placeholder")
+      )
+         return
       const { recipientId, id, creatorId } = directChat
       chattingService.sendMessage(
          user!.id === recipientId ? creatorId : recipientId,
@@ -167,7 +175,7 @@ const MessageTextField = ({
    }
 
    return (
-      <div className="relative bg-regular-dark-gray-cl w-type-message-bar py-[15.5px] px-2">
+      <div className="relative bg-regular-dark-gray-cl grow py-[15.5px] px-2">
          <AutoResizeTextField
             className="block bg-transparent outline-none w-full hover:bg-transparent whitespace-pre-wrap break-all leading-tight focus:bg-transparent z-10 styled-scrollbar border-transparent text-white hover:border-transparent focus:border-transparent focus:shadow-none"
             onEnterPress={handleCatchEnter}
@@ -178,7 +186,7 @@ const MessageTextField = ({
             onBlur={handleBlur}
             initialHeight={21}
             textSize={14}
-            id="STYLE-text-field"
+            id="STYLE-type-msg-bar"
          />
          <span
             className={`${hasContent ? "animate-hide-placeholder" : "animate-grow-placeholder"} leading-tight left-2.5 z-0 absolute top-1/2 -translate-y-1/2 text-regular-placeholder-cl`}
@@ -219,11 +227,11 @@ export const TypeMessageBar = memo(({ directChat }: TTypeMessageBarProps) => {
 
    return (
       fetchedMsgs && (
-         <div className="flex gap-2.5 items-end pt-2 pb-4 z-999 box-border">
+         <div className="flex gap-2.5 items-end pt-2 pb-4 z-999 box-border w-type-message-bar">
             <div
                onClick={startTyping}
                ref={textFieldContainerRef}
-               className="cursor-text flex items-center gap-2 relative z-10 rounded-2xl bg-regular-dark-gray-cl px-3 outline-2 outline outline-regular-dark-gray-cl hover:outline-regular-violet-cl transition-[outline] duration-200"
+               className="flex cursor-text grow items-center gap-2 relative z-10 rounded-2xl bg-regular-dark-gray-cl px-3 outline-2 outline outline-regular-dark-gray-cl hover:outline-regular-violet-cl transition-[outline] duration-200"
             >
                <AddEmoji textFieldRef={textFieldRef} />
                <MessageTextField
@@ -233,9 +241,9 @@ export const TypeMessageBar = memo(({ directChat }: TTypeMessageBarProps) => {
                   textFieldRef={textFieldRef}
                   textFieldContainerRef={textFieldContainerRef}
                />
-               <div className="text-gray-500 hover:text-regular-violet-cl cursor-pointer relative bottom-0 right-0">
+               <button className="text-gray-500 hover:text-regular-violet-cl cursor-pointer relative bottom-0 right-0">
                   <Paperclip />
-               </div>
+               </button>
             </div>
 
             <CustomTooltip

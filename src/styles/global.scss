@@ -4,8 +4,6 @@
 
 @mixin emoji-style {
    display: inline-block;
-   height: 20px;
-   width: 20px;
    padding-left: 1px;
    padding-right: 1px;
    box-sizing: content-box;
@@ -202,14 +200,18 @@ svg {
    }
 }
 
-#STYLE-text-field {
+#STYLE-type-msg-bar {
    .STYLE-emoji-img {
       @include emoji-style;
+      height: var(--tdc-type-msg-bar-emoji-height);
+      width: var(--tdc-type-msg-bar-emoji-width);
    }
 }
 
-#STYLE-messages-container {
+#STYLE-user-messages {
    .STYLE-emoji-img {
       @include emoji-style;
+      height: var(--tdc-user-msg-emoji-height);
+      width: var(--tdc-user-msg-emoji-width);
    }
 }

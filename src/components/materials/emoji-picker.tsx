@@ -158,7 +158,7 @@ const EmojiPicker = ({ onSelectEmoji, onHideShowPicker, addEmojiBtnRef }: TEmoji
    return (
       <div
          ref={pickerRef}
-         className="rounded-lg overflow-hidden bg-emoji-picker-bgcl w-emoji-picker h-emoji-picker"
+         className="rounded-lg overflow-hidden bg-emoji-picker-bgcl w-full h-full"
       >
          {/* Emoji Tabs */}
          <div className="flex overflow-x-auto p-2 gap-3 border-t border-gray-700">
