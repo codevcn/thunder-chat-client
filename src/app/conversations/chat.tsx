@@ -139,7 +139,7 @@ export const Chat = () => {
                <div
                   className={`${infoBarIsOpened ? "screen-large-chatting:translate-x-slide-chat-container screen-large-chatting:w-msgs-container" : "translate-x-0 w-full"} flex flex-col justify-between items-center h-chat-container transition duration-300 ease-slide-info-bar-timing overflow-hidden`}
                >
-                  <Messages directChatId={directChatId} />
+                  <Messages directChat={directChat} />
 
                   <TypeMessageBar directChat={directChat} />
                </div>

@@ -139,10 +139,10 @@ const config: Config = {
                "super-zoom-in 0.15s forwards ease, fade-out 0.15s forwards ease",
             "disappear-zoom-out-s40": "disappear-zoom-out-s40 0.15s forwards linear",
             "appear-zoom-in-s40": "appear-zoom-in-s40 0.15s forwards linear",
-            "new-friend-message": "new-friend-message 0.2s var(--tdc-new-message-timing) 1 0.01s",
-            "new-own-message": "new-own-message 0.2s var(--tdc-new-message-timing) 1 0.01s",
+            "new-friend-message":
+               "new-friend-message 0.2s var(--tdc-new-message-timing) 1 forwards",
+            "new-user-message": "new-user-message 0.2s var(--tdc-new-message-timing) 1 forwards",
             "scale-up": "scale-up 0.2s ease-out forwards",
-            "unread-message": "unread-message 0.3s ease-in-out forwards 2",
          },
          borderRadius: {
             lg: "var(--radius)",

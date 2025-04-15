@@ -23,9 +23,6 @@ export const ScrollToBottomMessageBtn = memo(() => {
       })
       eventEmitter.on(EInternalEvents.UNREAD_MESSAGES_COUNT, (count: number) => {
          setUnreadMessagesCount(count)
-         if (count > 0) {
-            setShowScrollBtn(true)
-         }
       })
       return () => {
          eventEmitter.off(EInternalEvents.SCROLL_OUT_OF_BOTTOM)
@@ -33,6 +30,12 @@ export const ScrollToBottomMessageBtn = memo(() => {
          eventEmitter.off(EInternalEvents.UNREAD_MESSAGES_COUNT)
       }
    }, [])
+
+   useEffect(() => {
+      if (unreadMessagesCount > 0) {
+         setShowScrollBtn(true)
+      }
+   }, [unreadMessagesCount])
 
    return (
       <div

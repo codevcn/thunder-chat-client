@@ -1,5 +1,6 @@
 import type { AxiosError, HttpStatusCode } from "axios"
 import type { TChattingPayload } from "./socket/types"
+import type { EMessageStatus } from "./socket/enums"
 
 // DB entities
 export type TUser = {
@@ -37,6 +38,7 @@ export type TDirectMessage = {
    content: string
    authorId: number
    directChatId: number
+   status: EMessageStatus
 }
 
 // Common types

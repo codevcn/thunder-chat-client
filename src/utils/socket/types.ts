@@ -1,4 +1,5 @@
-import { HttpStatusCode } from "axios"
+import type { HttpStatusCode } from "axios"
+import type { EMessageStatus } from "./enums"
 
 export type TWsErrorResponse = {
    isError: boolean
@@ -12,4 +13,14 @@ export type TChattingPayload = {
    directChatId: number
    token: string
    timestamp: Date
+}
+
+export type TMsgSeenListenPayload = {
+   messageId: number
+   status: EMessageStatus
+}
+
+export type TMsgSeenEmitPayload = {
+   messageId: number
+   receiverId: number
 }

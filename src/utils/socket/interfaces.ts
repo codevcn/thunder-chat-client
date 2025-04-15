@@ -5,7 +5,12 @@ import type {
    TUserWithProfile,
 } from "../types"
 import { ESocketEvents, ESocketInitEvents } from "./events"
-import type { TChattingPayload, TWsErrorResponse } from "./types"
+import type {
+   TChattingPayload,
+   TMsgSeenEmitPayload,
+   TMsgSeenListenPayload,
+   TWsErrorResponse,
+} from "./types"
 
 export interface IListenSocketEvents {
    [ESocketInitEvents.connect]: () => void
@@ -14,6 +19,7 @@ export interface IListenSocketEvents {
    [ESocketEvents.send_message_direct]: (newMessage: TDirectMessage) => void
    [ESocketEvents.send_friend_request]: (sender: TUserWithProfile) => void
    [ESocketEvents.recovered_connection]: (messages: TDirectMessage[]) => void
+   [ESocketEvents.message_seen_direct]: (payload: TMsgSeenListenPayload) => void
 }
 
 export interface IEmitSocketEvents {
@@ -21,4 +27,5 @@ export interface IEmitSocketEvents {
       message: TChattingPayload,
       cb: (data: TSendDirectMessageErrorRes | TSuccess) => void
    ) => void
+   [ESocketEvents.message_seen_direct]: (payload: TMsgSeenEmitPayload) => void
 }
