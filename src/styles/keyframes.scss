@@ -152,7 +152,7 @@
    }
 }
 
-@keyframes new-friend-message {
+@keyframes friend-new-message {
    0% {
       transform: translate(3.5rem, 1rem);
       opacity: 0;
@@ -170,5 +170,17 @@
    }
    100% {
       transform: scale(1); /* Phóng to đến kích thước đầy đủ */
+   }
+}
+
+@keyframes unread-message {
+   0% {
+      transform: scale(1);
+   }
+   50% {
+      transform: scale(1.15);
+   }
+   100% {
+      transform: scale(1);
    }
 }

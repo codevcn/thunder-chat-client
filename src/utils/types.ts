@@ -1,5 +1,5 @@
 import type { AxiosError, HttpStatusCode } from "axios"
-import type { TChattingPayload } from "./events/types"
+import type { TChattingPayload } from "./socket/types"
 
 // DB entities
 export type TUser = {
@@ -99,7 +99,7 @@ export type THandledAxiosError = {
 }
 
 export type TFormData = {
-   [key: string]: FormDataEntryValue | FormDataEntryValue[]
+   [key: string]: FormDataEntryValue | FormDataEntryValue[] | TCheckboxValue | undefined
 }
 
 export type TLastPageAccessed = {
@@ -112,3 +112,5 @@ export type TEmoji = {
    alt: string
    name: string
 }
+
+export type TCheckboxValue = "on" | undefined

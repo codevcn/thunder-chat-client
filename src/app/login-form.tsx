@@ -10,11 +10,12 @@ import { authService } from "@/services/auth.service"
 import { extractFormData } from "@/utils/helpers"
 import axiosErrorHandler from "@/utils/axios-error-handler"
 import { useAuthRedirect } from "@/hooks/redirect"
+import type { TCheckboxValue } from "@/utils/types"
 
 type TLoginFormData = {
    email: string
    password: string
-   keepSigned: boolean
+   keepSigned: TCheckboxValue
 }
 
 type TLoginFormProps = {
@@ -28,11 +29,11 @@ export const LoginForm = ({ typedEmail, onGoBack }: TLoginFormProps) => {
 
    const loginUser = (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault()
-      const { email, password, keepSigned } = extractFormData(e.currentTarget) as TLoginFormData
+      const { email, password, keepSigned } = extractFormData<TLoginFormData>(e.currentTarget)
       if (validator.isEmail(email)) {
          setLoading(true)
          authService
-            .loginUser(email, password, keepSigned)
+            .loginUser(email, password, keepSigned === "on")
             .then(() => {
                setTimeout(() => {
                   authRedirect()

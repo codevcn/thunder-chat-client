@@ -24,9 +24,9 @@ export const getRouteWithQueryString = (url: string = window.location.href): str
    return `${urlObject.pathname}${urlObject.search}`
 }
 
-export function extractFormData(formEle: HTMLFormElement) {
+export function extractFormData<T extends TFormData>(formEle: HTMLFormElement): T {
    const formData = new FormData(formEle)
-   const data: TFormData = {}
+   const data: any = {}
 
    for (const [key, value] of formData.entries()) {
       const currentValue = data[key]

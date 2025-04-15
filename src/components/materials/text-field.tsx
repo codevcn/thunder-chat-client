@@ -1,6 +1,12 @@
+import { X } from "lucide-react"
+
 type TTextFieldProps = Partial<{
    type: React.HTMLInputTypeAttribute
-   classNames: Partial<{ wrapper: string; input: string }>
+   classNames: Partial<{
+      wrapper: string
+      input: string
+      clearIcon: string
+   }>
    name: string
    inputId: string
    suffixIcon: React.ReactNode
@@ -9,6 +15,7 @@ type TTextFieldProps = Partial<{
    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
    onPressEnter: (e: React.KeyboardEvent<HTMLInputElement>) => void
    ref: React.RefObject<HTMLInputElement | null>
+   onClear: (e: React.MouseEvent<HTMLElement>) => void
 }>
 
 export const TextField = ({
@@ -22,10 +29,11 @@ export const TextField = ({
    onPressEnter,
    onChange,
    ref,
+   onClear,
 }: TTextFieldProps) => {
    const catchEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (onPressEnter) {
-         if (e.key === "Enter") {
+      if (e.key === "Enter") {
+         if (onPressEnter) {
             onPressEnter(e)
          }
       }
@@ -44,7 +52,9 @@ export const TextField = ({
             onChange={onChange}
             ref={ref}
          />
-         <div className="absolute right-1 top-1/2 -translate-y-1/2">{prefixIcon}</div>
+         <div className="absolute right-1 top-1/2 -translate-y-1/2">
+            {onClear ? <X className={classNames?.clearIcon} /> : prefixIcon}
+         </div>
       </div>
    )
 }

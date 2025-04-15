@@ -21,7 +21,6 @@ import { clientSocket } from "@/utils/socket/client-socket"
 import { ESocketEvents } from "@/utils/socket/events"
 import { eventEmitter } from "@/utils/event-emitter/event-emitter"
 import { santizeMsgContent } from "@/utils/helpers"
-import { useQueue } from "@/hooks/queue"
 
 const SCROLL_ON_MESSAGES_THRESHOLD: number = 100
 
@@ -52,10 +51,7 @@ const Message = memo(({ message, user, stickyTime }: TMessageProps) => {
       <>
          {stickyTime && <StickyTime stickyTime={stickyTime} />}
 
-         <div
-            className={`${isNewMsg ? "QUERY-unread-message" : ""} w-full text-regular-white-cl`}
-            data-msg-id={id}
-         >
+         <div className="w-full text-regular-white-cl" data-msg-id={id}>
             {user.id === authorId ? (
                <div className="flex justify-end w-full">
                   <div
@@ -76,9 +72,11 @@ const Message = memo(({ message, user, stickyTime }: TMessageProps) => {
                   </div>
                </div>
             ) : (
-               <div className="flex justify-start w-full">
+               <div
+                  className={`${isNewMsg ? "QUERY-unread-message" : ""} origin-left flex justify-start w-full`}
+               >
                   <div
-                     className={`${isNewMsg ? "animate-new-friend-message" : ""} max-w-[70%] w-max bg-regular-dark-gray-cl rounded-t-2xl rounded-br-2xl pt-1.5 pb-1 px-2 relative`}
+                     className={`${isNewMsg ? "animate-friend-new-message" : ""} max-w-[70%] w-max bg-regular-dark-gray-cl rounded-t-2xl rounded-br-2xl pt-1.5 pb-1 px-2 relative`}
                   >
                      <div
                         className="max-w-full break-words whitespace-pre-wrap text-sm inline"
@@ -125,9 +123,9 @@ type TMessagesProps = {
 
 type TMessagesLoadingState = "loading-messages"
 
-type TMsgInCheckingQueue = {
-   id: number
-   element: HTMLElement
+type TUnreadMessages = {
+   count: number
+   firstUnreadOffsetTop: number
 }
 
 export const Messages = memo(({ directChatId }: TMessagesProps) => {
@@ -141,7 +139,8 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
    const msgTime = useRef<Date>(new Date())
    const dispatch = useAppDispatch()
    const tempFlagUseEffectRef = useRef<boolean>(true)
-   const msgcheckingQueue = useQueue<TMsgInCheckingQueue>()
+   const messagesPreCount = useRef<number>(0)
+   const unreadMessagesRef = useRef<TUnreadMessages>({ count: 0, firstUnreadOffsetTop: -1 })
 
    // Xử lý cuộn xuống dưới khi nhấn nút
    const scrollToBottomMessage = () => {
@@ -251,9 +250,24 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
       messagesContainer.current?.addEventListener("scroll", scrollChatBoxListner)
    }
 
+   const scrollToFirstUnreadMessage = () => {
+      const msgsContainerEle = messagesContainer.current
+      if (msgsContainerEle) {
+         msgsContainerEle.scrollTo({
+            top: unreadMessagesRef.current.firstUnreadOffsetTop - msgsContainerEle.clientHeight / 2,
+            behavior: "instant",
+         })
+      }
+   }
+
    const listenScrollToBottomMsg = () => {
       eventEmitter.on(EInternalEvents.SCROLL_TO_BOTTOM_MSG_ACTION, () => {
-         scrollToBottomMessage()
+         const unreadMessages = unreadMessagesRef.current
+         if (unreadMessages.count > 0 && unreadMessages.firstUnreadOffsetTop !== -1) {
+            scrollToFirstUnreadMessage()
+         } else {
+            scrollToBottomMessage()
+         }
       })
    }
 
@@ -286,43 +300,36 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
       })
    }
 
-   const checkIsInVisibleView = (messageEle: HTMLElement): boolean => {
+   const checkUnreadMessage = () => {
+      if (messages && messages.length > 0 && messages.length > messagesPreCount.current) {
+         const unreadMessageEles =
+            messagesContainer.current?.querySelectorAll<HTMLElement>(".QUERY-unread-message")
+         if (unreadMessageEles && unreadMessageEles.length > 0) {
+            const unreadMessages = unreadMessagesRef.current
+            unreadMessages.firstUnreadOffsetTop = unreadMessageEles[0].offsetTop
+            unreadMessages.count = unreadMessageEles.length
+            eventEmitter.emit(EInternalEvents.UNREAD_MESSAGES_COUNT, unreadMessages.count)
+         }
+      }
+   }
+
+   const handleUnreadMessage = (unreadMessage: HTMLElement) => {
       const msgsContainerEle = messagesContainer.current
       if (msgsContainerEle) {
-         return (
-            messageEle.offsetTop > msgsContainerEle.scrollTop &&
-            messageEle.offsetTop + messageEle.offsetHeight <
-               msgsContainerEle.scrollTop + msgsContainerEle.clientHeight
-         )
-      }
-      return false
-   }
-
-   const handleDisplayUnreadMessage = (messageEle: HTMLElement) => {
-      if (checkIsInVisibleView(messageEle)) {
-         messageEle.classList.remove("QUERY-unread-message", "bg-pink-200")
-      } else {
-         messageEle.classList.add("bg-pink-200")
-      }
-   }
-
-   const checkUnreadMessage = () => {
-      if (messages && messages.length > 0) {
-         const unreadMessages =
-            messagesContainer.current?.querySelectorAll<HTMLElement>(".QUERY-unread-message")
-         if (unreadMessages && unreadMessages.length > 0) {
-            for (const message of unreadMessages) {
-               const msgId = parseInt(message.dataset.msgId || "0")
-               if (!msgcheckingQueue.isDuplicate(msgId)) {
-                  msgcheckingQueue.enqueue({ id: msgId, element: message })
-               }
-            }
-            while (!msgcheckingQueue.isEmpty()) {
-               const message = msgcheckingQueue.dequeue()
-               if (message) {
-                  handleDisplayUnreadMessage(message.element)
-               }
-            }
+         if (
+            unreadMessage.offsetTop + unreadMessage.offsetHeight <
+            msgsContainerEle.scrollTop + msgsContainerEle.clientHeight
+         ) {
+            unreadMessage.classList.remove("QUERY-unread-message")
+            const unreadMessages = unreadMessagesRef.current
+            unreadMessages.count -= 1
+            unreadMessages.firstUnreadOffsetTop =
+               msgsContainerEle.querySelectorAll<HTMLElement>(".QUERY-unread-message")[0]
+                  ?.offsetTop || -1
+            eventEmitter.emit(
+               EInternalEvents.UNREAD_MESSAGES_COUNT,
+               unreadMessagesRef.current.count
+            )
          }
       }
    }
@@ -332,7 +339,7 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
          messagesContainer.current?.querySelectorAll<HTMLElement>(".QUERY-unread-message")
       if (unreadMessages && unreadMessages.length > 0) {
          for (const msg of unreadMessages) {
-            handleDisplayUnreadMessage(msg)
+            handleUnreadMessage(msg)
          }
       }
    }, [])
@@ -344,11 +351,16 @@ export const Messages = memo(({ directChatId }: TMessagesProps) => {
       }
    }
 
+   const updateMessagesCount = () => {
+      messagesPreCount.current = messages?.length || 0
+   }
+
    useEffect(() => {
       setMsgTime()
       requestAnimationFrame(() => {
          scrollToBottomOnMessages()
          checkUnreadMessage()
+         updateMessagesCount() // Cập nhật số lượng tin nhắn sau khi cuộn
       })
    }, [messages])
 

@@ -75,7 +75,7 @@ export const Navigation = memo(() => {
                </div>
             </CustomTooltip>
          </div>
-         <div className="bg-regular-hover-card-cl h-full min-w-[1px]"></div>
+         <div className="outline-regular-hover-card-cl outline outline-1 h-full min-w-[1px]"></div>
       </div>
    )
 })

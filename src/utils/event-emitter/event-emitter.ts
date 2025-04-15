@@ -8,6 +8,7 @@ interface IEventEmitter {
    [EInternalEvents.SCROLL_OUT_OF_BOTTOM]: () => void
    [EInternalEvents.CLICK_ON_LAYOUT]: (e: MouseEvent) => void
    [EInternalEvents.MSG_TEXTFIELD_EDITED]: (e: TMsgContent) => void
+   [EInternalEvents.UNREAD_MESSAGES_COUNT]: (count: number) => void
 }
 
 export const eventEmitter = new EventEmitter<IEventEmitter>()

@@ -52,6 +52,8 @@ const config: Config = {
             "regular-tooltip-bgcl": "var(--tdc-regular-tooltip-bgcl)",
             "regular-border-cl": "var(--tdc-regular-border-cl)",
             "emoji-picker-bgcl": "var(--tdc-emoji-picker-bgcl)",
+            "unread-msg-bgcl": "var(--tdc-unread-msg-bgcl)",
+            "badge-bgcl": "var(--tdc-badge-bgcl)",
             background: "hsl(var(--background))",
             foreground: "hsl(var(--foreground))",
             card: {
@@ -140,6 +142,7 @@ const config: Config = {
             "new-friend-message": "new-friend-message 0.2s var(--tdc-new-message-timing) 1 0.01s",
             "new-own-message": "new-own-message 0.2s var(--tdc-new-message-timing) 1 0.01s",
             "scale-up": "scale-up 0.2s ease-out forwards",
+            "unread-message": "unread-message 0.3s ease-in-out forwards 2",
          },
          borderRadius: {
             lg: "var(--radius)",
