@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { FixedSizeGrid as Grid } from "react-window"
 
 const Cell = ({ columnIndex, rowIndex, style }) => (

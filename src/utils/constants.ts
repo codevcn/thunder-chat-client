@@ -4,3 +4,4 @@ export const SHOW_SCROLL_BTN_THRESHOLD: number = 250
 export const MAX_NUMBER_OF_PINNED_CONVERSATIONS: number = 3
 export const MAX_NUMBER_OF_TOASTS: number = 5
 export const MAX_TIMEOUT_MESSAGING: number = 5000
+export const NON_GUARD_ROUTES = ["/", "/faq", "/login-sign-up"]

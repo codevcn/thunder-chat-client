@@ -2,7 +2,7 @@ import type { AxiosError, HttpStatusCode } from "axios"
 import type { TChattingPayload } from "./socket/types"
 import type { EMessageStatus } from "./socket/enums"
 
-// DB entities
+// ================================= DB entities =================================
 export type TUser = {
    id: number
    email: string
@@ -30,6 +30,7 @@ export type TDirectChat = {
    createdAt: string
    creatorId: number
    recipientId: number
+   lastSentMessageId: number
 }
 
 export type TDirectMessage = {
@@ -41,7 +42,7 @@ export type TDirectMessage = {
    status: EMessageStatus
 }
 
-// Common types
+// ================================= Common types =================================
 export type TStateDirectMessage = TDirectMessage & {
    isNewMsg?: boolean
 }
@@ -116,3 +117,8 @@ export type TEmoji = {
 }
 
 export type TCheckboxValue = "on" | undefined
+
+export type TMessageStateUpdates = {
+   msgId: number
+   msgUpdates: Partial<TStateDirectMessage>
+}

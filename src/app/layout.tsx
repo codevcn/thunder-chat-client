@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import { Toaster } from "react-hot-toast"
 import { ReduxProvider } from "@/providers/redux-provider"
-import { nonGuardRoutes } from "@/configs/layout"
 
 import { SocketProvider } from "@/providers/socket-provider"
 import { RouteGuard } from "@/components/layout/resource-guard"
@@ -9,6 +8,7 @@ import { AuthProvider } from "@/providers/auth-provider"
 import { AppLayoutProvider } from "@/providers/app-layout-provider"
 
 import "@/styles/index.scss"
+import { NON_GUARD_ROUTES } from "@/utils/constants"
 
 export const metadata: Metadata = {
    title: "Thunder Chat",
@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
          <body className="bg-white text-white">
             <ReduxProvider>
                <AuthProvider>
-                  <RouteGuard nonGuardRoutes={nonGuardRoutes}>
+                  <RouteGuard nonGuardRoutes={NON_GUARD_ROUTES}>
                      <SocketProvider>
                         <AppLayoutProvider>{children}</AppLayoutProvider>
                      </SocketProvider>

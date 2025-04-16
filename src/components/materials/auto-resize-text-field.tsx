@@ -20,6 +20,7 @@ type AutoResizeTextFieldProps = {
    onBlur: () => void
    initialHeight: number
    textSize: number
+   onFocus: () => void
 }>
 
 export const AutoResizeTextField: React.FC<AutoResizeTextFieldProps> = ({
@@ -37,6 +38,7 @@ export const AutoResizeTextField: React.FC<AutoResizeTextFieldProps> = ({
    textFieldRef,
    initialHeight,
    textSize = 14,
+   onFocus,
 }) => {
    const setTextFieldContent = (textContent: string, textFieldEle?: HTMLDivElement) => {
       if (textFieldEle) {
@@ -117,6 +119,12 @@ export const AutoResizeTextField: React.FC<AutoResizeTextFieldProps> = ({
       }
    }
 
+   const handleFocus = () => {
+      if (onFocus) {
+         onFocus()
+      }
+   }
+
    // Lắng nghe sự kiện chỉnh sửa text field content
    const listenTextFieldEdited = (textFieldEle: HTMLDivElement) => {
       eventEmitter.on(EInternalEvents.MSG_TEXTFIELD_EDITED, (msgData) => {
@@ -149,6 +157,7 @@ export const AutoResizeTextField: React.FC<AutoResizeTextFieldProps> = ({
          onInput={(e) => handleInput(e.currentTarget as HTMLDivElement)}
          onKeyDown={handleKeyDown}
          onBlur={handleBlur}
+         onClick={handleFocus}
          style={{
             ...(style || {}),
             minHeight: `${minHeight}px`,

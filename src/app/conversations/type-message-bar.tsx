@@ -208,9 +208,9 @@ export const TypeMessageBar = memo(({ directChat }: TTypeMessageBarProps) => {
    const textFieldContainerRef = useRef<HTMLDivElement | null>(null)
 
    const startTyping = (e: React.MouseEvent<HTMLElement>) => {
-      if (e.target === textFieldRef.current) return
-      textFieldContainerRef.current?.classList.add("outline-regular-violet-cl")
       const textField = textFieldRef.current
+      textFieldContainerRef.current?.classList.add("outline-regular-violet-cl")
+      if (e.target === textField) return
       if (textField) {
          textField.focus()
          // Đặt con trỏ ở cuối nội dung

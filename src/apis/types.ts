@@ -69,10 +69,11 @@ export type TSearchUsersParams = {
 }
 
 export type TGetDirectMsgsParamsDTO = {
-   msgTime: Date
+   msgOffset: number
    directChatId: number
    limit: number
    sortType: ESortTypes
+   isFirstTime: boolean
 }
 
 export type TGetDirectMessagesData = {

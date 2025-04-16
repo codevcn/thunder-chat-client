@@ -11,7 +11,7 @@ import { EPaginations, ESortTypes, ETimeFormats } from "@/utils/enums"
 import { ScrollToBottomMessageBtn } from "./scroll-to-bottom-msg-btn"
 import { createPortal } from "react-dom"
 import { useUser } from "@/hooks/user"
-import { pushNewMessages } from "@/redux/messages/messages.slice"
+import { pushNewMessages, updateMessages } from "@/redux/messages/messages.slice"
 import { displayMessageStickyTime } from "@/utils/date-time"
 import axiosErrorHandler from "@/utils/axios-error-handler"
 import toast from "react-hot-toast"
@@ -46,7 +46,6 @@ type TMessageProps = {
 
 const Message = memo(({ message, user, stickyTime }: TMessageProps) => {
    const { authorId, content, createdAt, isNewMsg, id, status } = message
-   console.log(">>> msg data:", message)
 
    const msgTime = dayjs(createdAt).format(ETimeFormats.HH_mm)
 
@@ -64,20 +63,16 @@ const Message = memo(({ message, user, stickyTime }: TMessageProps) => {
                         className="text-end break-words whitespace-pre-wrap text-sm inline"
                         dangerouslySetInnerHTML={{ __html: santizeMsgContent(content) }}
                      ></div>
-                     <div className="flex justify-end items-center gap-x-1 mt-1.5 w-max">
+                     <div className="flex justify-end items-center gap-x-1 mt-1.5 w-full">
                         <span className="text-xs text-regular-creator-msg-time-cl leading-none">
                            {msgTime}
                         </span>
-                        <div
-                           hidden
-                           className={`QUERY-msg-status QUERY-msg-status-${EMessageStatus.SEEN} flex ml-0.5`}
-                        >
-                           <CheckCheck size={15} />
-                        </div>
-                        <div
-                           className={`QUERY-msg-status QUERY-msg-status-${EMessageStatus.SENT} flex ml-0.5`}
-                        >
-                           <Check size={15} />
+                        <div className="flex ml-0.5">
+                           {status === EMessageStatus.SENT ? (
+                              <Check size={15} />
+                           ) : (
+                              status === EMessageStatus.SEEN && <CheckCheck size={15} />
+                           )}
                         </div>
                      </div>
                   </div>
@@ -141,15 +136,15 @@ type TUnreadMessages = {
 }
 
 export const Messages = memo(({ directChat }: TMessagesProps) => {
-   const { id: directChatId, Recipient } = directChat
+   const { id: directChatId, recipientId, creatorId, lastSentMessageId } = directChat
    const { messages, fetchedMsgs } = useAppSelector(({ messages }) => messages)
    const [loading, setLoading] = useState<TMessagesLoadingState>()
-   const user = useUser()
+   const user = useUser()!
    const messagesContainer = useRef<HTMLDivElement>(null) // Tham chiếu đến phần tử chứa danh sách tin nhắn
    const hasMoreMessages = useRef<boolean>(true) // Biến để kiểm tra xem còn tin nhắn nào để tải thêm hay không
    const firstScrollToBottom = useRef<boolean>(true) // Biến để kiểm tra xem đã cuộn xuống dưới lần đầu hay chưa
    const finalMessageId = useRef<number>(-1) // Biến để lưu ID của tin nhắn cuối cùng trong danh sách
-   const msgTime = useRef<Date>(new Date()) // Biến để lưu thời gian để tải thêm tin nhắn
+   const msgOffset = useRef<number>(lastSentMessageId) // Biến lưu offset để tải thêm tin nhắn
    const dispatch = useAppDispatch()
    const tempFlagUseEffectRef = useRef<boolean>(true)
    const messagesPreCount = useRef<number>(0) // Biến để lưu số lượng tin nhắn trước đó trong danh sách
@@ -182,27 +177,27 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
                   top: msgsContainerEle.scrollHeight,
                   behavior: "instant",
                })
-            } else {
-               const finalMessage = messages.at(-1)!
-               if (finalMessageId.current !== finalMessage.id) {
-                  // Chỉ cuộn khi có tin nhắn mới
-                  finalMessageId.current = finalMessage.id
-                  if (
-                     msgsContainerEle.scrollTop + msgsContainerEle.clientHeight >
-                     msgsContainerEle.scrollHeight - SCROLL_ON_MESSAGES_THRESHOLD
-                  ) {
-                     // Cuộn khi có tin nhắn mới và màn hình chỉ đang cách mép dưới 100px
-                     msgsContainerEle.scrollTo({
-                        top: msgsContainerEle.scrollHeight,
-                        behavior: "smooth",
-                     })
-                  } else if (finalMessage.authorId === user!.id) {
-                     // Cuộn khi người dùng gửi tin nhắn
-                     msgsContainerEle.scrollTo({
-                        top: msgsContainerEle.scrollHeight,
-                        behavior: "smooth",
-                     })
-                  }
+               // Lưu ID của tin nhắn cuối cùng
+            }
+            const finalMessageData = messages[messages.length - 1]
+            if (finalMessageId.current !== finalMessageData.id) {
+               // Chỉ cuộn xuống dưới khi có tin nhắn mới từ user hoặc friend
+               finalMessageId.current = finalMessageData.id
+               if (
+                  msgsContainerEle.scrollTop + msgsContainerEle.clientHeight >
+                  msgsContainerEle.scrollHeight - SCROLL_ON_MESSAGES_THRESHOLD
+               ) {
+                  // Cuộn khi màn hình chỉ đang cách mép dưới 100px
+                  msgsContainerEle.scrollTo({
+                     top: msgsContainerEle.scrollHeight,
+                     behavior: "smooth",
+                  })
+               } else if (finalMessageData.authorId === user.id) {
+                  // Cuộn khi người dùng gửi tin nhắn
+                  msgsContainerEle.scrollTo({
+                     top: msgsContainerEle.scrollHeight,
+                     behavior: "smooth",
+                  })
                }
             }
          }
@@ -210,13 +205,17 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
    }
 
    // Thiết lập mốc thời gian để lấy tin nhắn, nếu không có tin nhắn nào thì lấy thời gian hiện tại
-   const setMsgTime = () => {
+   const initMessageOffset = () => {
       if (messages && messages.length > 0) {
-         msgTime.current = new Date(messages[0].createdAt)
+         msgOffset.current = messages[0].id
       }
    }
 
-   const fetchDirectMessages = async (directChatId: number, msgTime: Date) => {
+   const fetchDirectMessages = async (
+      directChatId: number,
+      msgOffset: number,
+      isFirstTime: boolean
+   ) => {
       const msgsContainerEle = messagesContainer.current
       if (!msgsContainerEle) return
       setLoading("loading-messages")
@@ -225,9 +224,10 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
       dispatch(
          fetchDirectMessagesThunk({
             directChatId,
-            msgTime,
+            msgOffset,
             limit: EPaginations.DIRECT_MESSAGES_PAGE_SIZE,
             sortType: ESortTypes.ASC,
+            isFirstTime,
          })
       )
          .unwrap()
@@ -248,7 +248,8 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
          })
    }
 
-   const scrollChatBoxListener = useCallback((e: Event) => {
+   // Hàm xử lý việc cuộn đoạn chat lên tin nhắn trên cùng
+   const handleScrollToTopMessage = useCallback((e: Event) => {
       const messagesContainer = e.currentTarget as HTMLDivElement
       if (
          messagesContainer.scrollHeight - messagesContainer.scrollTop <
@@ -259,15 +260,10 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
          eventEmitter.emit(EInternalEvents.SCROLL_OUT_OF_BOTTOM)
          // Check if the user scrolled to the top then fetch more messages
          if (messagesContainer.scrollTop === 0 && hasMoreMessages.current && !loading) {
-            fetchDirectMessages(directChatId, msgTime.current)
+            fetchDirectMessages(directChatId, msgOffset.current, false)
          }
       }
    }, [])
-
-   // Lắng nghe cuộn trong hộp trò chuyện để hiển thị nút cuộn xuống dưới
-   const listenScrollGetMoreMessages = () => {
-      messagesContainer.current?.addEventListener("scroll", scrollChatBoxListener)
-   }
 
    const scrollToFirstUnreadMessage = () => {
       const msgsContainerEle = messagesContainer.current
@@ -308,7 +304,7 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
                },
             ])
          )
-         clientSocket.setMessageOffset(new Date(createdAt), directChatId)
+         clientSocket.setMessageOffset(id, directChatId)
       })
    }
 
@@ -317,8 +313,8 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
       clientSocket.socket.on(ESocketEvents.recovered_connection, (newMessages) => {
          if (newMessages && newMessages.length > 0) {
             dispatch(pushNewMessages(newMessages))
-            const { createdAt } = newMessages.at(-1)!
-            clientSocket.setMessageOffset(new Date(createdAt), directChatId)
+            const { id } = newMessages[newMessages.length - 1]
+            clientSocket.setMessageOffset(id, directChatId)
          }
       })
    }
@@ -379,30 +375,33 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
          eventEmitter.emit(EInternalEvents.UNREAD_MESSAGES_COUNT, unreadMessages.count)
          clientSocket.socket.emit(ESocketEvents.message_seen_direct, {
             messageId: msgId,
-            receiverId: Recipient.id,
+            receiverId: recipientId === user.id ? creatorId : recipientId,
          })
       }
    }
 
-   // Hàm xử lý việc cuộn
-   const handleScrollMsgsContainer = useCallback(() => {
-      const msgsContainerEle = messagesContainer.current
-      if (msgsContainerEle) {
-         const unreadMessages =
-            msgsContainerEle.querySelectorAll<HTMLElement>(".QUERY-unread-message")
-         if (unreadMessages && unreadMessages.length > 0) {
-            for (const msg of unreadMessages) {
-               handleUnreadMsgInVisibleView(
-                  msgsContainerEle,
-                  msg,
-                  parseInt(msg.getAttribute("data-msg-id")!)
-               )
-            }
+   // Hàm xử lý việc cuộn các tin nhắn vào vùng nhìn thấy
+   const handleScrollMsgIntoVisibleView = (e: Event) => {
+      const msgsContainerEle = e.currentTarget as HTMLElement
+      const unreadMessages = msgsContainerEle.querySelectorAll<HTMLElement>(".QUERY-unread-message")
+      if (unreadMessages && unreadMessages.length > 0) {
+         for (const msg of unreadMessages) {
+            handleUnreadMsgInVisibleView(
+               msgsContainerEle,
+               msg,
+               parseInt(msg.getAttribute("data-msg-id")!)
+            )
          }
       }
+   }
+
+   // Hàm xử lý việc cuộn đoạn chat
+   const handleScrollMsgsContainer = useCallback((e: Event) => {
+      handleScrollMsgIntoVisibleView(e)
+      handleScrollToTopMessage(e)
    }, [])
 
-   // Lắng nghe sự kiện cuộn
+   // Lắng nghe sự kiện cuộn đoạn chat
    const listenOnScrollMsgsContainer = () => {
       const msgsContainerEle = messagesContainer.current
       if (msgsContainerEle) {
@@ -418,24 +417,12 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
    // Lắng nghe sự kiện đã đọc tin nhắn từ đối phương
    const listenMessageSeen = () => {
       clientSocket.socket.on(ESocketEvents.message_seen_direct, ({ messageId, status }) => {
-         const msgsContainerEle = messagesContainer.current
-         if (msgsContainerEle) {
-            const msgStatusList = msgsContainerEle.querySelectorAll<HTMLElement>(
-               `.QUERY-user-message-${messageId} .QUERY-msg-status`
-            )
-            for (const msgStatus of msgStatusList) {
-               if (msgStatus.classList.contains(`QUERY-msg-status-${status}`)) {
-                  msgStatus.hidden = false
-               } else {
-                  msgStatus.hidden = true
-               }
-            }
-         }
+         dispatch(updateMessages([{ msgId: messageId, msgUpdates: { status } }]))
       })
    }
 
    useEffect(() => {
-      setMsgTime()
+      initMessageOffset()
       requestAnimationFrame(() => {
          scrollToBottomOnMessages()
          checkUnreadMessage()
@@ -447,17 +434,15 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
       if (tempFlagUseEffectRef.current) {
          tempFlagUseEffectRef.current = false
          if (!messages || messages.length === 0) {
-            fetchDirectMessages(directChatId, msgTime.current)
+            fetchDirectMessages(directChatId, msgOffset.current, true)
          }
       }
       listenOnScrollMsgsContainer()
-      listenScrollGetMoreMessages()
       listenScrollToBottomMsg()
       listenSendDirectMessage()
       listenRecoverdConnection()
       listenMessageSeen()
       return () => {
-         messagesContainer.current?.removeEventListener("scroll", scrollChatBoxListener)
          messagesContainer.current?.removeEventListener("scroll", handleScrollMsgsContainer)
          eventEmitter.off(EInternalEvents.SCROLL_TO_BOTTOM_MSG_ACTION)
          clientSocket.socket.off(ESocketEvents.recovered_connection)
@@ -474,7 +459,7 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
             className="flex flex-col items-center w-full h-full overflow-y-scroll overflow-x-hidden styled-scrollbar px-3 box-border"
             ref={messagesContainer}
          >
-            {fetchedMsgs && user ? (
+            {fetchedMsgs ? (
                messages && messages.length > 0 ? (
                   <div
                      id="STYLE-user-messages"

@@ -1,5 +1,5 @@
-import type { TStateDirectMessage } from "@/utils/types"
-import { PayloadAction, createSlice, current } from "@reduxjs/toolkit"
+import type { TMessageStateUpdates, TStateDirectMessage } from "@/utils/types"
+import { PayloadAction, createSlice } from "@reduxjs/toolkit"
 import { fetchDirectMessagesThunk } from "./messages.thunk"
 import type { TDirectChatData, TGetDirectMessagesData } from "@/apis/types"
 import { fetchDirectChatThunk, startDirectChatThunk } from "../conversations/conversations-thunks"
@@ -21,11 +21,27 @@ export const messagesSlice = createSlice({
    name: "messages",
    reducers: {
       pushNewMessages: (state, action: PayloadAction<TStateDirectMessage[]>) => {
-         const currentMessages = current(state).messages
+         const currentMessages = state.messages
          state.messages =
             currentMessages && currentMessages.length > 0
                ? [...currentMessages, ...action.payload]
                : action.payload
+      },
+      updateMessages: (state, action: PayloadAction<TMessageStateUpdates[]>) => {
+         const currentMessages = state.messages
+         const updatesList = action.payload
+         if (currentMessages && currentMessages.length > 0) {
+            state.messages = currentMessages.map((msg) => {
+               const updates = updatesList.find(({ msgId }) => msgId === msg.id)?.msgUpdates
+               if (updates) {
+                  return {
+                     ...msg,
+                     ...updates,
+                  }
+               }
+               return msg
+            })
+         }
       },
    },
    extraReducers: (builder) => {
@@ -44,7 +60,7 @@ export const messagesSlice = createSlice({
       builder.addCase(
          fetchDirectMessagesThunk.fulfilled,
          (state, action: PayloadAction<TGetDirectMessagesData>) => {
-            const currentMessages = current(state).messages
+            const currentMessages = state.messages
             state.messages =
                currentMessages && currentMessages.length > 0
                   ? [...action.payload.directMessages, ...currentMessages]
@@ -55,4 +71,4 @@ export const messagesSlice = createSlice({
    },
 })
 
-export const { pushNewMessages } = messagesSlice.actions
+export const { pushNewMessages, updateMessages } = messagesSlice.actions

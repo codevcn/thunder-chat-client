@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import dayjs from "dayjs"
 import type { TDirectChatCard, TDirectMessage } from "@/utils/types"
 

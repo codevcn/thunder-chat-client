@@ -1,3 +1,4 @@
+import { ObjectQueue } from "@/utils/algorithms/queue"
 import { MAX_TIMEOUT_MESSAGING } from "@/utils/constants"
 import { clientSocket } from "@/utils/socket/client-socket"
 import { ESocketEvents } from "@/utils/socket/events"
@@ -5,9 +6,15 @@ import type { TChattingPayload } from "@/utils/socket/types"
 import type { TOfflineMessage, TSendMessageCallback } from "@/utils/types"
 
 class ChattingService {
-   private offlineMessages: TOfflineMessage[] = []
-   private messagesQueue: TChattingPayload[] = []
-   private acknowledgmentFlag: boolean = true
+   private offlineMessages: TOfflineMessage[]
+   private messagesQueue: ObjectQueue<TChattingPayload>
+   private acknowledgmentFlag: boolean
+
+   constructor() {
+      this.offlineMessages = []
+      this.messagesQueue = new ObjectQueue<TChattingPayload>()
+      this.acknowledgmentFlag = true
+   }
 
    async sendMessage(
       receiverId: number,
@@ -34,7 +41,7 @@ class ChattingService {
                   }
                )
          } else {
-            this.messagesQueue.push({ directChatId, message, receiverId, timestamp, token })
+            this.messagesQueue.enqueue({ directChatId, message, receiverId, timestamp, token })
          }
       } else {
          this.saveOfflineMessage(receiverId, message, directChatId, token, timestamp)
@@ -46,7 +53,7 @@ class ChattingService {
    }
 
    recursiveSendingQueueMessages() {
-      const message = this.getQueueMessages().shift()
+      const message = this.messagesQueue.dequeue()
       if (message) {
          this.sendMessage(
             message.receiverId,
@@ -106,10 +113,6 @@ class ChattingService {
 
    getAcknowledgmentFlag(): boolean {
       return this.acknowledgmentFlag
-   }
-
-   getQueueMessages(): TChattingPayload[] {
-      return this.messagesQueue
    }
 
    getOfflineMessages(): TOfflineMessage[] {
