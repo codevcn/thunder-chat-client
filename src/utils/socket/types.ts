@@ -24,3 +24,8 @@ export type TMsgSeenEmitPayload = {
    messageId: number
    receiverId: number
 }
+
+export type TTypingEmitPayload = {
+   receiverId: number
+   isTyping: boolean
+}

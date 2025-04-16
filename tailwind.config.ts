@@ -143,6 +143,7 @@ const config: Config = {
                "new-friend-message 0.2s var(--tdc-new-message-timing) 1 forwards",
             "new-user-message": "new-user-message 0.2s var(--tdc-new-message-timing) 1 forwards",
             "scale-up": "scale-up 0.2s ease-out forwards",
+            "typing-message": "typing-message 1s ease-in-out infinite",
          },
          borderRadius: {
             lg: "var(--radius)",

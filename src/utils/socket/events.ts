@@ -9,4 +9,5 @@ export enum ESocketEvents {
    send_friend_request = "friend_request:send",
    recovered_connection = "recovered_connection",
    message_seen_direct = "message_seen:direct",
+   typing_direct = "typing:direct",
 }

@@ -9,6 +9,7 @@ import type {
    TChattingPayload,
    TMsgSeenEmitPayload,
    TMsgSeenListenPayload,
+   TTypingEmitPayload,
    TWsErrorResponse,
 } from "./types"
 
@@ -20,6 +21,7 @@ export interface IListenSocketEvents {
    [ESocketEvents.send_friend_request]: (sender: TUserWithProfile) => void
    [ESocketEvents.recovered_connection]: (messages: TDirectMessage[]) => void
    [ESocketEvents.message_seen_direct]: (payload: TMsgSeenListenPayload) => void
+   [ESocketEvents.typing_direct]: (isTyping: boolean) => void
 }
 
 export interface IEmitSocketEvents {
@@ -28,4 +30,5 @@ export interface IEmitSocketEvents {
       cb: (data: TSendDirectMessageErrorRes | TSuccess) => void
    ) => void
    [ESocketEvents.message_seen_direct]: (payload: TMsgSeenEmitPayload) => void
+   [ESocketEvents.typing_direct]: (payload: TTypingEmitPayload) => void
 }

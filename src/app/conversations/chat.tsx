@@ -11,11 +11,26 @@ import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import validator from "validator"
 import { Search, Phone, MoreVertical, User } from "lucide-react"
-import { InfoBar } from "./infoBar"
+import { InfoBar } from "./info-bar"
 import { openInfoBar } from "@/redux/conversations/conversations-slice"
 import { setLastSeen } from "@/utils/helpers"
 import { fetchDirectChatThunk } from "@/redux/conversations/conversations-thunks"
 import { TypeMessageBar } from "./type-message-bar"
+import { clientSocket } from "@/utils/socket/client-socket"
+import { ESocketEvents } from "@/utils/socket/events"
+
+const TypingIndicator = () => {
+   return (
+      <div className="flex items-center gap-2">
+         <div className="flex items-center gap-1 grow pt-1">
+            <span className="w-1 h-1 bg-regular-placeholder-cl rounded-full animate-typing-message delay-0"></span>
+            <span className="w-1 h-1 bg-regular-placeholder-cl rounded-full animate-typing-message delay-150"></span>
+            <span className="w-1 h-1 bg-regular-placeholder-cl rounded-full animate-typing-message delay-300"></span>
+         </div>
+         <p className="text-xs text-regular-placeholder-cl font-semibold">The user is typing...</p>
+      </div>
+   )
+}
 
 type THeaderProps = {
    infoBarIsOpened: boolean
@@ -24,6 +39,20 @@ type THeaderProps = {
 
 const Header = ({ infoBarIsOpened, onOpenInfoBar }: THeaderProps) => {
    const recipient = useAppSelector(({ messages }) => messages.directChat?.Recipient)
+   const [isTyping, setIsTyping] = useState<boolean>(false)
+
+   const listenTypingMessage = () => {
+      clientSocket.socket.on(ESocketEvents.typing_direct, (typing) => {
+         setIsTyping(typing)
+      })
+   }
+
+   useEffect(() => {
+      listenTypingMessage()
+      return () => {
+         clientSocket.socket.off(ESocketEvents.typing_direct)
+      }
+   }, [])
 
    return (
       <div className="flex justify-between gap-2 px-6 py-1.5 bg-regular-dark-gray-cl w-full box-border h-header">
@@ -41,13 +70,17 @@ const Header = ({ infoBarIsOpened, onOpenInfoBar }: THeaderProps) => {
                         className="bg-user-avt-bgimg text-white"
                      />
                   )}
-                  <div>
+                  <div className="flex flex-col">
                      <h3 className="text-lg font-bold w-fit text-white">
                         {recipient.Profile?.fullName || "Unnamed"}
                      </h3>
-                     <div className="text-xs text-regular-text-secondary-cl">
-                        {"Last seen " + setLastSeen(dev_test_values.user_1.lastOnline)}
-                     </div>
+                     {isTyping ? (
+                        <TypingIndicator />
+                     ) : (
+                        <div className="text-xs text-regular-text-secondary-cl">
+                           {"Last seen " + setLastSeen(dev_test_values.user_1.lastOnline)}
+                        </div>
+                     )}
                   </div>
                </div>
             </CustomTooltip>

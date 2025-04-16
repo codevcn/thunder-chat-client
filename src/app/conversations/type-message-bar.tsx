@@ -14,6 +14,8 @@ import { createPortal } from "react-dom"
 import { renderToStaticMarkup } from "react-dom/server"
 import { eventEmitter } from "@/utils/event-emitter/event-emitter"
 import { EInternalEvents } from "@/utils/event-emitter/events"
+import { clientSocket } from "@/utils/socket/client-socket"
+import { ESocketEvents } from "@/utils/socket/events"
 
 const LazyEmojiPicker = lazy(() => import("../../components/materials/emoji-picker"))
 
@@ -128,14 +130,19 @@ const MessageTextField = ({
    textFieldRef,
    textFieldContainerRef,
 }: TMessageTextFieldProps) => {
-   const user = useUser()
+   const { recipientId, creatorId, id } = directChat
+   const user = useUser()!
 
-   const handleContentChange = (msg: string) => {
+   const handleTyping = (msg: string) => {
       if (msg.trim() && msg.length > 0) {
          setHasContent(true)
-         return
+      } else {
+         setHasContent(false)
       }
-      setHasContent(false)
+      clientSocket.socket.emit(ESocketEvents.typing_direct, {
+         receiverId: recipientId === user.id ? creatorId : recipientId,
+         isTyping: true,
+      })
    }
 
    const sendMessage = (msgToSend: string) => {
@@ -145,9 +152,8 @@ const MessageTextField = ({
          textFieldRef.current?.querySelector(".QUERY-empty-placeholder")
       )
          return
-      const { recipientId, id, creatorId } = directChat
       chattingService.sendMessage(
-         user!.id === recipientId ? creatorId : recipientId,
+         user.id === recipientId ? creatorId : recipientId,
          msgToSend,
          id,
          crypto.randomUUID(),
@@ -172,6 +178,10 @@ const MessageTextField = ({
       if (!textFieldRef.current?.innerHTML) {
          setHasContent(false)
       }
+      clientSocket.socket.emit(ESocketEvents.typing_direct, {
+         receiverId: recipientId === user.id ? creatorId : recipientId,
+         isTyping: false,
+      })
    }
 
    return (
@@ -179,7 +189,7 @@ const MessageTextField = ({
          <AutoResizeTextField
             className="block bg-transparent outline-none w-full hover:bg-transparent whitespace-pre-wrap break-all leading-tight focus:bg-transparent z-10 styled-scrollbar border-transparent text-white hover:border-transparent focus:border-transparent focus:shadow-none"
             onEnterPress={handleCatchEnter}
-            onContentChange={handleContentChange}
+            onContentChange={handleTyping}
             maxHeight={300}
             lineHeight={1.5}
             textFieldRef={textFieldRef}
@@ -207,7 +217,7 @@ export const TypeMessageBar = memo(({ directChat }: TTypeMessageBarProps) => {
    const [hasContent, setHasContent] = useState<boolean>(false)
    const textFieldContainerRef = useRef<HTMLDivElement | null>(null)
 
-   const startTyping = (e: React.MouseEvent<HTMLElement>) => {
+   const handleClickOnTextFieldContainer = (e: React.MouseEvent<HTMLElement>) => {
       const textField = textFieldRef.current
       textFieldContainerRef.current?.classList.add("outline-regular-violet-cl")
       if (e.target === textField) return
@@ -229,7 +239,7 @@ export const TypeMessageBar = memo(({ directChat }: TTypeMessageBarProps) => {
       fetchedMsgs && (
          <div className="flex gap-2.5 items-end pt-2 pb-4 z-999 box-border w-type-message-bar">
             <div
-               onClick={startTyping}
+               onClick={handleClickOnTextFieldContainer}
                ref={textFieldContainerRef}
                className="flex cursor-text grow items-center gap-2 relative z-10 rounded-2xl bg-regular-dark-gray-cl px-3 outline-2 outline outline-regular-dark-gray-cl hover:outline-regular-violet-cl transition-[outline] duration-200"
             >

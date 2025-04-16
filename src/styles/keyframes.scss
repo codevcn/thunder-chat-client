@@ -172,3 +172,15 @@
       transform: scale(1); /* Phóng to đến kích thước đầy đủ */
    }
 }
+
+@keyframes typing-message {
+   0% {
+      transform: translateY(0);
+   }
+   50% {
+      transform: translateY(-4px);
+   }
+   100% {
+      transform: translateY(0);
+   }
+}
