@@ -16,6 +16,7 @@ import { eventEmitter } from "@/utils/event-emitter/event-emitter"
 import { EInternalEvents } from "@/utils/event-emitter/events"
 import { clientSocket } from "@/utils/socket/client-socket"
 import { ESocketEvents } from "@/utils/socket/events"
+import { useDebounceLeading } from "@/hooks/debounce"
 
 const LazyEmojiPicker = lazy(() => import("../../components/materials/emoji-picker"))
 
@@ -123,6 +124,8 @@ type TMessageTextFieldProps = {
    textFieldContainerRef: React.RefObject<HTMLDivElement | null>
 }
 
+const INDICATE_TYPING_DELAY: number = 200
+
 const MessageTextField = ({
    directChat,
    setHasContent,
@@ -132,6 +135,14 @@ const MessageTextField = ({
 }: TMessageTextFieldProps) => {
    const { recipientId, creatorId, id } = directChat
    const user = useUser()!
+   const debounce = useDebounceLeading()
+
+   const indicateUserIsTyping = debounce((isTyping: boolean) => {
+      clientSocket.socket.emit(ESocketEvents.typing_direct, {
+         receiverId: recipientId === user.id ? creatorId : recipientId,
+         isTyping,
+      })
+   }, INDICATE_TYPING_DELAY)
 
    const handleTyping = (msg: string) => {
       if (msg.trim() && msg.length > 0) {
@@ -139,10 +150,7 @@ const MessageTextField = ({
       } else {
          setHasContent(false)
       }
-      clientSocket.socket.emit(ESocketEvents.typing_direct, {
-         receiverId: recipientId === user.id ? creatorId : recipientId,
-         isTyping: true,
-      })
+      indicateUserIsTyping(true)
    }
 
    const sendMessage = (msgToSend: string) => {
@@ -178,10 +186,7 @@ const MessageTextField = ({
       if (!textFieldRef.current?.innerHTML) {
          setHasContent(false)
       }
-      clientSocket.socket.emit(ESocketEvents.typing_direct, {
-         receiverId: recipientId === user.id ? creatorId : recipientId,
-         isTyping: false,
-      })
+      indicateUserIsTyping(false)
    }
 
    return (
