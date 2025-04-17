@@ -41,16 +41,14 @@ const Header = ({ infoBarIsOpened, onOpenInfoBar }: THeaderProps) => {
    const recipient = useAppSelector(({ messages }) => messages.directChat?.Recipient)
    const [isTyping, setIsTyping] = useState<boolean>(false)
 
-   const listenTypingMessage = () => {
-      clientSocket.socket.on(ESocketEvents.typing_direct, (typing) => {
-         setIsTyping(typing)
-      })
+   const handleTypingMessage = (typing: boolean) => {
+      setIsTyping(typing)
    }
 
    useEffect(() => {
-      listenTypingMessage()
+      clientSocket.socket.on(ESocketEvents.typing_direct, handleTypingMessage)
       return () => {
-         clientSocket.socket.off(ESocketEvents.typing_direct)
+         clientSocket.socket.off(ESocketEvents.typing_direct, handleTypingMessage)
       }
    }, [])
 

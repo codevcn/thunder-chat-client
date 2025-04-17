@@ -16,17 +16,12 @@ import { eventEmitter } from "@/utils/event-emitter/event-emitter"
 import { EInternalEvents } from "@/utils/event-emitter/events"
 import { clientSocket } from "@/utils/socket/client-socket"
 import { ESocketEvents } from "@/utils/socket/events"
-import { useDebounceLeading } from "@/hooks/debounce"
 
 const LazyEmojiPicker = lazy(() => import("../../components/materials/emoji-picker"))
 
 const Fallback = () => (
    <div className="rounded-lg overflow-hidden bg-emoji-picker-bgcl w-full h-full"></div>
 )
-
-type TAddEmojiProps = {
-   textFieldRef: React.RefObject<HTMLDivElement | null>
-}
 
 const EmojiImg = ({ alt, name, src }: TEmoji) => {
    return (
@@ -39,9 +34,13 @@ const EmojiImg = ({ alt, name, src }: TEmoji) => {
    )
 }
 
-const AddEmoji = ({ textFieldRef }: TAddEmojiProps) => {
+type TAddEmojiProps = {
+   textFieldRef: React.RefObject<HTMLDivElement | null>
+   addEmojiPopoverRef: React.RefObject<HTMLDivElement | null>
+}
+
+const AddEmoji = ({ textFieldRef, addEmojiPopoverRef }: TAddEmojiProps) => {
    const [showPicker, setShowPicker] = useState(false) // Hiển thị/ẩn picker
-   const addEmojiPopoverRef = useRef<HTMLDivElement>(null)
    const addEmojiBtnRef = useRef<HTMLButtonElement>(null)
    const appRootEle = useRootLayoutContext().appRootRef!.current!
 
@@ -51,7 +50,7 @@ const AddEmoji = ({ textFieldRef }: TAddEmojiProps) => {
          const emojiInString = renderToStaticMarkup(
             <EmojiImg alt={emojiObject.alt} name={emojiObject.name} src={emojiObject.src} />
          )
-         eventEmitter.emit(EInternalEvents.MSG_TEXTFIELD_EDITED, { textContent: emojiInString })
+         eventEmitter.emit(EInternalEvents.MSG_TEXTFIELD_EDITED, { content: emojiInString })
       }
    }
 
@@ -122,9 +121,30 @@ type TMessageTextFieldProps = {
    hasContent: boolean
    textFieldRef: React.RefObject<HTMLDivElement | null>
    textFieldContainerRef: React.RefObject<HTMLDivElement | null>
+   addEmojiPopoverRef: React.RefObject<HTMLDivElement | null>
 }
 
 const INDICATE_TYPING_DELAY: number = 200
+
+type TTypingFlags = "typing" | "stop"
+
+// Hàm custom debounce ngăn chặn việc gửi nhiều request trong 1 khoảng thời gian delay
+// Sẽ không ngăn chặn nếu 2 request kế tiếp nhau là khác loại với nhau (VD: pre req là "typing" còn next req là "blur")
+const useCustomDebounce = (typingFlagRef: React.RefObject<TTypingFlags | undefined>) => {
+   const timer = useRef<NodeJS.Timeout>(undefined)
+   return (handler: (type: TTypingFlags) => void, delayInMs: number) => {
+      return (type: TTypingFlags) => {
+         if (!timer.current || typingFlagRef.current !== type) {
+            typingFlagRef.current = type
+            handler(type)
+         }
+         clearTimeout(timer.current)
+         timer.current = setTimeout(() => {
+            timer.current = undefined
+         }, delayInMs)
+      }
+   }
+}
 
 const MessageTextField = ({
    directChat,
@@ -132,15 +152,18 @@ const MessageTextField = ({
    hasContent,
    textFieldRef,
    textFieldContainerRef,
+   addEmojiPopoverRef,
 }: TMessageTextFieldProps) => {
    const { recipientId, creatorId, id } = directChat
    const user = useUser()!
-   const debounce = useDebounceLeading()
+   const typingFlagRef = useRef<TTypingFlags | undefined>(undefined)
+   const debounce = useCustomDebounce(typingFlagRef)
 
-   const indicateUserIsTyping = debounce((isTyping: boolean) => {
+   const indicateUserIsTyping = debounce((type: TTypingFlags) => {
+      console.log(">>> debounce:", { type, typingFlag: typingFlagRef.current })
       clientSocket.socket.emit(ESocketEvents.typing_direct, {
          receiverId: recipientId === user.id ? creatorId : recipientId,
-         isTyping,
+         isTyping: type === "typing",
       })
    }, INDICATE_TYPING_DELAY)
 
@@ -150,7 +173,7 @@ const MessageTextField = ({
       } else {
          setHasContent(false)
       }
-      indicateUserIsTyping(true)
+      indicateUserIsTyping("typing")
    }
 
    const sendMessage = (msgToSend: string) => {
@@ -186,8 +209,25 @@ const MessageTextField = ({
       if (!textFieldRef.current?.innerHTML) {
          setHasContent(false)
       }
-      indicateUserIsTyping(false)
    }
+
+   const handleClickOnLayout = (e: MouseEvent) => {
+      if (
+         !addEmojiPopoverRef.current?.contains(e.target as Node) &&
+         !textFieldContainerRef.current?.contains(e.target as Node) &&
+         typingFlagRef.current === "typing"
+      ) {
+         console.log(">>> run into indicate stop")
+         indicateUserIsTyping("stop")
+      }
+   }
+
+   useEffect(() => {
+      eventEmitter.on(EInternalEvents.CLICK_ON_LAYOUT, handleClickOnLayout)
+      return () => {
+         eventEmitter.off(EInternalEvents.CLICK_ON_LAYOUT, handleClickOnLayout)
+      }
+   }, [])
 
    return (
       <div className="relative bg-regular-dark-gray-cl grow py-[15.5px] px-2">
@@ -221,12 +261,13 @@ export const TypeMessageBar = memo(({ directChat }: TTypeMessageBarProps) => {
    const textFieldRef = useRef<HTMLDivElement | null>(null)
    const [hasContent, setHasContent] = useState<boolean>(false)
    const textFieldContainerRef = useRef<HTMLDivElement | null>(null)
+   const addEmojiPopoverRef = useRef<HTMLDivElement>(null)
 
    const handleClickOnTextFieldContainer = (e: React.MouseEvent<HTMLElement>) => {
       const textField = textFieldRef.current
       textFieldContainerRef.current?.classList.add("outline-regular-violet-cl")
-      if (e.target === textField) return
       if (textField) {
+         if (e.target === textField) return
          textField.focus()
          // Đặt con trỏ ở cuối nội dung
          const range = document.createRange()
@@ -248,13 +289,14 @@ export const TypeMessageBar = memo(({ directChat }: TTypeMessageBarProps) => {
                ref={textFieldContainerRef}
                className="flex cursor-text grow items-center gap-2 relative z-10 rounded-2xl bg-regular-dark-gray-cl px-3 outline-2 outline outline-regular-dark-gray-cl hover:outline-regular-violet-cl transition-[outline] duration-200"
             >
-               <AddEmoji textFieldRef={textFieldRef} />
+               <AddEmoji textFieldRef={textFieldRef} addEmojiPopoverRef={addEmojiPopoverRef} />
                <MessageTextField
                   hasContent={hasContent}
                   directChat={directChat}
                   setHasContent={setHasContent}
                   textFieldRef={textFieldRef}
                   textFieldContainerRef={textFieldContainerRef}
+                  addEmojiPopoverRef={addEmojiPopoverRef}
                />
                <button className="text-gray-500 hover:text-regular-violet-cl cursor-pointer relative bottom-0 right-0">
                   <Paperclip />

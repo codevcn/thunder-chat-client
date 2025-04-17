@@ -19,9 +19,8 @@ export function isValueInEnum<T extends object>(value: string, enumObject: T): b
    return Object.values(enumObject).includes(value)
 }
 
-export const getRouteWithQueryString = (url: string = window.location.href): string => {
-   const urlObject = new URL(url)
-   return `${urlObject.pathname}${urlObject.search}`
+export const getPathWithQueryString = (): string => {
+   return window.location.pathname + window.location.search
 }
 
 export function extractFormData<T extends TFormData>(formEle: HTMLFormElement): T {

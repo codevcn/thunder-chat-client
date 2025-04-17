@@ -119,25 +119,23 @@ const EmojiPicker = ({ onSelectEmoji, onHideShowPicker, addEmojiBtnRef }: TEmoji
          })
    }
 
-   const listenClickOutside = (picker: HTMLElement) => {
-      eventEmitter.on(EInternalEvents.CLICK_ON_LAYOUT, (e) => {
+   const handleClickOutside = (e: MouseEvent) => {
+      const picker = pickerRef.current
+      if (picker) {
          if (
             !picker.contains(e.target as Node) &&
             !addEmojiBtnRef.current?.contains(e.target as Node)
          ) {
             onHideShowPicker(false)
          }
-      })
+      }
    }
 
    useEffect(() => {
-      const picker = pickerRef.current
-      if (picker) {
-         listenClickOutside(picker)
-      }
+      eventEmitter.on(EInternalEvents.CLICK_ON_LAYOUT, handleClickOutside)
       fetchEmojis()
       return () => {
-         eventEmitter.off(EInternalEvents.CLICK_ON_LAYOUT)
+         eventEmitter.off(EInternalEvents.CLICK_ON_LAYOUT, handleClickOutside)
       }
    }, [])
 

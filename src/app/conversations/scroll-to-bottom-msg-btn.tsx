@@ -25,9 +25,9 @@ export const ScrollToBottomMessageBtn = memo(() => {
          setUnreadMessagesCount(count)
       })
       return () => {
-         eventEmitter.off(EInternalEvents.SCROLL_OUT_OF_BOTTOM)
-         eventEmitter.off(EInternalEvents.SCROLL_TO_BOTTOM_MSG_UI)
-         eventEmitter.off(EInternalEvents.UNREAD_MESSAGES_COUNT)
+         eventEmitter.removeAllListeners(EInternalEvents.SCROLL_OUT_OF_BOTTOM)
+         eventEmitter.removeAllListeners(EInternalEvents.SCROLL_TO_BOTTOM_MSG_UI)
+         eventEmitter.removeAllListeners(EInternalEvents.UNREAD_MESSAGES_COUNT)
       }
    }, [])
 

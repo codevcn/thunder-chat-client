@@ -17,7 +17,7 @@ export const useDebounceLeading = () => {
    return <P extends any[]>(handler: (...params: P) => void, delayInMs: number) =>
       (...args: Parameters<typeof handler>) => {
          if (!timer.current) {
-            handler.apply(this, args)
+            handler(...args)
          }
          clearTimeout(timer.current)
          timer.current = setTimeout(() => {

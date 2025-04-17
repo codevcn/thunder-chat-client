@@ -1,6 +1,6 @@
 "use client"
 
-import { getRouteWithQueryString, pureNavigator } from "@/utils/helpers"
+import { getPathWithQueryString, pureNavigator } from "@/utils/helpers"
 import { useRouter } from "next/navigation"
 
 export const useAuthRedirect = () => {
@@ -13,7 +13,7 @@ export const useAuthRedirect = () => {
 export const useRedirectToLogin = () => {
    const router = useRouter()
    return () => {
-      const redirect = `/?redirect=${getRouteWithQueryString()}`
+      const redirect = `/?redirect=${getPathWithQueryString()}`
       router.push(redirect)
    }
 }

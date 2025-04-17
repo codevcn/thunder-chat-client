@@ -39,9 +39,9 @@ export const SocketProvider = ({ children }: { children: JSX.Element }) => {
          }
       }
       return () => {
-         clientSocket.socket.off(ESocketInitEvents.connect)
-         clientSocket.socket.off(ESocketInitEvents.connect_error)
-         clientSocket.socket.off(ESocketEvents.error)
+         clientSocket.socket.removeAllListeners(ESocketInitEvents.connect)
+         clientSocket.socket.removeAllListeners(ESocketInitEvents.connect_error)
+         clientSocket.socket.removeAllListeners(ESocketEvents.error)
       }
    }, [authStatus])
 

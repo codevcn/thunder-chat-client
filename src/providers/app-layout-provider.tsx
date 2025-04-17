@@ -10,31 +10,31 @@ import { localStorageManager } from "@/utils/local-storage"
 import { RootLayoutContext } from "@/contexts/root-layout.context"
 import { clientSocket } from "@/utils/socket/client-socket"
 import { ESocketEvents } from "@/utils/socket/events"
+import { getPathWithQueryString } from "@/utils/helpers"
+import type { TUserWithProfile } from "@/utils/types"
 
 export const AppLayoutProvider = ({ children }: { children: React.ReactNode }) => {
    const { toasts } = useToasterStore()
    const appRootRef = useRef<HTMLDivElement>(null)
 
    const setLastPageAccessed = () => {
-      localStorageManager.setLastPageAccessed(window.location.pathname)
+      localStorageManager.setLastPageAccessed(getPathWithQueryString())
    }
 
-   const listenFriendRequest = () => {
-      clientSocket.socket.on(ESocketEvents.send_friend_request, (payload) => {
-         const { Profile, email } = payload
-         toast(() => (
-            <div className="flex items-center justify-between gap-x-3">
-               <Info size={20} />
-               <span className="font-bold">{`User "${Profile?.fullName || email}" sent you an add friend request`}</span>
-               <Link
-                  href={`/friends?action=${EActions.ADD_FRIEND_REQUESTS}`}
-                  className="px-2 py-[5px]"
-               >
-                  <ArrowRight className="text-black" size={20} />
-               </Link>
-            </div>
-         ))
-      })
+   const handleFriendRequest = (userData: TUserWithProfile) => {
+      const { Profile, email } = userData
+      toast(() => (
+         <div className="flex items-center justify-between gap-x-3">
+            <Info size={20} />
+            <span className="font-bold">{`User "${Profile?.fullName || email}" sent you an add friend request`}</span>
+            <Link
+               href={`/friends?action=${EActions.ADD_FRIEND_REQUESTS}`}
+               className="px-2 py-[5px]"
+            >
+               <ArrowRight className="text-black" size={20} />
+            </Link>
+         </div>
+      ))
    }
 
    const limitDisplayedToasts = () => {
@@ -47,10 +47,10 @@ export const AppLayoutProvider = ({ children }: { children: React.ReactNode }) =
    }
 
    useEffect(() => {
-      listenFriendRequest()
+      clientSocket.socket.on(ESocketEvents.send_friend_request, handleFriendRequest)
       setLastPageAccessed()
       return () => {
-         clientSocket.socket.off(ESocketEvents.send_friend_request)
+         clientSocket.socket.off(ESocketEvents.send_friend_request, handleFriendRequest)
       }
    }, [])
 

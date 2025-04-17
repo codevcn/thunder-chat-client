@@ -1,3 +1,3 @@
 export type TMsgContent = {
-   textContent: string
+   content: string
 }

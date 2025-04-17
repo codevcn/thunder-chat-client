@@ -1,10 +1,10 @@
 "use client"
 
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
-import { useRef, useState, useEffect, memo, useCallback } from "react"
+import { useRef, useState, useEffect, memo } from "react"
 import { CheckCheck, Check } from "lucide-react"
 import { fetchDirectMessagesThunk } from "@/redux/messages/messages.thunk"
-import type { TStateDirectMessage, TUserWithoutPassword } from "@/utils/types"
+import type { TDirectMessage, TStateDirectMessage, TUserWithoutPassword } from "@/utils/types"
 import { Spinner } from "@/components/materials/spinner"
 import dayjs from "dayjs"
 import { EPaginations, ESortTypes, ETimeFormats } from "@/utils/enums"
@@ -23,6 +23,7 @@ import { eventEmitter } from "@/utils/event-emitter/event-emitter"
 import { santizeMsgContent } from "@/utils/helpers"
 import { EMessageStatus } from "@/utils/socket/enums"
 import type { TDirectChatData } from "@/apis/types"
+import type { TMsgSeenListenPayload } from "@/utils/socket/types"
 
 const SCROLL_ON_MESSAGES_THRESHOLD: number = 100
 
@@ -249,8 +250,8 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
    }
 
    // Hàm xử lý việc cuộn đoạn chat lên tin nhắn trên cùng
-   const handleScrollToTopMessage = useCallback((e: Event) => {
-      const messagesContainer = e.currentTarget as HTMLDivElement
+   const handleScrollToTopMessage = (e: Event) => {
+      const messagesContainer = e.currentTarget as HTMLElement
       if (
          messagesContainer.scrollHeight - messagesContainer.scrollTop <
          messagesContainer.clientHeight + SHOW_SCROLL_BTN_THRESHOLD
@@ -259,11 +260,11 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
       } else {
          eventEmitter.emit(EInternalEvents.SCROLL_OUT_OF_BOTTOM)
          // Check if the user scrolled to the top then fetch more messages
-         if (messagesContainer.scrollTop === 0 && hasMoreMessages.current && !loading) {
+         if (messagesContainer.scrollTop < 10 && hasMoreMessages.current && !loading) {
             fetchDirectMessages(directChatId, msgOffset.current, false)
          }
       }
-   }, [])
+   }
 
    const scrollToFirstUnreadMessage = () => {
       const msgsContainerEle = messagesContainer.current
@@ -276,47 +277,41 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
    }
 
    // Cuộn đến cuối danh sách tin nhắn hoặc cuộn đến tin nhắn đầu tiên chưa đọc
-   const listenScrollToBottomMsg = () => {
-      eventEmitter.on(EInternalEvents.SCROLL_TO_BOTTOM_MSG_ACTION, () => {
-         const unreadMessages = unreadMessagesRef.current
-         if (unreadMessages.count > 0 && unreadMessages.firstUnreadOffsetTop !== -1) {
-            scrollToFirstUnreadMessage()
-         } else {
-            scrollToBottomMessage()
-         }
-      })
+   const handleScrollToBottomMsg = () => {
+      const unreadMessages = unreadMessagesRef.current
+      if (unreadMessages.count > 0 && unreadMessages.firstUnreadOffsetTop !== -1) {
+         scrollToFirstUnreadMessage()
+      } else {
+         scrollToBottomMessage()
+      }
    }
 
-   // Lắng nghe sự kiện gửi tin nhắn từ đối phương
-   const listenSendDirectMessage = () => {
-      clientSocket.socket.on(ESocketEvents.send_message_direct, (newMessage) => {
-         const { id, authorId, createdAt, content, status } = newMessage
-         dispatch(
-            pushNewMessages([
-               {
-                  id,
-                  authorId,
-                  content,
-                  directChatId,
-                  createdAt,
-                  status,
-                  isNewMsg: true,
-               },
-            ])
-         )
+   // Xử lý sự kiện gửi tin nhắn từ đối phương
+   const handleSendDirectMessage = (newMessage: TDirectMessage) => {
+      const { id, authorId, createdAt, content, status } = newMessage
+      dispatch(
+         pushNewMessages([
+            {
+               id,
+               authorId,
+               content,
+               directChatId,
+               createdAt,
+               status,
+               isNewMsg: true,
+            },
+         ])
+      )
+      clientSocket.setMessageOffset(id, directChatId)
+   }
+
+   // Xử lý sự kiện kết nối lại từ server
+   const handleRecoverdConnection = (newMessages: TDirectMessage[]) => {
+      if (newMessages && newMessages.length > 0) {
+         dispatch(pushNewMessages(newMessages))
+         const { id } = newMessages[newMessages.length - 1]
          clientSocket.setMessageOffset(id, directChatId)
-      })
-   }
-
-   // Lắng nghe sự kiện kết nối lại từ server
-   const listenRecoverdConnection = () => {
-      clientSocket.socket.on(ESocketEvents.recovered_connection, (newMessages) => {
-         if (newMessages && newMessages.length > 0) {
-            dispatch(pushNewMessages(newMessages))
-            const { id } = newMessages[newMessages.length - 1]
-            clientSocket.setMessageOffset(id, directChatId)
-         }
-      })
+      }
    }
 
    // Xử lý tin nhắn chưa đọc nằm ngoài vùng nhìn thấy
@@ -396,17 +391,9 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
    }
 
    // Hàm xử lý việc cuộn đoạn chat
-   const handleScrollMsgsContainer = useCallback((e: Event) => {
+   const handleScrollMsgsContainer = (e: Event) => {
       handleScrollMsgIntoVisibleView(e)
       handleScrollToTopMessage(e)
-   }, [])
-
-   // Lắng nghe sự kiện cuộn đoạn chat
-   const listenOnScrollMsgsContainer = () => {
-      const msgsContainerEle = messagesContainer.current
-      if (msgsContainerEle) {
-         msgsContainerEle.addEventListener("scroll", handleScrollMsgsContainer)
-      }
    }
 
    // Cập nhật số lượng tin nhắn sau khi dữ liệu danh sách tin nhắn thay đổi
@@ -414,11 +401,9 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
       messagesPreCount.current = messages?.length || 0
    }
 
-   // Lắng nghe sự kiện đã đọc tin nhắn từ đối phương
-   const listenMessageSeen = () => {
-      clientSocket.socket.on(ESocketEvents.message_seen_direct, ({ messageId, status }) => {
-         dispatch(updateMessages([{ msgId: messageId, msgUpdates: { status } }]))
-      })
+   // Xử lý sự kiện đã đọc tin nhắn từ đối phương
+   const handleMessageSeen = ({ messageId, status }: TMsgSeenListenPayload) => {
+      dispatch(updateMessages([{ msgId: messageId, msgUpdates: { status } }]))
    }
 
    useEffect(() => {
@@ -437,17 +422,17 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
             fetchDirectMessages(directChatId, msgOffset.current, true)
          }
       }
-      listenOnScrollMsgsContainer()
-      listenScrollToBottomMsg()
-      listenSendDirectMessage()
-      listenRecoverdConnection()
-      listenMessageSeen()
+      messagesContainer.current?.addEventListener("scroll", handleScrollMsgsContainer)
+      eventEmitter.on(EInternalEvents.SCROLL_TO_BOTTOM_MSG_ACTION, handleScrollToBottomMsg)
+      clientSocket.socket.on(ESocketEvents.send_message_direct, handleSendDirectMessage)
+      clientSocket.socket.on(ESocketEvents.recovered_connection, handleRecoverdConnection)
+      clientSocket.socket.on(ESocketEvents.message_seen_direct, handleMessageSeen)
       return () => {
          messagesContainer.current?.removeEventListener("scroll", handleScrollMsgsContainer)
-         eventEmitter.off(EInternalEvents.SCROLL_TO_BOTTOM_MSG_ACTION)
-         clientSocket.socket.off(ESocketEvents.recovered_connection)
-         clientSocket.socket.off(ESocketEvents.send_message_direct)
-         clientSocket.socket.off(ESocketEvents.message_seen_direct)
+         eventEmitter.off(EInternalEvents.SCROLL_TO_BOTTOM_MSG_ACTION, handleScrollToBottomMsg)
+         clientSocket.socket.off(ESocketEvents.recovered_connection, handleRecoverdConnection)
+         clientSocket.socket.off(ESocketEvents.send_message_direct, handleSendDirectMessage)
+         clientSocket.socket.off(ESocketEvents.message_seen_direct, handleMessageSeen)
       }
    }, [])
 

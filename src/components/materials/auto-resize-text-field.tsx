@@ -1,5 +1,6 @@
 import { eventEmitter } from "@/utils/event-emitter/event-emitter"
 import { EInternalEvents } from "@/utils/event-emitter/events"
+import { TMsgContent } from "@/utils/event-emitter/types"
 import { useEffect } from "react"
 
 const EMPTY_PLACEHOLDER_HTML: string = `<span class="QUERY-empty-placeholder"></span>`
@@ -17,10 +18,10 @@ type AutoResizeTextFieldProps = {
    id: string
    style: React.CSSProperties
    lineHeight: number
-   onBlur: () => void
+   onBlur: (e: React.FocusEvent<HTMLDivElement>) => void
    initialHeight: number
    textSize: number
-   onFocus: () => void
+   onFocus: (e: React.MouseEvent<HTMLDivElement>) => void
 }>
 
 export const AutoResizeTextField: React.FC<AutoResizeTextFieldProps> = ({
@@ -46,7 +47,7 @@ export const AutoResizeTextField: React.FC<AutoResizeTextFieldProps> = ({
       }
    }
 
-   const getEmptyPlaceholder = (textFieldEle: HTMLDivElement) =>
+   const getEmptyPlaceholderEle = (textFieldEle: HTMLDivElement) =>
       textFieldEle.querySelector(".QUERY-empty-placeholder")
 
    // Điều chỉnh chiều cao dựa trên nội dung
@@ -83,7 +84,7 @@ export const AutoResizeTextField: React.FC<AutoResizeTextFieldProps> = ({
       }
       if (onContentChange) {
          // Gọi hàm khi có sự thay đổi nội dung (kiểm tra trước xem content có trống không)
-         if (getEmptyPlaceholder(textFieldEle)) {
+         if (getEmptyPlaceholderEle(textFieldEle)) {
             onContentChange("")
          } else {
             onContentChange(textFieldEle.innerHTML.trim())
@@ -113,31 +114,33 @@ export const AutoResizeTextField: React.FC<AutoResizeTextFieldProps> = ({
    }
 
    // Xử lý blur
-   const handleBlur = () => {
+   const handleBlur = (e: React.FocusEvent<HTMLDivElement>) => {
       if (onBlur) {
-         onBlur()
+         onBlur(e)
       }
    }
 
-   const handleFocus = () => {
+   // Xử lý focus (onClick)
+   const handleFocus = (e: React.MouseEvent<HTMLDivElement>) => {
       if (onFocus) {
-         onFocus()
+         onFocus(e)
       }
    }
 
-   // Lắng nghe sự kiện chỉnh sửa text field content
-   const listenTextFieldEdited = (textFieldEle: HTMLDivElement) => {
-      eventEmitter.on(EInternalEvents.MSG_TEXTFIELD_EDITED, (msgData) => {
-         textFieldEle.innerHTML += msgData.textContent
+   // Xử lý sự kiện chỉnh sửa text field content
+   const handleTextFieldEdited = (msgData: TMsgContent) => {
+      const textFieldEle = textFieldRef.current
+      if (textFieldEle) {
+         textFieldEle.innerHTML += msgData.content
          handleInput(textFieldEle)
-      })
+      }
    }
 
    // Khởi tạo component
    useEffect(() => {
       const textFieldEle = textFieldRef.current
       if (textFieldEle) {
-         listenTextFieldEdited(textFieldEle)
+         eventEmitter.on(EInternalEvents.MSG_TEXTFIELD_EDITED, handleTextFieldEdited)
          if (initialValue) {
             setTextFieldContent(initialValue, textFieldEle)
          } else {
@@ -146,7 +149,7 @@ export const AutoResizeTextField: React.FC<AutoResizeTextFieldProps> = ({
          adjustHeight(textFieldEle)
       }
       return () => {
-         eventEmitter.off(EInternalEvents.MSG_TEXTFIELD_EDITED)
+         eventEmitter.off(EInternalEvents.MSG_TEXTFIELD_EDITED, handleTextFieldEdited)
       }
    }, [])
 
