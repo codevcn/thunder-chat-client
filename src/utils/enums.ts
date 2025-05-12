@@ -51,4 +51,17 @@ export enum ESortTypes {
 
 export enum ELocalStorageKeys {
    LAST_PAGE_ACCESSED = "LAST_PAGE_ACCESSED",
+   THE_LAST_DIRECT_CHAT_ID = "TL_CONV_ID",
+}
+
+export enum EStickerCategory {
+   FOOD_DRINK = "food-drink",
+   ACTIVITY = "activity",
+   TRAVEL_PLACES = "travel-places",
+   SMILEY_PEOPLE = "smiley-people",
+}
+
+export enum EMessageTypes {
+   TEXT = "TEXT",
+   STICKER = "STICKER",
 }

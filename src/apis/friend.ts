@@ -1,12 +1,12 @@
 import { clientAxios, requestConfig } from "@/configs/axios"
-import type { TSuccess } from "@/utils/types"
+import type { TSuccess } from "@/utils/types/global"
 import type {
    TFriendRequestActionParams,
    TGetFriendRequestsData,
    TGetFriendRequestsParams,
    TGetFriendsData,
    TGetFriendsParams,
-} from "./types"
+} from "../utils/types/be-api"
 
 export const postSendFriendRequest = (senderId: number, recipientId: number) =>
    clientAxios.post<TSuccess>(

@@ -4,6 +4,7 @@ import * as React from "react"
 import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 
 import { cn } from "@/lib/utils"
+import type { TTooltipPlacement } from "@/utils/types/global"
 
 const TooltipProvider = TooltipPrimitive.Provider
 
@@ -33,7 +34,7 @@ TooltipContent.displayName = TooltipPrimitive.Content.displayName
 type TCustomTooltipProps = {
    children: React.JSX.Element
    title: string
-   placement?: "top" | "right" | "bottom" | "left"
+   placement?: TTooltipPlacement
    align?: "center" | "start" | "end"
    arrow?: boolean
 }
@@ -41,7 +42,7 @@ type TCustomTooltipProps = {
 const CustomTooltip = ({
    children,
    title,
-   placement,
+   placement = "bottom",
    align,
    arrow = true,
 }: TCustomTooltipProps) => {

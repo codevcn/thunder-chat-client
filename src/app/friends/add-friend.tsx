@@ -11,7 +11,7 @@ import { useUser } from "@/hooks/user"
 // import { Modal, Divider, Input, InputRef, Tooltip } from "antd"
 import { userService } from "@/services/user.service"
 import { useCallback, useRef, useState } from "react"
-import type { TSearchUsersData } from "@/apis/types"
+import type { TSearchUsersData } from "@/utils/types/be-api"
 import { friendService } from "@/services/friend.service"
 import {
    CustomAvatar,

@@ -1,17 +1,15 @@
 "use client"
 
-import type { TGetEmojisServiceRes } from "@/app/api/types"
-import { directChatService } from "@/services/direct-chat.service"
 import axiosErrorHandler from "@/utils/axios-error-handler"
-import type { TEmoji } from "@/utils/types"
+import type { TEmoji } from "@/utils/types/global"
 import { useEffect, useRef, useState } from "react"
 import toast from "react-hot-toast"
 import { FixedSizeGrid } from "react-window"
 import type { GridChildComponentProps } from "react-window"
 import { CustomTooltip } from "./tooltip"
 import { Spinner } from "./spinner"
-import { eventEmitter } from "@/utils/event-emitter/event-emitter"
-import { EInternalEvents } from "@/utils/event-emitter/events"
+import { expressionService } from "@/services/expression.service"
+import type { TGetEmojisRes } from "@/utils/types/fe-api"
 
 const GRID_COLUMN_COUNT: number = 7
 
@@ -53,7 +51,7 @@ const EmojiCell = ({ data, rowIndex, columnIndex, style }: GridChildComponentPro
          style={style}
          data-emoji-data={JSON.stringify(emojiData)}
       >
-         <img src={emojiData.src} alt={emojiData.alt} className="w-full h-full" />
+         <img src={emojiData.src} alt={emojiData.name} className="w-full h-full" />
       </button>
    )
 }
@@ -66,16 +64,17 @@ type EmojiCategoryProps = {
 const EmojisList = ({ title, emojis }: EmojiCategoryProps) => {
    const width: number = 300
    const height: number = 265
+   const cellSize: number = width / GRID_COLUMN_COUNT
 
    return (
       <div className="w-full">
          <h3 className="w-full text-sm font-medium mb-2 text-regular-text-secondary-cl">{title}</h3>
          <FixedSizeGrid
             columnCount={GRID_COLUMN_COUNT}
-            columnWidth={width / GRID_COLUMN_COUNT}
+            columnWidth={cellSize}
             height={height}
             rowCount={Math.ceil(emojis.length / GRID_COLUMN_COUNT)}
-            rowHeight={42.85}
+            rowHeight={cellSize}
             width={width}
             itemData={emojis}
             style={{ overflowX: "hidden", overflowY: "scroll" }}
@@ -99,17 +98,15 @@ enum EEmojiCategory {
 
 type TEmojiPickerProps = {
    onSelectEmoji: (emoji: TEmoji) => void
-   onHideShowPicker: (show: boolean) => void
-   addEmojiBtnRef: React.RefObject<HTMLButtonElement | null>
 }
 
-const EmojiPicker = ({ onSelectEmoji, onHideShowPicker, addEmojiBtnRef }: TEmojiPickerProps) => {
-   const [emojis, setEmojis] = useState<TGetEmojisServiceRes>()
+const EmojiPicker = ({ onSelectEmoji }: TEmojiPickerProps) => {
+   const [emojis, setEmojis] = useState<TGetEmojisRes>()
    const [activeTab, setActiveTab] = useState<EEmojiCategory>(EEmojiCategory.SMILEYS_PEOPLE)
    const pickerRef = useRef<HTMLDivElement | null>(null)
 
    const fetchEmojis = () => {
-      directChatService
+      expressionService
          .fetchEmojis()
          .then((res) => {
             setEmojis(res)
@@ -119,24 +116,8 @@ const EmojiPicker = ({ onSelectEmoji, onHideShowPicker, addEmojiBtnRef }: TEmoji
          })
    }
 
-   const handleClickOutside = (e: MouseEvent) => {
-      const picker = pickerRef.current
-      if (picker) {
-         if (
-            !picker.contains(e.target as Node) &&
-            !addEmojiBtnRef.current?.contains(e.target as Node)
-         ) {
-            onHideShowPicker(false)
-         }
-      }
-   }
-
    useEffect(() => {
-      eventEmitter.on(EInternalEvents.CLICK_ON_LAYOUT, handleClickOutside)
       fetchEmojis()
-      return () => {
-         eventEmitter.off(EInternalEvents.CLICK_ON_LAYOUT, handleClickOutside)
-      }
    }, [])
 
    const handleEmojiClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -154,12 +135,9 @@ const EmojiPicker = ({ onSelectEmoji, onHideShowPicker, addEmojiBtnRef }: TEmoji
    }
 
    return (
-      <div
-         ref={pickerRef}
-         className="rounded-lg overflow-hidden bg-emoji-picker-bgcl w-full h-full"
-      >
+      <div ref={pickerRef} className="overflow-hidden w-full h-inside-expression-picker">
          {/* Emoji Tabs */}
-         <div className="flex overflow-x-auto p-2 gap-3 border-t border-gray-700">
+         <div className="flex overflow-x-auto p-2 gap-3">
             <EmojiTab
                icon="🕒"
                label="Recent"

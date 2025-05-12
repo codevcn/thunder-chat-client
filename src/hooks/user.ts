@@ -1,4 +1,4 @@
-import type { TUserWithoutPassword } from "@/utils/types"
+import type { TUserWithoutPassword } from "@/utils/types/be-api"
 import { useAppSelector } from "./redux"
 
 type TUseUserReturn = TUserWithoutPassword | null

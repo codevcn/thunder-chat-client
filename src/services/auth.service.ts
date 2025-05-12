@@ -1,5 +1,6 @@
 import { getCheckAuth, postLoginUser } from "@/apis/auth"
-import type { TSuccess, TUserWithoutPassword } from "@/utils/types"
+import type { TUserWithoutPassword } from "@/utils/types/be-api"
+import type { TSuccess } from "@/utils/types/global"
 
 class AuthService {
    async checkAuth(): Promise<TUserWithoutPassword> {

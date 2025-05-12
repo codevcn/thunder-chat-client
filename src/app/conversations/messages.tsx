@@ -2,12 +2,10 @@
 
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
 import { useRef, useState, useEffect, memo } from "react"
-import { CheckCheck, Check } from "lucide-react"
 import { fetchDirectMessagesThunk } from "@/redux/messages/messages.thunk"
-import type { TDirectMessage, TStateDirectMessage, TUserWithoutPassword } from "@/utils/types"
+import type { TDirectMessage, TUserWithoutPassword } from "@/utils/types/be-api"
 import { Spinner } from "@/components/materials/spinner"
-import dayjs from "dayjs"
-import { EPaginations, ESortTypes, ETimeFormats } from "@/utils/enums"
+import { EPaginations, ESortTypes } from "@/utils/enums"
 import { ScrollToBottomMessageBtn } from "./scroll-to-bottom-msg-btn"
 import { createPortal } from "react-dom"
 import { useUser } from "@/hooks/user"
@@ -15,91 +13,17 @@ import { pushNewMessages, updateMessages } from "@/redux/messages/messages.slice
 import { displayMessageStickyTime } from "@/utils/date-time"
 import axiosErrorHandler from "@/utils/axios-error-handler"
 import toast from "react-hot-toast"
-import { SHOW_SCROLL_BTN_THRESHOLD } from "@/utils/constants"
 import { EInternalEvents } from "@/utils/event-emitter/events"
 import { clientSocket } from "@/utils/socket/client-socket"
 import { ESocketEvents } from "@/utils/socket/events"
 import { eventEmitter } from "@/utils/event-emitter/event-emitter"
-import { santizeMsgContent } from "@/utils/helpers"
-import { EMessageStatus } from "@/utils/socket/enums"
-import type { TDirectChatData } from "@/apis/types"
-import type { TMsgSeenListenPayload } from "@/utils/socket/types"
+import type { TDirectChatData } from "@/utils/types/be-api"
+import type { TMsgSeenListenPayload } from "@/utils/types/socket"
+import type { TStateDirectMessage } from "@/utils/types/global"
+import { Message } from "./message"
 
 const SCROLL_ON_MESSAGES_THRESHOLD: number = 100
-
-type TStickyTimeProps = {
-   stickyTime: string
-}
-
-const StickyTime = ({ stickyTime }: TStickyTimeProps) => {
-   return (
-      <div className="flex w-full py-2 text-regular-text-secondary-cl">
-         <div className="m-auto py-0.5 px-1 cursor-pointer font-bold">{stickyTime}</div>
-      </div>
-   )
-}
-
-type TMessageProps = {
-   message: TStateDirectMessage
-   user: TUserWithoutPassword
-   stickyTime: string | null
-}
-
-const Message = memo(({ message, user, stickyTime }: TMessageProps) => {
-   const { authorId, content, createdAt, isNewMsg, id, status } = message
-
-   const msgTime = dayjs(createdAt).format(ETimeFormats.HH_mm)
-
-   return (
-      <>
-         {stickyTime && <StickyTime stickyTime={stickyTime} />}
-
-         <div className="w-full text-regular-white-cl">
-            {user.id === authorId ? (
-               <div className={`QUERY-user-message-${id} flex justify-end w-full`}>
-                  <div
-                     className={`${isNewMsg ? "animate-new-user-message -translate-x-[3.5rem] translate-y-[1rem] opacity-0" : ""} max-w-[70%] w-max bg-regular-violet-cl rounded-t-2xl rounded-bl-2xl py-1.5 pb-1 pl-2 pr-1`}
-                  >
-                     <div
-                        className="text-end break-words whitespace-pre-wrap text-sm inline"
-                        dangerouslySetInnerHTML={{ __html: santizeMsgContent(content) }}
-                     ></div>
-                     <div className="flex justify-end items-center gap-x-1 mt-1.5 w-full">
-                        <span className="text-xs text-regular-creator-msg-time-cl leading-none">
-                           {msgTime}
-                        </span>
-                        <div className="flex ml-0.5">
-                           {status === EMessageStatus.SENT ? (
-                              <Check size={15} />
-                           ) : (
-                              status === EMessageStatus.SEEN && <CheckCheck size={15} />
-                           )}
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            ) : (
-               <div
-                  className={`${isNewMsg || status === EMessageStatus.SENT ? "QUERY-unread-message" : ""} origin-left flex justify-start w-full`}
-                  data-msg-id={id}
-               >
-                  <div
-                     className={`${isNewMsg ? "animate-new-friend-message translate-x-[3.5rem] translate-y-[1rem] opacity-0" : ""} max-w-[70%] w-max bg-regular-dark-gray-cl rounded-t-2xl rounded-br-2xl pt-1.5 pb-1 px-2 relative`}
-                  >
-                     <div
-                        className="max-w-full break-words whitespace-pre-wrap text-sm inline"
-                        dangerouslySetInnerHTML={{ __html: santizeMsgContent(content) }}
-                     ></div>
-                     <div className="flex justify-end items-center mt-1.5">
-                        <span className="text-xs text-regular-creator-msg-time-cl">{msgTime}</span>
-                     </div>
-                  </div>
-               </div>
-            )}
-         </div>
-      </>
-   )
-})
+const SHOW_SCROLL_BTN_THRESHOLD: number = 250
 
 const NoMessagesYet = () => {
    return (
@@ -287,21 +211,9 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
    }
 
    // Xử lý sự kiện gửi tin nhắn từ đối phương
-   const handleSendDirectMessage = (newMessage: TDirectMessage) => {
-      const { id, authorId, createdAt, content, status } = newMessage
-      dispatch(
-         pushNewMessages([
-            {
-               id,
-               authorId,
-               content,
-               directChatId,
-               createdAt,
-               status,
-               isNewMsg: true,
-            },
-         ])
-      )
+   const listenSendDirectMessage = (newMessage: TDirectMessage) => {
+      const { id } = newMessage
+      dispatch(pushNewMessages([newMessage]))
       clientSocket.setMessageOffset(id, directChatId)
    }
 
@@ -424,14 +336,14 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
       }
       messagesContainer.current?.addEventListener("scroll", handleScrollMsgsContainer)
       eventEmitter.on(EInternalEvents.SCROLL_TO_BOTTOM_MSG_ACTION, handleScrollToBottomMsg)
-      clientSocket.socket.on(ESocketEvents.send_message_direct, handleSendDirectMessage)
+      clientSocket.socket.on(ESocketEvents.send_message_direct, listenSendDirectMessage)
       clientSocket.socket.on(ESocketEvents.recovered_connection, handleRecoverdConnection)
       clientSocket.socket.on(ESocketEvents.message_seen_direct, handleMessageSeen)
       return () => {
          messagesContainer.current?.removeEventListener("scroll", handleScrollMsgsContainer)
          eventEmitter.off(EInternalEvents.SCROLL_TO_BOTTOM_MSG_ACTION, handleScrollToBottomMsg)
          clientSocket.socket.off(ESocketEvents.recovered_connection, handleRecoverdConnection)
-         clientSocket.socket.off(ESocketEvents.send_message_direct, handleSendDirectMessage)
+         clientSocket.socket.off(ESocketEvents.send_message_direct, listenSendDirectMessage)
          clientSocket.socket.off(ESocketEvents.message_seen_direct, handleMessageSeen)
       }
    }, [])

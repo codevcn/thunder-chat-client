@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { PASSWORD_REGEX } from "@/utils/regex"
-import type { TRegisterUserParams } from "@/apis/types"
+import type { TRegisterUserParams } from "@/utils/types/be-api"
 import { DatePicker, Spinner } from "@/components/materials"
 import { userService } from "@/services/user.service"
 import { useAuthRedirect } from "@/hooks/redirect"

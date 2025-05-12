@@ -1,5 +1,5 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit"
-import type { TUserWithoutPassword } from "@/utils/types"
+import type { TUserWithoutPassword } from "@/utils/types/be-api"
 
 type TUserState = {
    user: TUserWithoutPassword | null

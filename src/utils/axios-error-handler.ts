@@ -1,10 +1,11 @@
 import { AxiosError } from "axios"
-import { MAX_LEN_OF_ERROR_MESSAGE } from "./constants"
-import type { THandledAxiosError, THttpErrorResBody } from "./types"
+import type { THandledAxiosError, THttpErrorResBody } from "./types/global"
 import { EInvalidHttpErrMsgs, EServerErrMsgs } from "./enums"
 import { HttpStatusCode } from "axios"
 
 class AxiosErrorHandler {
+   private readonly MAX_LEN_OF_ERROR_MESSAGE: number = 100
+
    handleHttpError(
       originalError: unknown | Error | AxiosError<THttpErrorResBody>
    ): THandledAxiosError {
@@ -28,8 +29,8 @@ class AxiosErrorHandler {
                isUserError = data_of_response.isUserError //check if is error due to user or not
                message = data_of_response.message //update error message
 
-               if (message.length > MAX_LEN_OF_ERROR_MESSAGE) {
-                  message = `${message.slice(0, MAX_LEN_OF_ERROR_MESSAGE)}...`
+               if (message.length > this.MAX_LEN_OF_ERROR_MESSAGE) {
+                  message = `${message.slice(0, this.MAX_LEN_OF_ERROR_MESSAGE)}...`
                }
             }
          } else if (originalError.request) {

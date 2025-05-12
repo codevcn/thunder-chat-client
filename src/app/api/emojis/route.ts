@@ -2,16 +2,19 @@ import { NextResponse } from "next/server"
 import fs from "fs/promises"
 import path from "path"
 import { HttpStatusCode } from "axios"
-import type { TGetEmojiFile, TGetEmojisErrRes, TGetEmojisRes } from "../types"
+import type { TGetEmojisRes, TGetEmojisErrRes } from "@/utils/types/fe-api"
+import type { TEmoji } from "@/utils/types/global"
 
 const publicDir = path.join(process.cwd(), "public")
 
-const getEmojiFiles = async (dirname: string): Promise<TGetEmojiFile[]> => {
+type TEmojiDirs = "food-drink" | "activity" | "travel-places" | "smiley-people"
+
+const getEmojiFiles = async (dirname: TEmojiDirs): Promise<TEmoji[]> => {
    const dirPath = path.join(publicDir, "emojis", dirname)
    const files = await fs.readdir(dirPath)
    return files.map((file) => ({
       name: file,
-      path: `/emojis/${dirname}/${file}`,
+      src: `/emojis/${dirname}/${file}`,
    }))
 }
 
@@ -27,7 +30,6 @@ export async function GET(): Promise<NextResponse<TGetEmojisRes> | NextResponse<
          activity: activityEmojis,
          travelPlaces: travelPlacesEmojis,
          smileyPeople: smileyPeopleEmojis,
-         all: [...smileyPeopleEmojis, ...foodDrinkEmojis, ...foodDrinkEmojis, ...activityEmojis],
       })
    } catch (error) {
       return NextResponse.json<TGetEmojisErrRes>(

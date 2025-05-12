@@ -1,5 +1,5 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit"
-import type { TDirectChatCard } from "@/utils/types"
+import type { TDirectChatCard } from "@/utils/types/global"
 
 type TDirectChatsState = {
    conversations: TDirectChatCard[] | null

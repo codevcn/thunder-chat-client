@@ -4,7 +4,7 @@ import { CustomAvatar, CustomTooltip } from "@/components/materials"
 import { Search as SearchIcon, ArrowLeft, X } from "lucide-react"
 import dayjs from "dayjs"
 import { useDebounce } from "@/hooks/debounce"
-import type { TUserWithProfile } from "@/utils/types"
+import type { TUserWithProfile } from "@/utils/types/be-api"
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
 import { startDirectChatThunk } from "@/redux/conversations/conversations-thunks"
 import { ChangeEvent, Dispatch, SetStateAction, useRef, useState } from "react"
@@ -14,8 +14,9 @@ import { IconButton } from "@/components/materials/icon-button"
 import { useRouter } from "next/navigation"
 import { sortDirectChatsByPinned } from "@/redux/conversations/conversations-selectors"
 import { unwrapResult } from "@reduxjs/toolkit"
-import { MAX_NUMBER_OF_PINNED_CONVERSATIONS } from "@/utils/constants"
 import Image from "next/image"
+
+const MAX_NUMBER_OF_PINNED_CONVERSATIONS: number = 3
 
 type TResultProps = {
    convResult: TUserWithProfile

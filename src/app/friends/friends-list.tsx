@@ -1,6 +1,6 @@
 "use client"
 
-import type { TGetFriendsData } from "@/apis/types"
+import type { TGetFriendsData } from "@/utils/types/be-api"
 import { CustomAvatar } from "@/components/materials"
 import { Spinner } from "@/components/materials/spinner"
 import { useUser } from "@/hooks/user"

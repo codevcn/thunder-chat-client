@@ -1,6 +1,6 @@
 "use client"
 
-import type { TGetFriendRequestsData } from "@/apis/types"
+import type { TGetFriendRequestsData } from "@/utils/types/be-api"
 import { CustomAvatar, CustomDropdown } from "@/components/materials"
 import { Spinner } from "@/components/materials/spinner"
 import { useUser } from "@/hooks/user"
@@ -14,7 +14,7 @@ import { CustomTooltip } from "@/components/materials"
 import { useEffect, useMemo, useRef, useState } from "react"
 import toast from "react-hot-toast"
 import { customEventManager } from "@/utils/events/custom-events"
-import type { TUserWithoutPassword } from "@/utils/types"
+import type { TUserWithoutPassword } from "@/utils/types/global"
 import { EPaginations } from "@/utils/enums"
 
 type TRequestCardProps = {

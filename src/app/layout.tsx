@@ -8,7 +8,7 @@ import { AuthProvider } from "@/providers/auth-provider"
 import { AppLayoutProvider } from "@/providers/app-layout-provider"
 
 import "@/styles/index.scss"
-import { NON_GUARD_ROUTES } from "@/utils/constants"
+import { NON_GUARD_ROUTES } from "@/configs/layout"
 
 export const metadata: Metadata = {
    title: "Thunder Chat",

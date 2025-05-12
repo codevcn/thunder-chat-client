@@ -4,14 +4,15 @@ import Link from "next/link"
 import { useEffect, useRef } from "react"
 import toast, { useToasterStore } from "react-hot-toast"
 import { ArrowRight, Info } from "lucide-react"
-import { MAX_NUMBER_OF_TOASTS } from "@/utils/constants"
 import { EActions } from "@/app/friends/sharing"
 import { localStorageManager } from "@/utils/local-storage"
 import { RootLayoutContext } from "@/contexts/root-layout.context"
 import { clientSocket } from "@/utils/socket/client-socket"
 import { ESocketEvents } from "@/utils/socket/events"
 import { getPathWithQueryString } from "@/utils/helpers"
-import type { TUserWithProfile } from "@/utils/types"
+import type { TUserWithProfile } from "@/utils/types/be-api"
+
+const MAX_NUMBER_OF_TOASTS: number = 5
 
 export const AppLayoutProvider = ({ children }: { children: React.ReactNode }) => {
    const { toasts } = useToasterStore()

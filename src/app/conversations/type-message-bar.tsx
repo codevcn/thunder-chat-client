@@ -1,9 +1,8 @@
 "use client"
 
-import { CustomTooltip } from "@/components/materials"
-import { Mic, Paperclip, Send, Smile } from "lucide-react"
+import { CustomTooltip, IconButton } from "@/components/materials"
+import { Mic, Paperclip, Send, Smile, Sticker } from "lucide-react"
 import { chattingService } from "@/services/chatting.service"
-import type { TDirectChat, TEmoji } from "@/utils/types"
 import { useUser } from "@/hooks/user"
 import { AutoResizeTextField } from "@/components/materials"
 import toast from "react-hot-toast"
@@ -16,51 +15,78 @@ import { eventEmitter } from "@/utils/event-emitter/event-emitter"
 import { EInternalEvents } from "@/utils/event-emitter/events"
 import { clientSocket } from "@/utils/socket/client-socket"
 import { ESocketEvents } from "@/utils/socket/events"
+import type { TDirectChat, TSticker } from "@/utils/types/be-api"
+import type { TEmoji } from "@/utils/types/global"
+import { EMessageTypes } from "@/utils/enums"
 
 const LazyEmojiPicker = lazy(() => import("../../components/materials/emoji-picker"))
+const LazyStickerPicker = lazy(() => import("../../components/materials/sticker-picker"))
 
 const Fallback = () => (
-   <div className="rounded-lg overflow-hidden bg-emoji-picker-bgcl w-full h-full"></div>
+   <div className="rounded-lg overflow-hidden w-full h-inside-expression-picker"></div>
 )
 
-const EmojiImg = ({ alt, name, src }: TEmoji) => {
-   return (
-      <img
-         className="STYLE-emoji-img"
-         src={src}
-         alt={alt}
-         data-emoji-data={JSON.stringify({ alt, name, src })}
-      />
-   )
+const EmojiImg = ({ name, src }: TEmoji) => {
+   return <img className="STYLE-emoji-img" src={src} alt={name} />
 }
 
-type TAddEmojiProps = {
+type TExpressionCategory = "emoji" | "sticker"
+
+type TExpressionPickerProps = {
    textFieldRef: React.RefObject<HTMLDivElement | null>
-   addEmojiPopoverRef: React.RefObject<HTMLDivElement | null>
+   expressionPopoverRef: React.RefObject<HTMLDivElement | null>
+   directChat: TDirectChat
 }
 
-const AddEmoji = ({ textFieldRef, addEmojiPopoverRef }: TAddEmojiProps) => {
-   const [showPicker, setShowPicker] = useState(false) // Hiển thị/ẩn picker
+const ExpressionPicker = ({
+   textFieldRef,
+   expressionPopoverRef,
+   directChat,
+}: TExpressionPickerProps) => {
+   const [showPicker, setShowPicker] = useState<boolean>(false)
+   const [category, setCategory] = useState<TExpressionCategory>("emoji")
    const addEmojiBtnRef = useRef<HTMLButtonElement>(null)
    const appRootEle = useRootLayoutContext().appRootRef!.current!
-
+   const user = useUser()!
+   const { recipientId, creatorId, id } = directChat
    const handleSelectEmoji = (emojiObject: TEmoji) => {
       const textField = textFieldRef.current
       if (textField) {
          const emojiInString = renderToStaticMarkup(
-            <EmojiImg alt={emojiObject.alt} name={emojiObject.name} src={emojiObject.src} />
+            <EmojiImg name={emojiObject.name} src={emojiObject.src} />
          )
          eventEmitter.emit(EInternalEvents.MSG_TEXTFIELD_EDITED, { content: emojiInString })
       }
    }
 
-   const handleOpenEmojiPicker = () => {
+   const handleSelectSticker = (sticker: TSticker) => {
+      chattingService.sendMessage(
+         EMessageTypes.STICKER,
+         {
+            content: sticker.imageUrl,
+            receiverId: user.id === recipientId ? creatorId : recipientId,
+            directChatId: id,
+            token: crypto.randomUUID(),
+            timestamp: new Date(),
+         },
+         (data) => {
+            if ("success" in data && data.success) {
+               chattingService.setAcknowledgmentFlag(true)
+               chattingService.recursiveSendingQueueMessages()
+            } else if ("isError" in data && data.isError) {
+               toast.error("Error when sending message")
+            }
+         }
+      )
+   }
+
+   const toggleEmojiPicker = () => {
       setShowPicker((prev) => !prev)
    }
 
    const detectCollisionAndAdjust = () => {
       const addEmojiBtn = addEmojiBtnRef.current
-      const addEmojiPopover = addEmojiPopoverRef.current
+      const addEmojiPopover = expressionPopoverRef.current
       if (addEmojiBtn && addEmojiPopover) {
          const buttonRect = addEmojiBtn.getBoundingClientRect()
          const popoverRect = addEmojiPopover.getBoundingClientRect()
@@ -84,6 +110,25 @@ const AddEmoji = ({ textFieldRef, addEmojiPopoverRef }: TAddEmojiProps) => {
       }
    }
 
+   const handleClickOutside = (e: MouseEvent) => {
+      const addEmojiPopover = expressionPopoverRef.current
+      if (addEmojiPopover) {
+         if (
+            !addEmojiPopover.contains(e.target as Node) &&
+            !addEmojiBtnRef.current?.contains(e.target as Node)
+         ) {
+            setShowPicker(false)
+         }
+      }
+   }
+
+   useEffect(() => {
+      eventEmitter.on(EInternalEvents.CLICK_ON_LAYOUT, handleClickOutside)
+      return () => {
+         eventEmitter.off(EInternalEvents.CLICK_ON_LAYOUT, handleClickOutside)
+      }
+   }, [])
+
    useEffect(() => {
       if (showPicker) {
          detectCollisionAndAdjust()
@@ -91,37 +136,36 @@ const AddEmoji = ({ textFieldRef, addEmojiPopoverRef }: TAddEmojiProps) => {
    }, [showPicker])
 
    return (
-      <div className="flex text-gray-500 hover:text-regular-violet-cl relative bottom-0 left-0 cursor-pointer">
+      <div className="flex text-regular-icon-cl hover:text-regular-violet-cl relative bottom-0 left-0 cursor-pointer">
          {showPicker &&
             createPortal(
                <div
-                  ref={addEmojiPopoverRef}
-                  className="fixed top-0 left-0 h-emoji-picker w-emoji-picker"
+                  ref={expressionPopoverRef}
+                  className="fixed top-0 left-0 rounded-lg h-expression-picker w-expression-picker bg-expression-picker-bgcl"
                >
                   <Suspense fallback={<Fallback />}>
-                     <LazyEmojiPicker
-                        onSelectEmoji={handleSelectEmoji}
-                        onHideShowPicker={setShowPicker}
-                        addEmojiBtnRef={addEmojiBtnRef}
-                     />
+                     {category === "emoji" ? (
+                        <LazyEmojiPicker onSelectEmoji={handleSelectEmoji} />
+                     ) : (
+                        <LazyStickerPicker onSelectSticker={handleSelectSticker} />
+                     )}
                   </Suspense>
+                  <div className="flex items-center justify-center gap-3 w-full h-nav-expression-picker px-2 pt-0 pb-2.5">
+                     <IconButton title={{ text: "Emoji" }} onClick={() => setCategory("emoji")}>
+                        <Smile className="h-6 w-6 text-regular-icon-cl" />
+                     </IconButton>
+                     <IconButton title={{ text: "Sticker" }} onClick={() => setCategory("sticker")}>
+                        <Sticker className="h-6 w-6 text-regular-icon-cl" />
+                     </IconButton>
+                  </div>
                </div>,
                document.body
             )}
-         <button ref={addEmojiBtnRef} onClick={handleOpenEmojiPicker}>
+         <button ref={addEmojiBtnRef} onClick={toggleEmojiPicker}>
             <Smile />
          </button>
       </div>
    )
-}
-
-type TMessageTextFieldProps = {
-   directChat: TDirectChat
-   setHasContent: (hasContent: boolean) => void
-   hasContent: boolean
-   textFieldRef: React.RefObject<HTMLDivElement | null>
-   textFieldContainerRef: React.RefObject<HTMLDivElement | null>
-   addEmojiPopoverRef: React.RefObject<HTMLDivElement | null>
 }
 
 const INDICATE_TYPING_DELAY: number = 200
@@ -146,13 +190,22 @@ const useCustomDebounce = (typingFlagRef: React.RefObject<TTypingFlags | undefin
    }
 }
 
+type TMessageTextFieldProps = {
+   directChat: TDirectChat
+   setHasContent: (hasContent: boolean) => void
+   hasContent: boolean
+   textFieldRef: React.RefObject<HTMLDivElement | null>
+   textFieldContainerRef: React.RefObject<HTMLDivElement | null>
+   expressionPopoverRef: React.RefObject<HTMLDivElement | null>
+}
+
 const MessageTextField = ({
    directChat,
    setHasContent,
    hasContent,
    textFieldRef,
    textFieldContainerRef,
-   addEmojiPopoverRef,
+   expressionPopoverRef,
 }: TMessageTextFieldProps) => {
    const { recipientId, creatorId, id } = directChat
    const user = useUser()!
@@ -160,7 +213,6 @@ const MessageTextField = ({
    const debounce = useCustomDebounce(typingFlagRef)
 
    const indicateUserIsTyping = debounce((type: TTypingFlags) => {
-      console.log(">>> debounce:", { type, typingFlag: typingFlagRef.current })
       clientSocket.socket.emit(ESocketEvents.typing_direct, {
          receiverId: recipientId === user.id ? creatorId : recipientId,
          isTyping: type === "typing",
@@ -181,14 +233,18 @@ const MessageTextField = ({
          !msgToSend ||
          msgToSend.length === 0 ||
          textFieldRef.current?.querySelector(".QUERY-empty-placeholder")
-      )
+      ) {
          return
+      }
       chattingService.sendMessage(
-         user.id === recipientId ? creatorId : recipientId,
-         msgToSend,
-         id,
-         crypto.randomUUID(),
-         new Date(),
+         EMessageTypes.TEXT,
+         {
+            content: msgToSend,
+            receiverId: user.id === recipientId ? creatorId : recipientId,
+            directChatId: id,
+            token: crypto.randomUUID(),
+            timestamp: new Date(),
+         },
          (data) => {
             if ("success" in data && data.success) {
                chattingService.setAcknowledgmentFlag(true)
@@ -213,11 +269,10 @@ const MessageTextField = ({
 
    const handleClickOnLayout = (e: MouseEvent) => {
       if (
-         !addEmojiPopoverRef.current?.contains(e.target as Node) &&
+         !expressionPopoverRef.current?.contains(e.target as Node) &&
          !textFieldContainerRef.current?.contains(e.target as Node) &&
          typingFlagRef.current === "typing"
       ) {
-         console.log(">>> run into indicate stop")
          indicateUserIsTyping("stop")
       }
    }
@@ -261,7 +316,7 @@ export const TypeMessageBar = memo(({ directChat }: TTypeMessageBarProps) => {
    const textFieldRef = useRef<HTMLDivElement | null>(null)
    const [hasContent, setHasContent] = useState<boolean>(false)
    const textFieldContainerRef = useRef<HTMLDivElement | null>(null)
-   const addEmojiPopoverRef = useRef<HTMLDivElement>(null)
+   const expressionPopoverRef = useRef<HTMLDivElement>(null)
 
    const handleClickOnTextFieldContainer = (e: React.MouseEvent<HTMLElement>) => {
       const textField = textFieldRef.current
@@ -289,14 +344,18 @@ export const TypeMessageBar = memo(({ directChat }: TTypeMessageBarProps) => {
                ref={textFieldContainerRef}
                className="flex cursor-text grow items-center gap-2 relative z-10 rounded-2xl bg-regular-dark-gray-cl px-3 outline-2 outline outline-regular-dark-gray-cl hover:outline-regular-violet-cl transition-[outline] duration-200"
             >
-               <AddEmoji textFieldRef={textFieldRef} addEmojiPopoverRef={addEmojiPopoverRef} />
+               <ExpressionPicker
+                  textFieldRef={textFieldRef}
+                  expressionPopoverRef={expressionPopoverRef}
+                  directChat={directChat}
+               />
                <MessageTextField
                   hasContent={hasContent}
                   directChat={directChat}
                   setHasContent={setHasContent}
                   textFieldRef={textFieldRef}
                   textFieldContainerRef={textFieldContainerRef}
-                  addEmojiPopoverRef={addEmojiPopoverRef}
+                  expressionPopoverRef={expressionPopoverRef}
                />
                <button className="text-gray-500 hover:text-regular-violet-cl cursor-pointer relative bottom-0 right-0">
                   <Paperclip />

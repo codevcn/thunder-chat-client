@@ -1,7 +1,7 @@
-import type { TRegisterUserParams, TSearchUsersData } from "@/apis/types"
+import type { TRegisterUserParams, TSearchUsersData, TUserWithProfile } from "@/utils/types/be-api"
 import { getSearchUsers, getUserByEmail, postRegisterUser } from "@/apis/user"
 import { EPaginations } from "@/utils/enums"
-import type { TSuccess, TUserWithProfile } from "@/utils/types"
+import type { TSuccess } from "@/utils/types/global"
 
 class UserService {
    async searchUsers(keyword: string): Promise<TSearchUsersData[]> {

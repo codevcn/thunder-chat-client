@@ -8,7 +8,7 @@ import { IconButton } from "@/components/materials/icon-button"
 import { ProgressiveImage } from "@/components/materials/progressive-image"
 import { setLastSeen } from "@/utils/helpers"
 import { robotoFont } from "@/utils/fonts"
-import type { TUserWithProfile } from "@/utils/types"
+import type { TUserWithProfile } from "@/utils/types/be-api"
 
 const Avatar = ({ recipient }: { recipient: TUserWithProfile }) => {
    return (

@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 import dayjs from "dayjs"
-import type { TDirectChatCard, TDirectMessage } from "@/utils/types"
+import type { TDirectChatCard, TDirectMessage } from "@/utils/types/global"
 
 const getQueryStringWithPathname = () => {
    // Lấy URL hiện tại

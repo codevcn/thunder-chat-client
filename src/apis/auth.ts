@@ -1,6 +1,6 @@
-import type { TSuccess, TUserWithoutPassword } from "@/utils/types"
+import type { TSuccess } from "@/utils/types/global"
 import { clientAxios, requestConfig } from "@/configs/axios"
-import type { TLoginUserParams } from "./types"
+import type { TLoginUserParams, TUserWithoutPassword } from "../utils/types/be-api"
 
 export const postLoginUser = (data: TLoginUserParams) =>
    clientAxios.post<TSuccess>("/auth/login", data, requestConfig)

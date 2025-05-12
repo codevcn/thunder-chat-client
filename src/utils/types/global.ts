@@ -1,48 +1,6 @@
 import type { AxiosError, HttpStatusCode } from "axios"
-import type { TChattingPayload } from "./socket/types"
-import type { EMessageStatus } from "./socket/enums"
+import type { TDirectMessage, TDirectChat } from "@/utils/types/be-api"
 
-// ================================= DB entities =================================
-export type TUser = {
-   id: number
-   email: string
-   password: string
-   username: string | null
-   createdAt: string
-}
-
-export type TProfile = {
-   id: number
-   createdAt: string
-   fullName: string
-   birthday: string | null
-   about: string | null
-   avatar: string | null
-   userId: number
-}
-
-export type TUserWithProfile = TUser & { Profile: Omit<TProfile, "id" | "userId"> | null }
-
-export type TUserWithoutPassword = Omit<TUser, "password">
-
-export type TDirectChat = {
-   id: number
-   createdAt: string
-   creatorId: number
-   recipientId: number
-   lastSentMessageId: number
-}
-
-export type TDirectMessage = {
-   id: number
-   createdAt: string
-   content: string
-   authorId: number
-   directChatId: number
-   status: EMessageStatus
-}
-
-// ================================= Common types =================================
 export type TStateDirectMessage = TDirectMessage & {
    isNewMsg?: boolean
 }
@@ -90,8 +48,6 @@ export type TSendDirectMessageErrorRes = {
    message: string
 }
 
-export type TOfflineMessage = TChattingPayload
-
 export type TSendMessageCallback = (data: TSendDirectMessageErrorRes | TSuccess) => void
 
 export type THandledAxiosError = {
@@ -112,7 +68,6 @@ export type TLastPageAccessed = {
 
 export type TEmoji = {
    src: string
-   alt: string
    name: string
 }
 
@@ -122,3 +77,5 @@ export type TMessageStateUpdates = {
    msgId: number
    msgUpdates: Partial<TStateDirectMessage>
 }
+
+export type TTooltipPlacement = "top" | "right" | "bottom" | "left"

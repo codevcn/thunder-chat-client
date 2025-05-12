@@ -14,7 +14,7 @@ const ChatBackground = () => {
    const dispatch = useAppDispatch()
 
    useEffect(() => {
-      dispatch(setChatBackground("/images/chat_bg/chat-bg-pattern-dark.ad38368a9e8140d0ac7d.png"))
+      dispatch(setChatBackground("/images/chat_bg/chat-bg-pattern-dark.ad38368a9e8140d0ac7d.webp"))
    }, [chatBackground])
 
    return (

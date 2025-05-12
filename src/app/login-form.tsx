@@ -10,7 +10,7 @@ import { authService } from "@/services/auth.service"
 import { extractFormData } from "@/utils/helpers"
 import axiosErrorHandler from "@/utils/axios-error-handler"
 import { useAuthRedirect } from "@/hooks/redirect"
-import type { TCheckboxValue } from "@/utils/types"
+import type { TCheckboxValue } from "@/utils/types/global"
 
 type TLoginFormData = {
    email: string

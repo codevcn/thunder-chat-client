@@ -3,7 +3,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit"
 
 export const startDirectChatThunk = createAsyncThunk(
    "messages/start",
-   directChatService.startDirectChat
+   directChatService.fetchDirectChat
 )
 
 export const fetchDirectChatThunk = createAsyncThunk(

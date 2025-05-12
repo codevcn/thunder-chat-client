@@ -24,7 +24,7 @@
    --tdc-regular-button-bgcl: var(--tdc-regular-modal-content-bgcl);
    --tdc-regular-hover-bgcl: #515151;
    --tdc-regular-divider-cl: #80808060;
-   --tdc-emoji-picker-bgcl: #2a2a2a;
+   --tdc-expression-picker-bgcl: #2a2a2a;
    --tdc-badge-bgcl: #dc1c1c;
 
    /* widths */
@@ -36,7 +36,7 @@
    --tdc-messages-list-width: 560px;
    --tdc-type-message-bar-width: var(--tdc-messages-list-width);
    --tdc-msgs-container-width: calc(100% - var(--tdc-info-bar-width));
-   --tdc-emoji-picker-width: 324px;
+   --tdc-expression-picker-width: 324px;
    --tdc-type-msg-bar-emoji-width: 20px;
    --tdc-user-msg-emoji-width: 22px;
 
@@ -44,9 +44,15 @@
    --tdc-header-height: 3.5rem;
    --tdc-chat-container-height: 100%;
    --tdc-type-msg-bar-height: 50px;
-   --tdc-emoji-picker-height: 365px;
+   --tdc-inside-expression-picker-height: 365px;
+   --tdc-expression-picker-height: 408px;
+   --tdc-nav-expression-picker-height: calc(
+      var(--tdc-expression-picker-height) - var(--tdc-inside-expression-picker-height)
+   );
    --tdc-type-msg-bar-emoji-height: 20px;
    --tdc-user-msg-emoji-height: 22px;
+   --tdc-sticker-width: 208px;
+   --tdc-sticker-height: 208px;
 
    /* transitions */
    --tdc-slide-info-bar-timing: cubic-bezier(0.33, 1, 0.68, 1);

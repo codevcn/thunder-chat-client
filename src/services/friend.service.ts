@@ -10,8 +10,8 @@ import type {
    TGetFriendRequestsParams,
    TGetFriendsData,
    TGetFriendsParams,
-} from "@/apis/types"
-import type { TSuccess } from "@/utils/types"
+} from "@/utils/types/be-api"
+import type { TSuccess } from "@/utils/types/global"
 
 class FriendService {
    async sendFriendRequest(userId: number, recipientId: number): Promise<TSuccess> {

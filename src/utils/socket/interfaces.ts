@@ -1,9 +1,6 @@
-import type {
-   TDirectMessage,
-   TSendDirectMessageErrorRes,
-   TSuccess,
-   TUserWithProfile,
-} from "../types"
+import type { TUserWithProfile } from "@/utils/types/be-api"
+import type { TDirectMessage } from "@/utils/types/be-api"
+import type { TSendDirectMessageErrorRes, TSuccess } from "../types/global"
 import { ESocketEvents, ESocketInitEvents } from "./events"
 import type {
    TChattingPayload,
@@ -11,7 +8,7 @@ import type {
    TMsgSeenListenPayload,
    TTypingEmitPayload,
    TWsErrorResponse,
-} from "./types"
+} from "../types/socket"
 
 export interface IListenSocketEvents {
    [ESocketInitEvents.connect]: () => void

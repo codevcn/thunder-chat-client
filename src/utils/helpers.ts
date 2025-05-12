@@ -1,15 +1,6 @@
 import dayjs from "dayjs"
-import { THE_LAST_DIRECT_CHAT_ID_NAME } from "./constants"
-import type { TFormData } from "./types"
+import type { TFormData } from "./types/global"
 import DOMPurify from "dompurify"
-
-export const storeDirectChatIdAtLocal = (id: string) => {
-   localStorage.setItem(THE_LAST_DIRECT_CHAT_ID_NAME, id)
-}
-
-export const getDirectChatIdFromLocal = () => {
-   return localStorage.getItem(THE_LAST_DIRECT_CHAT_ID_NAME)
-}
 
 export const setLastSeen = (date: string) => {
    return dayjs(date).format("MM/DD/YYYY, h:mm A")

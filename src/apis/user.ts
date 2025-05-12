@@ -1,6 +1,11 @@
-import type { TSuccess, TUserWithProfile } from "@/utils/types"
+import type { TSuccess } from "@/utils/types/global"
 import { clientAxios, requestConfig } from "@/configs/axios"
-import type { TRegisterUserParams, TSearchUsersData, TSearchUsersParams } from "./types"
+import type {
+   TRegisterUserParams,
+   TSearchUsersData,
+   TSearchUsersParams,
+   TUserWithProfile,
+} from "../utils/types/be-api"
 
 export const getUserByEmail = (email: string) =>
    clientAxios.get<TUserWithProfile>("/user/get-user?email=" + email)

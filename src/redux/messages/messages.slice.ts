@@ -1,7 +1,7 @@
-import type { TMessageStateUpdates, TStateDirectMessage } from "@/utils/types"
+import type { TMessageStateUpdates, TStateDirectMessage } from "@/utils/types/global"
 import { PayloadAction, createSlice } from "@reduxjs/toolkit"
 import { fetchDirectMessagesThunk } from "./messages.thunk"
-import type { TDirectChatData, TGetDirectMessagesData } from "@/apis/types"
+import type { TDirectChatData, TGetDirectMessagesData } from "@/utils/types/be-api"
 import { fetchDirectChatThunk, startDirectChatThunk } from "../conversations/conversations-thunks"
 
 type TMessagesState = {
