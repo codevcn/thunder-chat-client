@@ -1,10 +1,10 @@
 "use client"
 
-import * as React from "react"
 import * as TooltipPrimitive from "@radix-ui/react-tooltip"
 
 import { cn } from "@/lib/utils"
-import type { TTooltipPlacement } from "@/utils/types/global"
+import type { TPlacement } from "@/utils/types/global"
+import { forwardRef } from "react"
 
 const TooltipProvider = TooltipPrimitive.Provider
 
@@ -12,8 +12,8 @@ const Tooltip = TooltipPrimitive.Root
 
 const TooltipTrigger = TooltipPrimitive.Trigger
 
-const TooltipContent = React.forwardRef<
-   React.ElementRef<typeof TooltipPrimitive.Content>,
+const TooltipContent = forwardRef<
+   React.ComponentRef<typeof TooltipPrimitive.Content>,
    React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
 >(({ className, sideOffset = 4, ...props }, ref) => (
    <TooltipPrimitive.Portal>
@@ -34,7 +34,7 @@ TooltipContent.displayName = TooltipPrimitive.Content.displayName
 type TCustomTooltipProps = {
    children: React.JSX.Element
    title: string
-   placement?: TTooltipPlacement
+   placement?: TPlacement
    align?: "center" | "start" | "end"
    arrow?: boolean
 }
@@ -43,13 +43,13 @@ const CustomTooltip = ({
    children,
    title,
    placement = "bottom",
-   align,
+   align = "center",
    arrow = true,
 }: TCustomTooltipProps) => {
    return (
       <TooltipProvider delayDuration={300}>
          <Tooltip>
-            <TooltipTrigger style={{ height: "fit-content" }}>{children}</TooltipTrigger>
+            <TooltipTrigger className="h-fit cursor-auto">{children}</TooltipTrigger>
             <TooltipContent side={placement} align={align}>
                {title}
                {arrow && (

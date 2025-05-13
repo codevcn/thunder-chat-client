@@ -6,10 +6,10 @@ import type { TRegisterUserParams } from "@/utils/types/be-api"
 import { DatePicker, Spinner } from "@/components/materials"
 import { userService } from "@/services/user.service"
 import { useAuthRedirect } from "@/hooks/redirect"
-import toast from "react-hot-toast"
 import axiosErrorHandler from "@/utils/axios-error-handler"
 import { Eye, EyeOff, ArrowLeft } from "lucide-react"
 import { extractFormData } from "@/utils/helpers"
+import { toast } from "sonner"
 
 type TFormFields = TRegisterUserParams & {
    confirmPassword: string

@@ -2,8 +2,9 @@
    /* colors */
    --tdc-regular-black-cl: #0f0f0f;
    --tdc-regular-white-cl: #fffffff9;
-   --tdc-regular-red-cl: #ff0000;
-   --tdc-regular-green-cl: #34e534;
+   --tdc-regular-red-cl: #ef4444;
+   --tdc-regular-green-cl: #38a169;
+   --tdc-regular-orange-cl: #b7791f;
    --tdc-regular-violet-cl: #766ac8;
    --tdc-regular-dark-gray-cl: #212121;
    --tdc-regular-hover-card-cl: #303030;
@@ -20,12 +21,13 @@
       var(--tdc-gradient-violet-to-cl);
    --tdc-regular-text-secondary-cl: #aaaaaa;
    --tdc-regular-info-bar-bgcl: #181818;
-   --tdc-regular-modal-content-bgcl: #313131;
-   --tdc-regular-button-bgcl: var(--tdc-regular-modal-content-bgcl);
+   --tdc-regular-modal-board-bgcl: #313131;
+   --tdc-regular-button-bgcl: var(--tdc-regular-modal-board-bgcl);
    --tdc-regular-hover-bgcl: #515151;
-   --tdc-regular-divider-cl: #80808060;
+   --tdc-regular-divider-cl: var(--tdc-regular-hover-bgcl);
    --tdc-expression-picker-bgcl: #2a2a2a;
-   --tdc-badge-bgcl: #dc1c1c;
+   --tdc-regular-badge-bgcl: #dc1c1c;
+   --tdc-regular-dropdown-board-bgcl: #505050;
 
    /* widths */
    --tdc-convs-card-width: 300px;
@@ -39,6 +41,7 @@
    --tdc-expression-picker-width: 324px;
    --tdc-type-msg-bar-emoji-width: 20px;
    --tdc-user-msg-emoji-width: 22px;
+   --tdc-toast-width: 320px;
 
    /* heights */
    --tdc-header-height: 3.5rem;
@@ -51,8 +54,6 @@
    );
    --tdc-type-msg-bar-emoji-height: 20px;
    --tdc-user-msg-emoji-height: 22px;
-   --tdc-sticker-width: 208px;
-   --tdc-sticker-height: 208px;
 
    /* transitions */
    --tdc-slide-info-bar-timing: cubic-bezier(0.33, 1, 0.68, 1);

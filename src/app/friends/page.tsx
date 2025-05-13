@@ -1,43 +1,43 @@
 "use client"
 
 import { FriendsList } from "./friends-list"
-import { Navigation } from "@/components/layout/navigation"
+import { AppNavigation } from "@/components/layout/app-navigation"
 import { AddFriend } from "./add-friend"
 import { Contact, Ban, Mail } from "lucide-react"
 import { FriendRequests } from "./friend-requests"
 import { Blocked } from "./blocked"
 import { useSearchParams } from "next/navigation"
-import { EActions } from "./sharing"
+import { ETabs } from "./sharing"
 import { useRouter } from "next/navigation"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/materials"
 
-type TActions = {
-   key: EActions
+type TTab = {
+   key: ETabs
    label: string
    icon: React.JSX.Element
 }
 
-const actions: TActions[] = [
+const tabs: TTab[] = [
    {
-      key: EActions.FRIENDS_LIST,
+      key: ETabs.FRIENDS_LIST,
       label: "My Friends",
-      icon: <Contact />,
+      icon: <Contact className="h-5 w-5" />,
    },
    {
-      key: EActions.ADD_FRIEND_REQUESTS,
+      key: ETabs.ADD_FRIEND_REQUESTS,
       label: "Friend Invitations",
-      icon: <Mail />,
+      icon: <Mail className="h-5 w-5" />,
    },
    {
-      key: EActions.BLOCKED,
+      key: ETabs.BLOCKED,
       label: "Blocked",
-      icon: <Ban />,
+      icon: <Ban className="h-5 w-5" />,
    },
 ]
 
-const Actions = () => {
+const Main = () => {
    const searchParams = useSearchParams()
-   const qsAction = searchParams.get("action") || EActions.FRIENDS_LIST
+   const qsAction = searchParams.get("action") || ETabs.FRIENDS_LIST
    const router = useRouter()
 
    const changeTab = (key: string) => {
@@ -45,40 +45,40 @@ const Actions = () => {
    }
 
    return (
-      <div className="w-full">
-         <div className="flex mt-5 gap-x-10 justify-between h-fit w-full px-10 border-b border-regular-hover-card-cl border-solid">
-            <Tabs
-               defaultValue="account"
-               className="w-[400px] py-5"
-               onValueChange={changeTab}
-               value={qsAction}
-            >
-               <TabsList>
-                  {actions.map(({ key, label }) => (
-                     <TabsTrigger value={key}>{label}</TabsTrigger>
+      <div className="w-full px-5 pt-5 pb-3 relative">
+         <div className="h-fit w-full">
+            <Tabs defaultValue={ETabs.FRIENDS_LIST} onValueChange={changeTab} value={qsAction}>
+               <TabsList className="gap-1 p-0">
+                  {tabs.map(({ key, label, icon }) => (
+                     <TabsTrigger key={key} value={key}>
+                        <div className="flex items-center gap-x-1">
+                           {icon}
+                           {label}
+                        </div>
+                     </TabsTrigger>
                   ))}
                </TabsList>
-               <TabsContent forceMount value={EActions.FRIENDS_LIST}>
+               <TabsContent value={ETabs.FRIENDS_LIST}>
                   <FriendsList />
                </TabsContent>
-               <TabsContent forceMount value={EActions.ADD_FRIEND_REQUESTS}>
+               <TabsContent value={ETabs.ADD_FRIEND_REQUESTS}>
                   <FriendRequests />
                </TabsContent>
-               <TabsContent forceMount value={EActions.BLOCKED}>
+               <TabsContent value={ETabs.BLOCKED}>
                   <Blocked />
                </TabsContent>
             </Tabs>
-            <AddFriend />
          </div>
+         <AddFriend />
       </div>
    )
 }
 
 const FriendsPage = () => {
    return (
-      <div className="FriendsPage flex FriendsPage bg-regular-black-cl w-full relative">
-         <Navigation />
-         <Actions />
+      <div className="flex min-h-screen bg-regular-black-cl w-full relative">
+         <AppNavigation />
+         <Main />
       </div>
    )
 }

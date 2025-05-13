@@ -78,4 +78,6 @@ export type TMessageStateUpdates = {
    msgUpdates: Partial<TStateDirectMessage>
 }
 
-export type TTooltipPlacement = "top" | "right" | "bottom" | "left"
+export type TPlacement = "top" | "right" | "bottom" | "left"
+
+export type TAlign = "center" | "start" | "end"

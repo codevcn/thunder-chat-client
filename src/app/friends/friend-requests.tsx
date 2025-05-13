@@ -1,21 +1,29 @@
 "use client"
 
-import type { TGetFriendRequestsData } from "@/utils/types/be-api"
-import { CustomAvatar, CustomDropdown } from "@/components/materials"
+import type { TGetFriendRequestsData, TUserWithoutPassword } from "@/utils/types/be-api"
+import { CustomAvatar, CustomDropdown, DefaultAvatar } from "@/components/materials"
 import { Spinner } from "@/components/materials/spinner"
 import { useUser } from "@/hooks/user"
 import { friendService } from "@/services/friend.service"
 import axiosErrorHandler from "@/utils/axios-error-handler"
 import { displayTimeDifference } from "@/utils/date-time"
-import { EInternalEvents, EFriendRequestStatus } from "@/utils/enums"
-import { ArrowLeft, ArrowRight, Repeat, CheckCircle, Filter, Trash } from "lucide-react"
-// import { Tooltip, Dropdown } from "antd"
+import { EFriendRequestStatus } from "@/utils/enums"
+import {
+   ArrowLeft,
+   ArrowRight,
+   Repeat,
+   CheckCircle,
+   Filter,
+   Trash,
+   CheckCheck,
+   X,
+} from "lucide-react"
 import { CustomTooltip } from "@/components/materials"
 import { useEffect, useMemo, useRef, useState } from "react"
-import toast from "react-hot-toast"
-import { customEventManager } from "@/utils/events/custom-events"
-import type { TUserWithoutPassword } from "@/utils/types/global"
 import { EPaginations } from "@/utils/enums"
+import { eventEmitter } from "@/utils/event-emitter/event-emitter"
+import { EInternalEvents } from "@/utils/event-emitter/events"
+import { toast } from "@/components/materials"
 
 type TRequestCardProps = {
    req: TGetFriendRequestsData
@@ -40,13 +48,13 @@ const RequestCard = ({ req, loading, onFriendRequestActions, user }: TRequestCar
    const { Profile, email } = userInfo
 
    return (
-      <div className="flex justify-between items-center w-full mb-3 gap-x-5 px-4 py-3 bg-regular-modal-content-bgcl rounded-md">
+      <div className="flex justify-between items-center w-full mb-3 gap-x-5 px-4 py-3 bg-regular-modal-board-bgcl rounded-md">
          <div className="flex items-center gap-x-3">
             <div>
                <CustomAvatar
+                  fallback={<DefaultAvatar size={45} />}
                   src={Profile?.avatar || undefined}
                   imgSize={45}
-                  fallback={Profile?.fullName[0]}
                />
             </div>
             <div className="h-fit">
@@ -54,54 +62,60 @@ const RequestCard = ({ req, loading, onFriendRequestActions, user }: TRequestCar
                   <span className="mb-1 font-bold">{Profile?.fullName || "Unnamed"}</span>
                   <span className="text-sm text-regular-placeholder-cl">{` (${displayTimeDifference(createdAt)})`}</span>
                </div>
-               <div className="text-sm text-regular-placeholder-cl">
+               <div className="text-sm text-regular-icon-cl">
                   <span>{isSentRequest ? `Sent to ${email}` : `Received from ${email}`}</span>
                </div>
             </div>
          </div>
          {status === EFriendRequestStatus.PENDING ? (
             isSentRequest ? (
-               <div className="px-3 py-2 rounded-md text-black bg-regular-white-cl">Pending.</div>
+               <div className="px-3 py-2 rounded-md text-regular-black-cl bg-regular-white-cl">
+                  Pending.
+               </div>
             ) : (
-               <div className="flex items-center gap-x-7">
+               <div className="flex items-center gap-x-5">
                   {loading === `request-card-ACCEPTED-${id}` ? (
                      <Spinner size="small" />
                   ) : (
                      <CustomTooltip title="Accept" placement="bottom">
-                        <button
-                           className="hover:scale-125 transition-transform"
+                        <div
+                           className="hover:scale-125 cursor-pointer transition-transform"
                            onClick={() =>
                               onFriendRequestActions(EFriendRequestStatus.ACCEPTED, id, email)
                            }
                         >
                            <CheckCircle size={20} />
-                        </button>
+                        </div>
                      </CustomTooltip>
                   )}
                   {loading === `request-card-REJECTED-${id}` ? (
                      <Spinner size="small" />
                   ) : (
                      <CustomTooltip title="Reject" placement="bottom">
-                        <button
-                           className="hover:scale-125 transition-transform"
+                        <div
+                           className="hover:scale-125 cursor-pointer transition-transform"
                            onClick={() =>
                               onFriendRequestActions(EFriendRequestStatus.REJECTED, id, email)
                            }
                         >
                            <Trash size={20} className="text-regular-red-cl" />
-                        </button>
+                        </div>
                      </CustomTooltip>
                   )}
                </div>
             )
          ) : status === EFriendRequestStatus.ACCEPTED ? (
-            <div className="px-3 py-2 rounded-md text-white bg-regular-green-cl">
-               The invitation has been accepted.
-            </div>
+            <CustomTooltip title="The invitation has been accepted." placement="bottom">
+               <div className="px-3 py-2 rounded-md text-regular-white-cl bg-regular-green-cl">
+                  <CheckCheck size={20} />
+               </div>
+            </CustomTooltip>
          ) : (
-            <div className="px-3 py-2 rounded-md text-white bg-regular-red-cl">
-               The invitation has been rejected.
-            </div>
+            <CustomTooltip title="The invitation has been rejected." placement="bottom">
+               <div className="px-3 py-2 rounded-md text-regular-white-cl bg-regular-red-cl">
+                  <X size={20} />
+               </div>
+            </CustomTooltip>
          )}
       </div>
    )
@@ -116,11 +130,14 @@ const LoadMoreBtn = ({ onLoadMore, hidden }: TLoadMoreBtnProps) => {
    const [isLastRequest, setIsLastRequest] = useState<boolean>(false)
 
    useEffect(() => {
-      customEventManager.on(EInternalEvents.LAST_FRIEND_REQUEST, (payload) => {
+      const handleLastFriendRequest = () => {
          setIsLastRequest(true)
-      })
+      }
+
+      eventEmitter.on(EInternalEvents.LAST_FRIEND_REQUEST, handleLastFriendRequest)
+
       return () => {
-         customEventManager.off(EInternalEvents.LAST_FRIEND_REQUEST)
+         eventEmitter.removeListener(EInternalEvents.LAST_FRIEND_REQUEST, handleLastFriendRequest)
       }
    }, [])
 
@@ -137,15 +154,15 @@ const LoadMoreBtn = ({ onLoadMore, hidden }: TLoadMoreBtnProps) => {
 }
 
 enum EFilterLabels {
-   ALL = "ALL",
-   SENT = "SENT",
-   RECEIVED = "RECEIVED",
+   ALL = "All",
+   SENT = "Sent",
+   RECEIVED = "Received",
 }
 
 type TLoading =
    | "friend-requests"
    | `request-card-${EFriendRequestStatus.ACCEPTED | EFriendRequestStatus.REJECTED}-${number}`
-   | null
+   | undefined
 
 type TMenuItemProps = {
    children: React.JSX.Element | React.JSX.Element[]
@@ -154,7 +171,7 @@ type TMenuItemProps = {
 
 export const FriendRequests = () => {
    const [requests, setRequests] = useState<TGetFriendRequestsData[]>([])
-   const [loading, setLoading] = useState<TLoading>(null)
+   const [loading, setLoading] = useState<TLoading>(undefined)
    const user = useUser()
    const [filter, setFilter] = useState<EFilterLabels>(EFilterLabels.ALL)
    const tempFlagUseEffectRef = useRef<boolean>(true)
@@ -188,15 +205,14 @@ export const FriendRequests = () => {
             if (requests && requests.length > 0) {
                setRequests((pre) => [...pre, ...requests])
             } else {
-               customEventManager.dispatchEvent(EInternalEvents.LAST_FRIEND_REQUEST)
+               eventEmitter.emit(EInternalEvents.LAST_FRIEND_REQUEST)
             }
          })
          .catch((error) => {
-            console.error(">>> error:", error)
             toast.error(axiosErrorHandler.handleHttpError(error).message)
          })
          .finally(() => {
-            setLoading(null)
+            setLoading(undefined)
          })
    }
 
@@ -223,10 +239,9 @@ export const FriendRequests = () => {
             toast.success(`You rejected invitation of the user ${friendEmail}.`)
          }
       } catch (error) {
-         console.error(">>> error:", error)
          toast.error(axiosErrorHandler.handleHttpError(error).message)
       }
-      setLoading(null)
+      setLoading(undefined)
    }
 
    const onLoadMore = () => {
@@ -238,38 +253,37 @@ export const FriendRequests = () => {
       }
    }
 
-   const activeClass: string = "underline font-bold"
-
    const MenuItem = ({ children, type }: TMenuItemProps) => (
-      <div
-         className={`flex gap-x-2 hover:underline ${filter === type ? activeClass : ""}`}
+      <button
+         className={`flex gap-x-2 w-full p-2 border-none text-regular-icon-cl outline-none hover:bg-regular-hover-card-cl rounded-md ${filter === type ? "text-regular-white-cl" : ""}`}
          onClick={() => setFilter(type)}
       >
          {children}
-      </div>
+      </button>
    )
 
    return (
-      <div className="px-5">
-         <div className="mb-4 border-b border-regular-hover-card-cl border-solid pb-3">
+      <div className="mt-2 border-t border-regular-hover-card-cl border-solid pt-3">
+         <div className="mb-4">
             <CustomDropdown
                triggerButton={
-                  <button className="flex items-center gap-x-2 px-4 py-2 rounded-md bg-regular-modal-content-bgcl">
-                     <Filter />
-                     <span className="text-lg leading-none">{filter}</span>
+                  <button className="flex items-center gap-x-2 px-4 py-2 outline-none border-none rounded-md text-regular-icon-cl bg-regular-modal-board-bgcl">
+                     <Filter className="h-5 w-5" />
+                     <span className="text-lg leading-none font-medium">{filter}</span>
                   </button>
                }
+               align="start"
             >
                <MenuItem type={EFilterLabels.ALL}>
-                  <Repeat />
+                  <Repeat className="h-5 w-5" />
                   <span>All</span>
                </MenuItem>
-               <MenuItem type={EFilterLabels.ALL}>
-                  <ArrowRight />
+               <MenuItem type={EFilterLabels.SENT}>
+                  <ArrowRight className="h-5 w-5" />
                   <span>Sent</span>
                </MenuItem>
-               <MenuItem type={EFilterLabels.ALL}>
-                  <ArrowLeft />
+               <MenuItem type={EFilterLabels.RECEIVED}>
+                  <ArrowLeft className="h-5 w-5" />
                   <span>Received</span>
                </MenuItem>
             </CustomDropdown>

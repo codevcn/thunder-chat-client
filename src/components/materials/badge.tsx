@@ -1,4 +1,3 @@
-import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
@@ -37,5 +36,5 @@ type TCounterBadgeProps = {
 }
 
 export const CounterBadge = ({ className, count }: TCounterBadgeProps) => {
-   return <Badge className={`${className} bg-badge-bgcl`}>{count}</Badge>
+   return <Badge className={`${className} bg-regular-badge-bgcl`}>{count}</Badge>
 }

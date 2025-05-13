@@ -12,7 +12,6 @@ import { useUser } from "@/hooks/user"
 import { pushNewMessages, updateMessages } from "@/redux/messages/messages.slice"
 import { displayMessageStickyTime } from "@/utils/date-time"
 import axiosErrorHandler from "@/utils/axios-error-handler"
-import toast from "react-hot-toast"
 import { EInternalEvents } from "@/utils/event-emitter/events"
 import { clientSocket } from "@/utils/socket/client-socket"
 import { ESocketEvents } from "@/utils/socket/events"
@@ -21,6 +20,7 @@ import type { TDirectChatData } from "@/utils/types/be-api"
 import type { TMsgSeenListenPayload } from "@/utils/types/socket"
 import type { TStateDirectMessage } from "@/utils/types/global"
 import { Message } from "./message"
+import { toast } from "sonner"
 
 const SCROLL_ON_MESSAGES_THRESHOLD: number = 100
 const SHOW_SCROLL_BTN_THRESHOLD: number = 250
@@ -353,7 +353,7 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
          {createPortal(<ScrollToBottomMessageBtn />, document.body)}
 
          <div
-            className="flex flex-col items-center w-full h-full overflow-y-scroll overflow-x-hidden styled-scrollbar px-3 box-border"
+            className="flex flex-col items-center w-full h-full overflow-y-scroll overflow-x-hidden STYLE-styled-scrollbar px-3 box-border"
             ref={messagesContainer}
          >
             {fetchedMsgs ? (

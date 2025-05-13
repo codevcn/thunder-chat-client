@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import { Toaster } from "react-hot-toast"
 import { ReduxProvider } from "@/providers/redux-provider"
 
 import { SocketProvider } from "@/providers/socket-provider"
@@ -9,6 +8,9 @@ import { AppLayoutProvider } from "@/providers/app-layout-provider"
 
 import "@/styles/index.scss"
 import { NON_GUARD_ROUTES } from "@/configs/layout"
+import { Toaster } from "@/components/materials/sonner"
+import { ErrorIconForToast } from "@/components/layout/icons"
+import { SuccessIconForToast } from "@/components/layout/icons"
 
 export const metadata: Metadata = {
    title: "Thunder Chat",
@@ -30,20 +32,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </ReduxProvider>
 
             <Toaster
-               position="bottom-left"
-               reverseOrder={true}
-               toastOptions={{
-                  duration: 3000,
-                  error: {
-                     style: {
-                        fontWeight: "bold",
-                     },
-                  },
-                  success: {
-                     style: {
-                        fontWeight: "bold",
-                     },
-                  },
+               position="bottom-right"
+               richColors
+               closeButton
+               theme="light"
+               duration={3000}
+               icons={{
+                  success: <SuccessIconForToast />,
+                  error: <ErrorIconForToast />,
                }}
             />
          </body>

@@ -1,4 +1,4 @@
-import type { TTooltipPlacement } from "@/utils/types/global"
+import type { TPlacement } from "@/utils/types/global"
 import { CustomTooltip } from "./tooltip"
 
 type TIconButtonProps = {
@@ -8,7 +8,7 @@ type TIconButtonProps = {
    onClick: (e: React.MouseEvent<HTMLDivElement>) => void
    title: {
       text: string
-      placement?: TTooltipPlacement
+      placement?: TPlacement
    }
 }>
 

@@ -33,9 +33,9 @@ const navs: TNav[] = [
    },
 ]
 
-export const Navigation = memo(() => {
+export const AppNavigation = memo(() => {
    return (
-      <div className="screen-medium-chatting:flex hidden w-[55.5px] h-screen">
+      <div className="screen-medium-chatting:flex hidden w-[55px] h-screen relative">
          <div className="flex justify-between flex-col gap-4 bg-regular-dark-gray-cl pt-6 pb-3 w-[inherit] h-[inherit]">
             <CustomTooltip title="Account" placement="right">
                <Link
@@ -75,7 +75,7 @@ export const Navigation = memo(() => {
                </div>
             </CustomTooltip>
          </div>
-         <div className="outline-regular-hover-card-cl outline outline-1 h-full min-w-[1px]"></div>
+         <div className="absolute top-0 right-0 min-w-[0.5px] h-full bg-regular-hover-card-cl"></div>
       </div>
    )
 })

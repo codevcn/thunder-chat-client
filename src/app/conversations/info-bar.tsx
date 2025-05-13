@@ -56,13 +56,13 @@ const ProfileInfo = ({ recipient }: { recipient: TUserWithProfile }) => {
             </div>
          )}
 
-         {recipient.username && (
+         {recipient.email && (
             <div className="flex gap-4 items-center px-4 py-2">
                <div className="text-regular-icon-cl">
                   <AtSign color="inherit" />
                </div>
                <div className="w-info-bar">
-                  <p className="text-base leading-5 w-full">{recipient.username}</p>
+                  <p className="text-base leading-5 w-full">{recipient.email}</p>
                   <p className="text-regular-text-secondary-cl mt-1">Username</p>
                </div>
             </div>
@@ -98,7 +98,7 @@ export const InfoBar = () => {
 
          {recipient && (
             <div className="h-chat-container w-full">
-               <div className="overflow-y-scroll styled-scrollbar h-full bg-regular-info-bar-bgcl">
+               <div className="overflow-y-scroll STYLE-styled-scrollbar h-full bg-regular-info-bar-bgcl">
                   <Avatar recipient={recipient} />
 
                   <ProfileInfo recipient={recipient} />

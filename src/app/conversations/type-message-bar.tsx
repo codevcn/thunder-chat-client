@@ -5,7 +5,6 @@ import { Mic, Paperclip, Send, Smile, Sticker } from "lucide-react"
 import { chattingService } from "@/services/chatting.service"
 import { useUser } from "@/hooks/user"
 import { AutoResizeTextField } from "@/components/materials"
-import toast from "react-hot-toast"
 import { useAppSelector } from "@/hooks/redux"
 import { memo, useEffect, useRef, useState, Suspense, lazy } from "react"
 import { useRootLayoutContext } from "@/hooks/layout"
@@ -18,6 +17,7 @@ import { ESocketEvents } from "@/utils/socket/events"
 import type { TDirectChat, TSticker } from "@/utils/types/be-api"
 import type { TEmoji } from "@/utils/types/global"
 import { EMessageTypes } from "@/utils/enums"
+import { toast } from "sonner"
 
 const LazyEmojiPicker = lazy(() => import("../../components/materials/emoji-picker"))
 const LazyStickerPicker = lazy(() => import("../../components/materials/sticker-picker"))
@@ -287,7 +287,7 @@ const MessageTextField = ({
    return (
       <div className="relative bg-regular-dark-gray-cl grow py-[15.5px] px-2">
          <AutoResizeTextField
-            className="block bg-transparent outline-none w-full hover:bg-transparent whitespace-pre-wrap break-all leading-tight focus:bg-transparent z-10 styled-scrollbar border-transparent text-white hover:border-transparent focus:border-transparent focus:shadow-none"
+            className="block bg-transparent outline-none w-full hover:bg-transparent whitespace-pre-wrap break-all leading-tight focus:bg-transparent z-10 STYLE-styled-scrollbar border-transparent text-white hover:border-transparent focus:border-transparent focus:shadow-none"
             onEnterPress={handleCatchEnter}
             onContentChange={handleTyping}
             maxHeight={300}

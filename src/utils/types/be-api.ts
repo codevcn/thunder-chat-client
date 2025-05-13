@@ -9,7 +9,6 @@ export type TUser = {
    id: number
    email: string
    password: string
-   username: string | null
    createdAt: string
 }
 
@@ -84,7 +83,6 @@ export type TRegisterUserParams = {
 export type TSearchUsersData = {
    id: number
    email: string
-   username: string | null
    Profile: {
       id: number
       fullName: string

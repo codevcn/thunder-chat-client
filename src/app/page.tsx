@@ -5,7 +5,6 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import { useDebounce } from "@/hooks/debounce"
 import validator from "validator"
-import toast from "react-hot-toast"
 import { userService } from "@/services/user.service"
 import { ECheckUserStatus } from "./sharings"
 import { Spinner } from "@/components/materials"
@@ -14,6 +13,7 @@ import { useAuth } from "@/hooks/auth"
 import { EAuthStatus } from "@/utils/enums"
 import { getCurrentLocationPath, pureNavigator } from "@/utils/helpers"
 import { localStorageManager } from "@/utils/local-storage"
+import { toast } from "sonner"
 
 type TLoginFormProps = {
    onSetCheckUserStatus: (status: ECheckUserStatus) => void

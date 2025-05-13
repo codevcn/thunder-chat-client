@@ -1,17 +1,17 @@
 "use client"
 
 import type { TGetFriendsData } from "@/utils/types/be-api"
-import { CustomAvatar } from "@/components/materials"
+import { CustomAvatar, DefaultAvatar } from "@/components/materials"
 import { Spinner } from "@/components/materials/spinner"
 import { useUser } from "@/hooks/user"
 import { friendService } from "@/services/friend.service"
 import axiosErrorHandler from "@/utils/axios-error-handler"
 import { displayTimeDifference } from "@/utils/date-time"
-import { EInternalEvents } from "@/utils/enums"
 import { useEffect, useMemo, useRef, useState } from "react"
-import toast from "react-hot-toast"
-import { customEventManager } from "@/utils/events/custom-events"
 import { EPaginations } from "@/utils/enums"
+import { eventEmitter } from "@/utils/event-emitter/event-emitter"
+import { EInternalEvents } from "@/utils/event-emitter/events"
+import { toast } from "@/components/materials"
 
 type TFriendCardProps = {
    friend: TGetFriendsData
@@ -22,22 +22,26 @@ const FriendCard = ({ friend }: TFriendCardProps) => {
    const { Profile, email } = Recipient
 
    return (
-      <div className="flex justify-between items-center w-full mb-3 gap-x-5 px-4 py-3 bg-regular-modal-content-bgcl rounded-md">
+      <div className="flex justify-between items-center w-full mb-3 gap-x-5 px-4 py-3 bg-regular-modal-board-bgcl rounded-md">
          <div className="flex items-center gap-x-3">
             <div>
-               <CustomAvatar src={Profile?.avatar || undefined} imgSize={45} />
+               <CustomAvatar
+                  fallback={<DefaultAvatar size={45} />}
+                  src={Profile?.avatar || undefined}
+                  imgSize={45}
+               />
             </div>
             <div className="h-fit">
                <div>
                   <span className="mb-1 font-bold">{Profile?.fullName || "Unnamed"}</span>
                </div>
-               <div className="text-sm text-regular-placeholder-cl">
+               <div className="text-sm text-regular-icon-cl">
                   <span>{email}</span>
                </div>
             </div>
          </div>
-         <div className="text-regular-placeholder-cl italic">
-            {`Was friend ${displayTimeDifference(createdAt)}`}
+         <div className="text-regular-placeholder-cl">
+            {`Be friend ${displayTimeDifference(createdAt)}`}
          </div>
       </div>
    )
@@ -52,11 +56,14 @@ const LoadMoreBtn = ({ onLoadMore, hidden }: TLoadMoreBtnProps) => {
    const [isLastFriend, setIsLastFriend] = useState<boolean>(false)
 
    useEffect(() => {
-      customEventManager.on(EInternalEvents.LAST_FRIEND_REQUEST, (payload) => {
+      const handleLastFriend = () => {
          setIsLastFriend(true)
-      })
+      }
+
+      eventEmitter.on(EInternalEvents.LAST_FRIEND_REQUEST, handleLastFriend)
+
       return () => {
-         customEventManager.off(EInternalEvents.LAST_FRIEND_REQUEST)
+         eventEmitter.removeListener(EInternalEvents.LAST_FRIEND_REQUEST, handleLastFriend)
       }
    }, [])
 
@@ -72,11 +79,11 @@ const LoadMoreBtn = ({ onLoadMore, hidden }: TLoadMoreBtnProps) => {
    )
 }
 
-type TLoading = "friends"
+type TLoading = "friends" | undefined
 
 export const FriendsList = () => {
    const [friends, setFriends] = useState<TGetFriendsData[]>([])
-   const [loading, setLoading] = useState<TLoading | null>(null)
+   const [loading, setLoading] = useState<TLoading>(undefined)
    const user = useUser()
    const tempFlagUseEffectRef = useRef<boolean>(true)
 
@@ -96,15 +103,14 @@ export const FriendsList = () => {
             if (friends && friends.length > 0) {
                setFriends((pre) => [...pre, ...friends])
             } else {
-               customEventManager.dispatchEvent(EInternalEvents.LAST_FRIEND_REQUEST)
+               eventEmitter.emit(EInternalEvents.LAST_FRIEND_REQUEST)
             }
          })
          .catch((error) => {
-            console.error(">>> error:", error)
             toast.error(axiosErrorHandler.handleHttpError(error).message)
          })
          .finally(() => {
-            setLoading(null)
+            setLoading(undefined)
          })
    }
 
@@ -127,8 +133,7 @@ export const FriendsList = () => {
    }
 
    return (
-      <div className="px-5">
-         <div className="mb-4 border-b border-regular-hover-card-cl border-solid pb-3"></div>
+      <div className="mt-2 border-t border-regular-hover-card-cl border-solid pt-3">
          <div>
             {filteredFriends && filteredFriends.length > 0
                ? filteredFriends.map((friend) => <FriendCard key={friend.id} friend={friend} />)

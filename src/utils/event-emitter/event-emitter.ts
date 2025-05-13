@@ -9,6 +9,7 @@ interface IEventEmitter {
    [EInternalEvents.CLICK_ON_LAYOUT]: (e: MouseEvent) => void
    [EInternalEvents.MSG_TEXTFIELD_EDITED]: (e: TMsgContent) => void
    [EInternalEvents.UNREAD_MESSAGES_COUNT]: (count: number) => void
+   [EInternalEvents.LAST_FRIEND_REQUEST]: () => void
 }
 
 export const eventEmitter = new EventEmitter<IEventEmitter>()

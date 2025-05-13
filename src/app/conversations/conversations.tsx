@@ -231,14 +231,14 @@ export const Conversations = () => {
 
          <div className="relative z-10 grow overflow-hidden">
             <div
-               className={`${isTyping ? "animate-super-zoom-out-fade-in" : "animate-super-zoom-in-fade-out"} py-5 absolute top-0 left-0 z-20 px-2 box-border w-full h-full overflow-x-hidden overflow-y-auto styled-scrollbar`}
+               className={`${isTyping ? "animate-super-zoom-out-fade-in" : "animate-super-zoom-in-fade-out"} py-5 absolute top-0 left-0 z-20 px-2 box-border w-full h-full overflow-x-hidden overflow-y-auto STYLE-styled-scrollbar`}
             >
                <div className="font-bold pl-3 pb-1 text-regular-icon-cl">Result</div>
                <Results loading={searching} />
             </div>
 
             <div
-               className={`${isTyping ? "animate-zoom-fade-out" : "animate-zoom-fade-in"} !flex flex-col w-full absolute top-0 left-0 z-30 px-2 h-full overflow-x-hidden overflow-y-auto styled-scrollbar`}
+               className={`${isTyping ? "animate-zoom-fade-out" : "animate-zoom-fade-in"} !flex flex-col w-full absolute top-0 left-0 z-30 px-2 h-full overflow-x-hidden overflow-y-auto STYLE-styled-scrollbar`}
             >
                <ChatCards />
             </div>

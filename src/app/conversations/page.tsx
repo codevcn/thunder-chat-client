@@ -5,7 +5,7 @@ import { Chat } from "./chat"
 import { useEffect } from "react"
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
 import { setChatBackground } from "@/redux/settings/settings.slice"
-import { Navigation } from "@/components/layout/navigation"
+import { AppNavigation } from "@/components/layout/app-navigation"
 import { eventEmitter } from "@/utils/event-emitter/event-emitter"
 import { EInternalEvents } from "@/utils/event-emitter/events"
 
@@ -42,7 +42,7 @@ const ConversationPage = () => {
          <ChatBackground />
 
          <div className="flex absolute h-full w-full top-0 left-0 bg-transparent z-20">
-            <Navigation />
+            <AppNavigation />
 
             <div className="flex grow relative z-20">
                <Conversations />

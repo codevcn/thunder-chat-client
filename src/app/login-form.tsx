@@ -4,13 +4,13 @@ import { useState } from "react"
 import { ArrowLeft, Info } from "lucide-react"
 import { Checkbox, CustomTooltip, Spinner } from "@/components/materials"
 import validator from "validator"
-import toast from "react-hot-toast"
 import { Eye, EyeOff } from "lucide-react"
 import { authService } from "@/services/auth.service"
 import { extractFormData } from "@/utils/helpers"
 import axiosErrorHandler from "@/utils/axios-error-handler"
 import { useAuthRedirect } from "@/hooks/redirect"
 import type { TCheckboxValue } from "@/utils/types/global"
+import { toast } from "sonner"
 
 type TLoginFormData = {
    email: string

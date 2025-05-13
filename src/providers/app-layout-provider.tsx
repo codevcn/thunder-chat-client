@@ -1,22 +1,19 @@
 "use client"
 
-import Link from "next/link"
 import { useEffect, useRef } from "react"
-import toast, { useToasterStore } from "react-hot-toast"
-import { ArrowRight, Info } from "lucide-react"
-import { EActions } from "@/app/friends/sharing"
 import { localStorageManager } from "@/utils/local-storage"
 import { RootLayoutContext } from "@/contexts/root-layout.context"
 import { clientSocket } from "@/utils/socket/client-socket"
 import { ESocketEvents } from "@/utils/socket/events"
 import { getPathWithQueryString } from "@/utils/helpers"
 import type { TUserWithProfile } from "@/utils/types/be-api"
-
-const MAX_NUMBER_OF_TOASTS: number = 5
+import { toast } from "sonner"
+import { ETabs } from "@/app/friends/sharing"
+import { useRouter } from "next/navigation"
 
 export const AppLayoutProvider = ({ children }: { children: React.ReactNode }) => {
-   const { toasts } = useToasterStore()
    const appRootRef = useRef<HTMLDivElement>(null)
+   const router = useRouter()
 
    const setLastPageAccessed = () => {
       localStorageManager.setLastPageAccessed(getPathWithQueryString())
@@ -24,27 +21,14 @@ export const AppLayoutProvider = ({ children }: { children: React.ReactNode }) =
 
    const handleFriendRequest = (userData: TUserWithProfile) => {
       const { Profile, email } = userData
-      toast(() => (
-         <div className="flex items-center justify-between gap-x-3">
-            <Info size={20} />
-            <span className="font-bold">{`User "${Profile?.fullName || email}" sent you an add friend request`}</span>
-            <Link
-               href={`/friends?action=${EActions.ADD_FRIEND_REQUESTS}`}
-               className="px-2 py-[5px]"
-            >
-               <ArrowRight className="text-black" size={20} />
-            </Link>
-         </div>
-      ))
-   }
-
-   const limitDisplayedToasts = () => {
-      setTimeout(() => {
-         toasts
-            .filter((t) => t.visible) // Only consider visible toasts
-            .filter((_, i) => i >= MAX_NUMBER_OF_TOASTS) // Is toast index over limit?
-            .forEach((t) => toast.dismiss(t.id)) // Dismiss – Use toast.remove(t.id) for no exit animation
-      }, 0)
+      toast(`User "${Profile?.fullName || email}" sent you an add friend request`, {
+         action: {
+            label: "View",
+            onClick: () => {
+               router.push(`/friends?action=${ETabs.ADD_FRIEND_REQUESTS}`)
+            },
+         },
+      })
    }
 
    useEffect(() => {
@@ -54,10 +38,6 @@ export const AppLayoutProvider = ({ children }: { children: React.ReactNode }) =
          clientSocket.socket.off(ESocketEvents.send_friend_request, handleFriendRequest)
       }
    }, [])
-
-   useEffect(() => {
-      limitDisplayedToasts()
-   }, [toasts])
 
    return (
       <div ref={appRootRef} id="App-Root" className="bg-regular-dark-gray-cl">

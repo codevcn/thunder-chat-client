@@ -1,10 +1,10 @@
 "use client"
 
-import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { forwardRef } from "react"
 
 const Dialog = DialogPrimitive.Root
 
@@ -12,10 +12,8 @@ const DialogTrigger = DialogPrimitive.Trigger
 
 const DialogPortal = DialogPrimitive.Portal
 
-const DialogClose = DialogPrimitive.Close
-
-const DialogOverlay = React.forwardRef<
-   React.ElementRef<typeof DialogPrimitive.Overlay>,
+const DialogOverlay = forwardRef<
+   React.ComponentRef<typeof DialogPrimitive.Overlay>,
    React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
    <DialogPrimitive.Overlay
@@ -29,8 +27,8 @@ const DialogOverlay = React.forwardRef<
 ))
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 
-const DialogContent = React.forwardRef<
-   React.ElementRef<typeof DialogPrimitive.Content>,
+const DialogContent = forwardRef<
+   React.ComponentRef<typeof DialogPrimitive.Content>,
    React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, ...props }, ref) => (
    <DialogPortal>
@@ -38,16 +36,12 @@ const DialogContent = React.forwardRef<
       <DialogPrimitive.Content
          ref={ref}
          className={cn(
-            "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
+            "fixed left-[50%] top-[50%] z-50 w-full max-w-lg translate-x-[-50%] translate-y-[-50%] border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
             className
          )}
          {...props}
       >
          {children}
-         <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-         </DialogPrimitive.Close>
       </DialogPrimitive.Content>
    </DialogPortal>
 ))
@@ -69,8 +63,8 @@ const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivEleme
 )
 DialogFooter.displayName = "DialogFooter"
 
-const DialogTitle = React.forwardRef<
-   React.ElementRef<typeof DialogPrimitive.Title>,
+const DialogTitle = forwardRef<
+   React.ComponentRef<typeof DialogPrimitive.Title>,
    React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
 >(({ className, ...props }, ref) => (
    <DialogPrimitive.Title
@@ -81,8 +75,8 @@ const DialogTitle = React.forwardRef<
 ))
 DialogTitle.displayName = DialogPrimitive.Title.displayName
 
-const DialogDescription = React.forwardRef<
-   React.ElementRef<typeof DialogPrimitive.Description>,
+const DialogDescription = forwardRef<
+   React.ComponentRef<typeof DialogPrimitive.Description>,
    React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
 >(({ className, ...props }, ref) => (
    <DialogPrimitive.Description
@@ -94,14 +88,56 @@ const DialogDescription = React.forwardRef<
 DialogDescription.displayName = DialogPrimitive.Description.displayName
 
 type TCustomDialogProps = {
-   children: React.JSX.Element
    open: boolean
+   dialogBody: React.JSX.Element
+   trigger?: React.JSX.Element
+   dialogHeader?: {
+      title: string
+      description: string
+      classNames?: {
+         title?: string
+         description?: string
+      }
+   }
+   onHideShow?: (open: boolean) => void
 }
 
-const CustomDialog = ({ children, open = false }: TCustomDialogProps) => {
+const CustomDialog = ({
+   trigger,
+   open,
+   dialogBody,
+   dialogHeader,
+   onHideShow,
+}: TCustomDialogProps) => {
    return (
-      <Dialog open={open}>
-         <DialogContent>{children}</DialogContent>
+      <Dialog open={open} onOpenChange={onHideShow}>
+         <DialogTrigger asChild={!!trigger}>{trigger}</DialogTrigger>
+         <DialogContent className="xs:max-w-[350px] sm:max-w-[400px] md:max-w-[600px] lg:max-w-[900px] bg-regular-modal-board-bgcl rounded-lg border-none outline-none">
+            <DialogHeader hidden={!dialogHeader}>
+               <DialogTitle
+                  className={cn("text-regular-white-cl", dialogHeader?.classNames?.title)}
+               >
+                  {dialogHeader?.title || ""}
+               </DialogTitle>
+               <DialogDescription
+                  className={cn("text-regular-icon-cl", dialogHeader?.classNames?.description)}
+               >
+                  {dialogHeader?.description || ""}
+               </DialogDescription>
+            </DialogHeader>
+            {dialogBody}
+            {onHideShow && (
+               <DialogFooter className="translate-y-2 w-full">
+                  <button
+                     className="flex gap-1 items-center w-fit border-2 text-sm border-gray-500 border-solid px-5 py-1 rounded-[5px] text-regular-white-cl hover:bg-regular-icon-btn-cl"
+                     onClick={() => onHideShow(false)}
+                  >
+                     <X className="h-4 w-4" />
+                     <span>Close</span>
+                  </button>
+               </DialogFooter>
+            )}
+         </DialogContent>
       </Dialog>
    )
 }

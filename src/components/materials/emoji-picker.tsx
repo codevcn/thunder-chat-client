@@ -3,13 +3,13 @@
 import axiosErrorHandler from "@/utils/axios-error-handler"
 import type { TEmoji } from "@/utils/types/global"
 import { useEffect, useRef, useState } from "react"
-import toast from "react-hot-toast"
 import { FixedSizeGrid } from "react-window"
 import type { GridChildComponentProps } from "react-window"
 import { CustomTooltip } from "./tooltip"
 import { Spinner } from "./spinner"
 import { expressionService } from "@/services/expression.service"
 import type { TGetEmojisRes } from "@/utils/types/fe-api"
+import { toast } from "sonner"
 
 const GRID_COLUMN_COUNT: number = 7
 

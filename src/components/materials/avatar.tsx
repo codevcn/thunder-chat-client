@@ -1,12 +1,13 @@
 "use client"
 
-import * as React from "react"
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
 
 import { cn } from "@/lib/utils"
+import Image from "next/image"
+import { forwardRef } from "react"
 
-const Avatar = React.forwardRef<
-   React.ElementRef<typeof AvatarPrimitive.Root>,
+const Avatar = forwardRef<
+   React.ComponentRef<typeof AvatarPrimitive.Root>,
    React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
 >(({ className, ...props }, ref) => (
    <AvatarPrimitive.Root
@@ -17,8 +18,8 @@ const Avatar = React.forwardRef<
 ))
 Avatar.displayName = AvatarPrimitive.Root.displayName
 
-const AvatarImage = React.forwardRef<
-   React.ElementRef<typeof AvatarPrimitive.Image>,
+const AvatarImage = forwardRef<
+   React.ComponentRef<typeof AvatarPrimitive.Image>,
    React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
 >(({ className, ...props }, ref) => (
    <AvatarPrimitive.Image
@@ -29,8 +30,8 @@ const AvatarImage = React.forwardRef<
 ))
 AvatarImage.displayName = AvatarPrimitive.Image.displayName
 
-const AvatarFallback = React.forwardRef<
-   React.ElementRef<typeof AvatarPrimitive.Fallback>,
+const AvatarFallback = forwardRef<
+   React.ComponentRef<typeof AvatarPrimitive.Fallback>,
    React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
 >(({ className, ...props }, ref) => (
    <AvatarPrimitive.Fallback
@@ -75,4 +76,22 @@ const CustomAvatar = ({
    )
 }
 
-export { CustomAvatar }
+type TDefaultAvatarProps = Partial<{
+   size: number
+   className: string
+   src: string
+}>
+
+const DefaultAvatar = ({ size = 45, className, src }: TDefaultAvatarProps) => {
+   return (
+      <Image
+         src={src || "/images/user/default-avatar-white.webp"}
+         alt="default avatar"
+         width={size}
+         height={size}
+         className={cn("rounded-full bg-regular-icon-btn-cl p-2", className)}
+      />
+   )
+}
+
+export { CustomAvatar, DefaultAvatar }

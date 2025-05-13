@@ -2,11 +2,11 @@
 
 import { EAuthStatus } from "@/utils/enums"
 import { JSX, useEffect, useState } from "react"
-import toast from "react-hot-toast"
 import { useRedirectToLogin } from "@/hooks/redirect"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/hooks/auth"
 import { AppLoading } from "./app-loading"
+import { toast } from "sonner"
 
 type TGuardProps = {
    children: JSX.Element

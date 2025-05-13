@@ -13,5 +13,5 @@ export const getUserByEmail = (email: string) =>
 export const postRegisterUser = (data: TRegisterUserParams) =>
    clientAxios.post<TSuccess>("/user/register", data, requestConfig)
 
-export const getSearchUsers = (payload: TSearchUsersParams) =>
-   clientAxios.get<TSearchUsersData[]>("/user/search-users", { params: payload })
+export const getSearchUsers = (params: TSearchUsersParams) =>
+   clientAxios.get<TSearchUsersData[]>("/user/search-users", { params })
