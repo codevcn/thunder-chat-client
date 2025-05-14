@@ -66,7 +66,7 @@ const ExpressionPicker = ({
             content: sticker.imageUrl,
             receiverId: user.id === recipientId ? creatorId : recipientId,
             directChatId: id,
-            token: crypto.randomUUID(),
+            token: chattingService.getMessageToken(),
             timestamp: new Date(),
          },
          (data) => {

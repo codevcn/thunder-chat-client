@@ -12,6 +12,7 @@ import { EPaginations } from "@/utils/enums"
 import { eventEmitter } from "@/utils/event-emitter/event-emitter"
 import { EInternalEvents } from "@/utils/event-emitter/events"
 import { toast } from "@/components/materials"
+import { Contact } from "lucide-react"
 
 type TFriendCardProps = {
    friend: TGetFriendsData
@@ -138,8 +139,14 @@ export const FriendsList = () => {
             {filteredFriends && filteredFriends.length > 0
                ? filteredFriends.map((friend) => <FriendCard key={friend.id} friend={friend} />)
                : !loading && (
-                    <div className="mt-10 text-center text-regular-placeholder-cl">
-                       There's no friends now.
+                    <div className="flex flex-col items-center gap-4 mt-8">
+                       <Contact className="w-16 h-16 text-regular-icon-cl" />
+                       <h3 className="text-lg font-medium text-regular-icon-cl text-center">
+                          No friends yet
+                       </h3>
+                       <p className="text-sm text-regular-icon-cl text-center max-w-[300px]">
+                          You can add friends by clicking the Add Friend button in the page corner
+                       </p>
                     </div>
                  )}
          </div>

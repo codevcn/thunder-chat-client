@@ -3,9 +3,9 @@
 import { useAppDispatch, useAppSelector } from "@/hooks/redux"
 import { useRef, useState, useEffect, memo } from "react"
 import { fetchDirectMessagesThunk } from "@/redux/messages/messages.thunk"
-import type { TDirectMessage, TUserWithoutPassword } from "@/utils/types/be-api"
+import type { TDirectMessage, TSticker, TUserWithoutPassword } from "@/utils/types/be-api"
 import { Spinner } from "@/components/materials/spinner"
-import { EPaginations, ESortTypes } from "@/utils/enums"
+import { EMessageTypes, EPaginations, ESortTypes } from "@/utils/enums"
 import { ScrollToBottomMessageBtn } from "./scroll-to-bottom-msg-btn"
 import { createPortal } from "react-dom"
 import { useUser } from "@/hooks/user"
@@ -21,18 +21,77 @@ import type { TMsgSeenListenPayload } from "@/utils/types/socket"
 import type { TStateDirectMessage } from "@/utils/types/global"
 import { Message } from "./message"
 import { toast } from "sonner"
+import { expressionService } from "@/services/expression.service"
+import Image from "next/image"
+import { chattingService } from "@/services/chatting.service"
+import { CustomTooltip } from "@/components/materials"
 
 const SCROLL_ON_MESSAGES_THRESHOLD: number = 100
 const SHOW_SCROLL_BTN_THRESHOLD: number = 250
 
-const NoMessagesYet = () => {
+type TNoMessagesYetProps = {
+   directChat: TDirectChatData
+   user: TUserWithoutPassword
+}
+
+const NoMessagesYet = ({ directChat, user }: TNoMessagesYetProps) => {
+   const [randomSticker, setRandomSticker] = useState<TSticker | null>(null)
+   const { id: directChatId, recipientId, creatorId } = directChat
+
+   const fetchRandomSticker = async () => {
+      await expressionService
+         .fetchRandomSticker()
+         .then((sticker) => {
+            setRandomSticker(sticker)
+         })
+         .catch((error) => {
+            toast.error(axiosErrorHandler.handleHttpError(error).message)
+         })
+   }
+
+   const sendGreetingSticker = () => {
+      if (randomSticker) {
+         chattingService.sendMessage(
+            EMessageTypes.STICKER,
+            {
+               receiverId: user.id === recipientId ? creatorId : recipientId,
+               content: randomSticker.imageUrl,
+               directChatId: directChatId,
+               token: chattingService.getMessageToken(),
+               timestamp: new Date(),
+            },
+            (data) => {
+               if ("success" in data && data.success) {
+                  chattingService.setAcknowledgmentFlag(true)
+                  chattingService.recursiveSendingQueueMessages()
+               } else if ("isError" in data && data.isError) {
+                  toast.error("Error when sending message")
+               }
+            }
+         )
+      }
+   }
+
+   useEffect(() => {
+      fetchRandomSticker()
+   }, [])
+
    return (
-      <div className="flex-col items-center gap-y-1 m-auto text-base w-2/4 cursor-pointer">
-         <p className="font-bold">No messages here yet...</p>
-         <p className="text-center">Send a message or tap on the greeting below.</p>
-         <p className="bg-regular-violet-cl font-bold p-5 py-2 mt-2 rounded-lg hover:scale-105 transition">
-            SAY HELLO!
-         </p>
+      <div className="flex flex-col items-center justify-center gap-1 m-auto text-center text-base">
+         <p className="font-bold w-fit text-lg">No messages here yet...</p>
+         <p className="w-fit">Send a message or tap on the greeting below.</p>
+         {randomSticker && (
+            <CustomTooltip title="Send a greeting sticker">
+               <div className="mt-3 cursor-pointer" onClick={sendGreetingSticker}>
+                  <Image
+                     src={randomSticker.imageUrl}
+                     alt={randomSticker.stickerName}
+                     width={120}
+                     height={120}
+                  />
+               </div>
+            </CustomTooltip>
+         )}
       </div>
    )
 }
@@ -342,9 +401,15 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
       return () => {
          messagesContainer.current?.removeEventListener("scroll", handleScrollMsgsContainer)
          eventEmitter.off(EInternalEvents.SCROLL_TO_BOTTOM_MSG_ACTION, handleScrollToBottomMsg)
-         clientSocket.socket.off(ESocketEvents.recovered_connection, handleRecoverdConnection)
-         clientSocket.socket.off(ESocketEvents.send_message_direct, listenSendDirectMessage)
-         clientSocket.socket.off(ESocketEvents.message_seen_direct, handleMessageSeen)
+         clientSocket.socket.removeListener(
+            ESocketEvents.recovered_connection,
+            handleRecoverdConnection
+         )
+         clientSocket.socket.removeListener(
+            ESocketEvents.send_message_direct,
+            listenSendDirectMessage
+         )
+         clientSocket.socket.removeListener(ESocketEvents.message_seen_direct, handleMessageSeen)
       }
    }, [])
 
@@ -370,7 +435,7 @@ export const Messages = memo(({ directChat }: TMessagesProps) => {
                      <MappedMessages messages={messages} user={user} />
                   </div>
                ) : (
-                  <NoMessagesYet />
+                  <NoMessagesYet directChat={directChat} user={user} />
                )
             ) : (
                <div className="m-auto w-11 h-11">

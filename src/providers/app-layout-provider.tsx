@@ -6,10 +6,12 @@ import { RootLayoutContext } from "@/contexts/root-layout.context"
 import { clientSocket } from "@/utils/socket/client-socket"
 import { ESocketEvents } from "@/utils/socket/events"
 import { getPathWithQueryString } from "@/utils/helpers"
-import type { TUserWithProfile } from "@/utils/types/be-api"
+import type { TGetFriendRequestsData, TUserWithProfile } from "@/utils/types/be-api"
 import { toast } from "sonner"
 import { ETabs } from "@/app/friends/sharing"
 import { useRouter } from "next/navigation"
+import { EInternalEvents } from "@/utils/event-emitter/events"
+import { eventEmitter } from "@/utils/event-emitter/event-emitter"
 
 export const AppLayoutProvider = ({ children }: { children: React.ReactNode }) => {
    const appRootRef = useRef<HTMLDivElement>(null)
@@ -19,8 +21,12 @@ export const AppLayoutProvider = ({ children }: { children: React.ReactNode }) =
       localStorageManager.setLastPageAccessed(getPathWithQueryString())
    }
 
-   const handleFriendRequest = (userData: TUserWithProfile) => {
+   const listenFriendRequest = (
+      userData: TUserWithProfile,
+      requestData: TGetFriendRequestsData
+   ) => {
       const { Profile, email } = userData
+      eventEmitter.emit(EInternalEvents.SEND_FRIEND_REQUEST, requestData)
       toast(`User "${Profile?.fullName || email}" sent you an add friend request`, {
          action: {
             label: "View",
@@ -32,10 +38,10 @@ export const AppLayoutProvider = ({ children }: { children: React.ReactNode }) =
    }
 
    useEffect(() => {
-      clientSocket.socket.on(ESocketEvents.send_friend_request, handleFriendRequest)
+      clientSocket.socket.on(ESocketEvents.send_friend_request, listenFriendRequest)
       setLastPageAccessed()
       return () => {
-         clientSocket.socket.off(ESocketEvents.send_friend_request, handleFriendRequest)
+         clientSocket.socket.removeListener(ESocketEvents.send_friend_request, listenFriendRequest)
       }
    }, [])
 

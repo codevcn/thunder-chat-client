@@ -2,7 +2,7 @@
 
 import { EAuthStatus } from "@/utils/enums"
 import { JSX, useEffect, useState } from "react"
-import { useRedirectToLogin } from "@/hooks/redirect"
+import { useRedirectToLogin } from "@/hooks/navigation"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/hooks/auth"
 import { AppLoading } from "./app-loading"

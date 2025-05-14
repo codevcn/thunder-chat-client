@@ -45,3 +45,34 @@ export const getCurrentLocationPath = (): string => {
 export const santizeMsgContent = (htmlStr: string): string => {
    return DOMPurify.sanitize(htmlStr)
 }
+
+/**
+ * Handle event delegation for dataset
+ * @param e - React.MouseEvent<HTMLDivElement>
+ * @param target - { datasetName: camelCase string, className?: string }
+ * @returns dataset value or null if dataset not found
+ */
+export const handleEventDelegation = <R extends Record<string, any>>(
+   e: React.MouseEvent<HTMLDivElement>,
+   target: {
+      datasetName: string
+      className?: string
+   }
+): R | null => {
+   const { datasetName, className } = target
+   const element = e.target as HTMLElement
+   let dataset = element.getAttribute(datasetName)
+   if (dataset) {
+      return JSON.parse(dataset)
+   }
+   const closest = element.closest<HTMLElement>(
+      `${className ? `.${className}` : ""}[${datasetName}]`
+   )
+   if (closest) {
+      const dataset = closest.getAttribute(datasetName)
+      if (dataset) {
+         return JSON.parse(dataset)
+      }
+   }
+   return null
+}

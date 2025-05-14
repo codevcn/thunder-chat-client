@@ -20,3 +20,6 @@ export const getFetchEmojis = () =>
          "Cache-Control": "no-store",
       },
    })
+
+export const getGetRandomSticker = () =>
+   clientAxios.get<TSticker | null>("/sticker/get-random-sticker", requestConfig)

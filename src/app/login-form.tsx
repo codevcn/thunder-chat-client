@@ -8,7 +8,7 @@ import { Eye, EyeOff } from "lucide-react"
 import { authService } from "@/services/auth.service"
 import { extractFormData } from "@/utils/helpers"
 import axiosErrorHandler from "@/utils/axios-error-handler"
-import { useAuthRedirect } from "@/hooks/redirect"
+import { useAuthRedirect } from "@/hooks/navigation"
 import type { TCheckboxValue } from "@/utils/types/global"
 import { toast } from "sonner"
 

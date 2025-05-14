@@ -8,7 +8,6 @@ import { useUser } from "@/hooks/user"
 import { userService } from "@/services/user.service"
 import { useCallback, useRef, useState } from "react"
 import type { TSearchUsersData } from "@/utils/types/be-api"
-import { friendService } from "@/services/friend.service"
 import {
    CustomAvatar,
    CustomDialog,
@@ -17,6 +16,9 @@ import {
    TextField,
 } from "@/components/materials"
 import { toast } from "@/components/materials"
+import { eventEmitter } from "@/utils/event-emitter/event-emitter"
+import { EInternalEvents } from "@/utils/event-emitter/events"
+import { friendRequestService } from "@/services/friend-request.service"
 
 type TUserCardProps = {
    item: TSearchUsersData
@@ -108,10 +110,11 @@ export const AddFriend = () => {
 
    const sendFriendRequest = debounceLeading(async (recipientId: number) => {
       setLoading(`user-card-${recipientId}`)
-      friendService
+      friendRequestService
          .sendFriendRequest(user.id, recipientId)
-         .then(() => {
+         .then((res) => {
             toast.success("Sent friend request successfully!")
+            eventEmitter.emit(EInternalEvents.SEND_FRIEND_REQUEST, res)
          })
          .catch((error) => {
             toast.error(axiosErrorHandler.handleHttpError(error).message)

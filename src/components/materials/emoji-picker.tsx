@@ -25,7 +25,7 @@ const EmojiTab = ({ icon, label, activeTab, tabType, onClick }: EmojiTabProps) =
    return (
       <CustomTooltip title={label} placement="bottom">
          <div
-            className={`p-2 rounded-full transition-colors ${
+            className={`p-2 rounded-full transition-colors cursor-pointer ${
                activeTab === tabType ? "bg-regular-hover-bgcl" : "hover:bg-regular-hover-bgcl"
             }`}
             onClick={() => {

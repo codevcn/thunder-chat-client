@@ -10,4 +10,5 @@ export enum ESocketEvents {
    recovered_connection = "recovered_connection",
    message_seen_direct = "message_seen:direct",
    typing_direct = "typing:direct",
+   friend_request_action = "friend_request_action",
 }

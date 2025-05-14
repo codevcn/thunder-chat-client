@@ -4,7 +4,6 @@ import type { TGetFriendRequestsData, TUserWithoutPassword } from "@/utils/types
 import { CustomAvatar, CustomDropdown, DefaultAvatar } from "@/components/materials"
 import { Spinner } from "@/components/materials/spinner"
 import { useUser } from "@/hooks/user"
-import { friendService } from "@/services/friend.service"
 import axiosErrorHandler from "@/utils/axios-error-handler"
 import { displayTimeDifference } from "@/utils/date-time"
 import { EFriendRequestStatus } from "@/utils/enums"
@@ -17,6 +16,7 @@ import {
    Trash,
    CheckCheck,
    X,
+   Mail,
 } from "lucide-react"
 import { CustomTooltip } from "@/components/materials"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -24,21 +24,22 @@ import { EPaginations } from "@/utils/enums"
 import { eventEmitter } from "@/utils/event-emitter/event-emitter"
 import { EInternalEvents } from "@/utils/event-emitter/events"
 import { toast } from "@/components/materials"
+import { handleEventDelegation } from "@/utils/helpers"
+import { clientSocket } from "@/utils/socket/client-socket"
+import { ESocketEvents } from "@/utils/socket/events"
+import type { TFriendRequestPayload } from "@/utils/types/socket"
+import { friendRequestService } from "@/services/friend-request.service"
 
 type TRequestCardProps = {
    req: TGetFriendRequestsData
    loading: TLoading | null
    user: TUserWithoutPassword
-   onFriendRequestActions: (
-      action: EFriendRequestStatus.ACCEPTED | EFriendRequestStatus.REJECTED,
-      friendRequestId: number,
-      friendEmail: string
-   ) => void
 }
 
-const RequestCard = ({ req, loading, onFriendRequestActions, user }: TRequestCardProps) => {
+const RequestCard = ({ req, loading, user }: TRequestCardProps) => {
    const { Sender, createdAt, id, status, Recipient } = req
-   const isSentRequest = user.id === Sender.id
+   const senderId = Sender.id
+   const isSentRequest = user.id === senderId
 
    let userInfo = Sender
    if (isSentRequest) {
@@ -70,7 +71,7 @@ const RequestCard = ({ req, loading, onFriendRequestActions, user }: TRequestCar
          {status === EFriendRequestStatus.PENDING ? (
             isSentRequest ? (
                <div className="px-3 py-2 rounded-md text-regular-black-cl bg-regular-white-cl">
-                  Pending.
+                  Pending
                </div>
             ) : (
                <div className="flex items-center gap-x-5">
@@ -79,10 +80,13 @@ const RequestCard = ({ req, loading, onFriendRequestActions, user }: TRequestCar
                   ) : (
                      <CustomTooltip title="Accept" placement="bottom">
                         <div
-                           className="hover:scale-125 cursor-pointer transition-transform"
-                           onClick={() =>
-                              onFriendRequestActions(EFriendRequestStatus.ACCEPTED, id, email)
-                           }
+                           data-request-info={JSON.stringify({
+                              requestId: id,
+                              friendEmail: email,
+                              action: EFriendRequestStatus.ACCEPTED,
+                              senderId,
+                           })}
+                           className="QUERY-request-card-action hover:scale-125 cursor-pointer transition-transform"
                         >
                            <CheckCircle size={20} />
                         </div>
@@ -93,10 +97,13 @@ const RequestCard = ({ req, loading, onFriendRequestActions, user }: TRequestCar
                   ) : (
                      <CustomTooltip title="Reject" placement="bottom">
                         <div
-                           className="hover:scale-125 cursor-pointer transition-transform"
-                           onClick={() =>
-                              onFriendRequestActions(EFriendRequestStatus.REJECTED, id, email)
-                           }
+                           data-request-info={JSON.stringify({
+                              requestId: id,
+                              friendEmail: email,
+                              action: EFriendRequestStatus.REJECTED,
+                              senderId,
+                           })}
+                           className="QUERY-request-card-action hover:scale-125 cursor-pointer transition-transform"
                         >
                            <Trash size={20} className="text-regular-red-cl" />
                         </div>
@@ -169,12 +176,33 @@ type TMenuItemProps = {
    type: EFilterLabels
 }
 
+type TFriendRequestActionsParams = {
+   action: EFriendRequestStatus.ACCEPTED | EFriendRequestStatus.REJECTED
+   friendEmail: string
+   requestId: number
+   senderId: number
+}
+
 export const FriendRequests = () => {
    const [requests, setRequests] = useState<TGetFriendRequestsData[]>([])
    const [loading, setLoading] = useState<TLoading>(undefined)
    const user = useUser()
    const [filter, setFilter] = useState<EFilterLabels>(EFilterLabels.ALL)
    const tempFlagUseEffectRef = useRef<boolean>(true)
+
+   const updateRequest = (reqId: number, action: EFriendRequestStatus) => {
+      setRequests((pre) =>
+         pre.map((req) => {
+            if (req.id === reqId) {
+               return {
+                  ...req,
+                  status: action,
+               }
+            }
+            return req
+         })
+      )
+   }
 
    const filterRequests = (requests: TGetFriendRequestsData[]): TGetFriendRequestsData[] => {
       switch (filter) {
@@ -193,9 +221,9 @@ export const FriendRequests = () => {
       return requests
    }, [filter, requests])
 
-   const getFriendRequestsHandler = async (lastFriendRequestId?: number) => {
+   const fetchFriendRequests = async (lastFriendRequestId?: number) => {
       setLoading("friend-requests")
-      friendService
+      friendRequestService
          .getFriendRequests({
             limit: EPaginations.FRIEND_REQUESTS_PAGE_SIZE,
             userId: user!.id,
@@ -203,7 +231,9 @@ export const FriendRequests = () => {
          })
          .then((requests) => {
             if (requests && requests.length > 0) {
-               setRequests((pre) => [...pre, ...requests])
+               setRequests((pre) => {
+                  return [...pre, ...requests]
+               })
             } else {
                eventEmitter.emit(EInternalEvents.LAST_FRIEND_REQUEST)
             }
@@ -216,42 +246,84 @@ export const FriendRequests = () => {
          })
    }
 
-   useEffect(() => {
-      if (tempFlagUseEffectRef.current) {
-         tempFlagUseEffectRef.current = false
-         if (!requests || requests.length === 0) {
-            getFriendRequestsHandler()
+   const listenSendFriendRequest = (requestData: TGetFriendRequestsData) => {
+      setRequests((pre) => {
+         /*
+          * Check if the request is already in the list
+          * If it is, update the request
+          * If it is not, insert the request to start of the list
+          */
+         let updated: boolean = false
+         const updatedRequests = pre.map((req) => {
+            if (req.id === requestData.id) {
+               updated = true
+               return {
+                  ...req,
+                  ...requestData,
+               }
+            }
+            return req
+         })
+         if (!updated) {
+            return [requestData, ...pre]
          }
-      }
-   }, [])
+         return updatedRequests
+      })
+   }
 
-   const friendRequestActions = async (
-      action: EFriendRequestStatus.ACCEPTED | EFriendRequestStatus.REJECTED,
-      friendRequestId: number,
-      friendEmail: string
-   ) => {
-      setLoading(`request-card-${action}-${friendRequestId}`)
-      try {
-         await friendService.friendRequestAction({ action, friendRequestId })
-         if (action === EFriendRequestStatus.ACCEPTED) {
-            toast.success(`The user ${friendEmail} now becomes your friend.`)
-         } else {
-            toast.success(`You rejected invitation of the user ${friendEmail}.`)
-         }
-      } catch (error) {
-         toast.error(axiosErrorHandler.handleHttpError(error).message)
-      }
-      setLoading(undefined)
+   const handleFriendRequestActions = (e: React.MouseEvent<HTMLDivElement>) => {
+      const dataset = handleEventDelegation<TFriendRequestActionsParams>(e, {
+         datasetName: "data-request-info",
+         className: "QUERY-request-card-action",
+      })
+      if (!dataset) return
+      const { action, friendEmail, requestId, senderId } = dataset
+      setLoading(`request-card-${action}-${requestId}`)
+      friendRequestService
+         .friendRequestAction({ action, requestId, senderId })
+         .then(() => {
+            if (action === EFriendRequestStatus.ACCEPTED) {
+               toast.success(`The user ${friendEmail} now becomes your friend.`)
+            } else {
+               toast.success(`You rejected invitation of the user ${friendEmail}.`)
+            }
+            updateRequest(requestId, action)
+         })
+         .catch((error) => {
+            toast.error(axiosErrorHandler.handleHttpError(error).message)
+         })
+         .finally(() => {
+            setLoading(undefined)
+         })
    }
 
    const onLoadMore = () => {
       if (requests) {
          const requestsLen = requests.length
          if (requestsLen > 0) {
-            getFriendRequestsHandler(requests[requestsLen - 1].id)
+            fetchFriendRequests(requests[requestsLen - 1].id)
          }
       }
    }
+
+   const listenFriendRequestAction = (payload: TFriendRequestPayload) => {
+      const { requestId, action } = payload
+      updateRequest(requestId, action)
+   }
+
+   useEffect(() => {
+      if (tempFlagUseEffectRef.current) {
+         tempFlagUseEffectRef.current = false
+         if (!requests || requests.length === 0) {
+            fetchFriendRequests()
+         }
+      }
+      clientSocket.socket.on(ESocketEvents.friend_request_action, listenFriendRequestAction)
+      eventEmitter.on(EInternalEvents.SEND_FRIEND_REQUEST, listenSendFriendRequest)
+      return () => {
+         eventEmitter.removeListener(EInternalEvents.SEND_FRIEND_REQUEST, listenSendFriendRequest)
+      }
+   }, [])
 
    const MenuItem = ({ children, type }: TMenuItemProps) => (
       <button
@@ -288,27 +360,29 @@ export const FriendRequests = () => {
                </MenuItem>
             </CustomDropdown>
          </div>
-         <div>
+         <div onClick={handleFriendRequestActions}>
             {filteredRequests && filteredRequests.length > 0
                ? filteredRequests.map((req) => (
-                    <RequestCard
-                       key={req.id}
-                       req={req}
-                       loading={loading}
-                       onFriendRequestActions={friendRequestActions}
-                       user={user!}
-                    />
+                    <RequestCard key={req.id} req={req} loading={loading} user={user!} />
                  ))
                : !loading && (
-                    <div className="mt-10 text-center text-regular-placeholder-cl">
-                       There's no invitations now.
+                    <div className="flex flex-col items-center gap-4 mt-8">
+                       <Mail className="w-16 h-16 text-regular-icon-cl" />
+                       <h3 className="text-lg font-medium text-regular-icon-cl text-center">
+                          No friend requests yet
+                       </h3>
+                       <p className="text-sm text-regular-icon-cl text-center max-w-[300px]">
+                          You can add friends by clicking the Add Friend button in the page corner
+                       </p>
                     </div>
                  )}
          </div>
          <div className="flex w-full justify-center mt-5" hidden={!(loading === "friend-requests")}>
             <Spinner size="medium" />
          </div>
-         <LoadMoreBtn onLoadMore={onLoadMore} hidden={loading === "friend-requests"} />
+         {filteredRequests && filteredRequests.length > 0 && !loading && (
+            <LoadMoreBtn onLoadMore={onLoadMore} hidden={loading === "friend-requests"} />
+         )}
       </div>
    )
 }

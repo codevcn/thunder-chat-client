@@ -49,7 +49,11 @@ class ChattingService {
       }
    }
 
-   async sendOfflineMessages(): Promise<void> {
+   getMessageToken() {
+      return crypto.randomUUID()
+   }
+
+   sendOfflineMessages() {
       this.recursiveSendingOfflineMessages()
    }
 
@@ -77,7 +81,7 @@ class ChattingService {
       }
    }
 
-   saveOfflineMessage(chattingPayload: TChattingPayload): void {
+   saveOfflineMessage(chattingPayload: TChattingPayload) {
       let offlineMessages = this.offlineMessages
       if (offlineMessages && offlineMessages.length > 0) {
          offlineMessages = [...offlineMessages, chattingPayload]
@@ -87,15 +91,15 @@ class ChattingService {
       this.offlineMessages = offlineMessages
    }
 
-   setAcknowledgmentFlag(flag: boolean): void {
+   setAcknowledgmentFlag(flag: boolean) {
       this.acknowledgmentFlag = flag
    }
 
-   getAcknowledgmentFlag(): boolean {
+   getAcknowledgmentFlag() {
       return this.acknowledgmentFlag
    }
 
-   clearOfflineMessages(): void {
+   clearOfflineMessages() {
       this.offlineMessages = []
    }
 }

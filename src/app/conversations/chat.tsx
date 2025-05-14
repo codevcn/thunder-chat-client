@@ -48,7 +48,7 @@ const Header = ({ infoBarIsOpened, onOpenInfoBar }: THeaderProps) => {
    useEffect(() => {
       clientSocket.socket.on(ESocketEvents.typing_direct, handleTypingMessage)
       return () => {
-         clientSocket.socket.off(ESocketEvents.typing_direct, handleTypingMessage)
+         clientSocket.socket.removeListener(ESocketEvents.typing_direct, handleTypingMessage)
       }
    }, [])
 

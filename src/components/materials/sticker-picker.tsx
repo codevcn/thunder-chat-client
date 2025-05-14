@@ -25,7 +25,7 @@ const StickerTab = ({ thumbnailUrl, label, activeCategory, tabType, onClick }: S
    return (
       <CustomTooltip title={label} placement="bottom">
          <div
-            className={`p-2 rounded-full transition-colors ${
+            className={`p-2 rounded-full transition-colors cursor-pointer ${
                activeCategory === tabType ? "bg-regular-hover-bgcl" : "hover:bg-regular-hover-bgcl"
             }`}
             onClick={() => {

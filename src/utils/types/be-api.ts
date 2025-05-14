@@ -45,6 +45,22 @@ export type TDirectMessage = {
    type: EMessageTypes
 }
 
+export type TFriend = {
+   id: number
+   senderId: number
+   recipientId: number
+   createdAt: Date
+}
+
+export type TFriendRequest = {
+   id: number
+   senderId: number
+   recipientId: number
+   status: EFriendRequestStatus
+   createdAt: Date
+   updatedAt: Date
+}
+
 export type TSticker = {
    id: number
    stickerName: string
@@ -105,8 +121,9 @@ export type TGetFriendRequestsParams = {
 }
 
 export type TFriendRequestActionParams = {
-   friendRequestId: number
+   requestId: number
    action: EFriendRequestStatus
+   senderId: number
 }
 
 export type TGetFriendsData = {
