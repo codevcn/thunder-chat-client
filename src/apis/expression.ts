@@ -21,5 +21,5 @@ export const getFetchEmojis = () =>
       },
    })
 
-export const getGetRandomSticker = () =>
-   clientAxios.get<TSticker | null>("/sticker/get-random-sticker", requestConfig)
+export const getGetGreetingSticker = () =>
+   clientAxios.get<TSticker | null>("/sticker/get-greeting-sticker", requestConfig)

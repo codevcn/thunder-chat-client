@@ -76,3 +76,14 @@ export const handleEventDelegation = <R extends Record<string, any>>(
    }
    return null
 }
+
+/**
+ * Create a path with query parameters
+ * @param path - The path to create the path with
+ * @param params - The parameters to create the path with
+ * @returns The path with the query parameters
+ */
+export const createPathWithParams = (path: string, params: Record<string, string>): string => {
+   const queryParams = new URLSearchParams(params)
+   return `${path}?${queryParams.toString()}`
+}

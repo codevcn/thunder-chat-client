@@ -2,7 +2,7 @@ import type { TMessageStateUpdates, TStateDirectMessage } from "@/utils/types/gl
 import { PayloadAction, createSlice } from "@reduxjs/toolkit"
 import { fetchDirectMessagesThunk } from "./messages.thunk"
 import type { TDirectChatData, TGetDirectMessagesData } from "@/utils/types/be-api"
-import { fetchDirectChatThunk, startDirectChatThunk } from "../conversations/conversations-thunks"
+import { fetchDirectChatThunk } from "../conversations/conversations-thunks"
 
 type TMessagesState = {
    directChat: TDirectChatData | null
@@ -45,12 +45,6 @@ export const messagesSlice = createSlice({
       },
    },
    extraReducers: (builder) => {
-      builder.addCase(
-         startDirectChatThunk.fulfilled,
-         (state, action: PayloadAction<TDirectChatData>) => {
-            state.directChat = action.payload
-         }
-      )
       builder.addCase(
          fetchDirectChatThunk.fulfilled,
          (state, action: PayloadAction<TDirectChatData>) => {

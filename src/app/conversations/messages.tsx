@@ -35,14 +35,15 @@ type TNoMessagesYetProps = {
 }
 
 const NoMessagesYet = ({ directChat, user }: TNoMessagesYetProps) => {
-   const [randomSticker, setRandomSticker] = useState<TSticker | null>(null)
+   const [greetingSticker, setGreetingSticker] = useState<TSticker | null>(null)
    const { id: directChatId, recipientId, creatorId } = directChat
+   const tempFlagUseEffectRef = useRef<boolean>(true)
 
    const fetchRandomSticker = async () => {
       await expressionService
-         .fetchRandomSticker()
+         .fetchGreetingSticker()
          .then((sticker) => {
-            setRandomSticker(sticker)
+            setGreetingSticker(sticker)
          })
          .catch((error) => {
             toast.error(axiosErrorHandler.handleHttpError(error).message)
@@ -50,12 +51,12 @@ const NoMessagesYet = ({ directChat, user }: TNoMessagesYetProps) => {
    }
 
    const sendGreetingSticker = () => {
-      if (randomSticker) {
+      if (greetingSticker) {
          chattingService.sendMessage(
             EMessageTypes.STICKER,
             {
                receiverId: user.id === recipientId ? creatorId : recipientId,
-               content: randomSticker.imageUrl,
+               content: greetingSticker.imageUrl,
                directChatId: directChatId,
                token: chattingService.getMessageToken(),
                timestamp: new Date(),
@@ -73,19 +74,22 @@ const NoMessagesYet = ({ directChat, user }: TNoMessagesYetProps) => {
    }
 
    useEffect(() => {
-      fetchRandomSticker()
+      if (tempFlagUseEffectRef.current) {
+         tempFlagUseEffectRef.current = false
+         fetchRandomSticker()
+      }
    }, [])
 
    return (
       <div className="flex flex-col items-center justify-center gap-1 m-auto text-center text-base">
          <p className="font-bold w-fit text-lg">No messages here yet...</p>
          <p className="w-fit">Send a message or tap on the greeting below.</p>
-         {randomSticker && (
+         {greetingSticker && (
             <CustomTooltip title="Send a greeting sticker">
                <div className="mt-3 cursor-pointer" onClick={sendGreetingSticker}>
                   <Image
-                     src={randomSticker.imageUrl}
-                     alt={randomSticker.stickerName}
+                     src={greetingSticker.imageUrl}
+                     alt={greetingSticker.stickerName}
                      width={120}
                      height={120}
                   />

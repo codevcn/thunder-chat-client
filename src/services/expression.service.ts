@@ -2,7 +2,7 @@ import {
    getGetAllStickerCategories,
    getFetchStickers,
    getFetchEmojis,
-   getGetRandomSticker,
+   getGetGreetingSticker,
 } from "@/apis/expression"
 import type { TStickerCategory, TSticker } from "@/utils/types/be-api"
 import type { TGetEmojisRes } from "@/utils/types/fe-api"
@@ -28,8 +28,8 @@ class ExpressionService {
       }
    }
 
-   async fetchRandomSticker(): Promise<TSticker | null> {
-      const { data } = await getGetRandomSticker()
+   async fetchGreetingSticker(): Promise<TSticker | null> {
+      const { data } = await getGetGreetingSticker()
       return data
    }
 }
