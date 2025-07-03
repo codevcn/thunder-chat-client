@@ -56,7 +56,7 @@ const SearchResult = ({ loading, searchResult }: TSearchResultProps) => {
    const router = useRouter()
    const dispatch = useAppDispatch()
 
-   const startDirectChat = async (id: number) => {
+   const startDirectChat = async () => {
       const res = await dispatch(fetchDirectChatThunk({ recipientId: id }))
       const convData = unwrapResult(res)
       router.push(createPathWithParams("/conversations", { cid: convData.id.toString() }))
@@ -89,6 +89,7 @@ const SearchResult = ({ loading, searchResult }: TSearchResultProps) => {
                         key={message.id}
                         convName={message.conversationName}
                         textUnder={message.messageContent}
+                        avatarUrl={message.avatarUrl}
                      />
                   ))}
             </div>

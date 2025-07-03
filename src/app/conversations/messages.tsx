@@ -66,6 +66,7 @@ const NoMessagesYet = ({ directChat, user }: TNoMessagesYetProps) => {
                   chattingService.setAcknowledgmentFlag(true)
                   chattingService.recursiveSendingQueueMessages()
                } else if ("isError" in data && data.isError) {
+                  console.log(">>> error in data:", data)
                   toast.error("Error when sending message")
                }
             }
@@ -90,8 +91,8 @@ const NoMessagesYet = ({ directChat, user }: TNoMessagesYetProps) => {
                   <Image
                      src={greetingSticker.imageUrl}
                      alt={greetingSticker.stickerName}
-                     width={120}
-                     height={120}
+                     width={150}
+                     height={150}
                   />
                </div>
             </CustomTooltip>

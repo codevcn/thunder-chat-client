@@ -74,6 +74,7 @@ const ExpressionPicker = ({
                chattingService.setAcknowledgmentFlag(true)
                chattingService.recursiveSendingQueueMessages()
             } else if ("isError" in data && data.isError) {
+               console.log(">>> data err:", data)
                toast.error("Error when sending message")
             }
          }
@@ -250,6 +251,7 @@ const MessageTextField = ({
                chattingService.setAcknowledgmentFlag(true)
                chattingService.recursiveSendingQueueMessages()
             } else if ("isError" in data && data.isError) {
+               console.log(">>> error in data 123:", data)
                toast.error("Error when sending message")
             }
          }
